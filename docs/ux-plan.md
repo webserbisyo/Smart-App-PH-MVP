@@ -271,7 +271,7 @@ Loading (skeleton in the content's shape) · empty (Fluent icon, one line, one a
 
 | Checkpoint | Runs after | Builds | Phone test (both shops) |
 | --- | --- | --- | --- |
-| P4.0 Kit additions and shared patterns | P3b (any time before P4.1) | Section 4: 6 components, Fluent icons, core money, time and status look, `compressImage`, the shared patterns on `/kit` (order rules come from P5.4) | `/kit` on a phone: every pattern in every state |
+| P4.0 Kit additions and shared patterns | P3b (any time before P4.1) | Section 4: 6 components, Fluent icons, core money, time, status look and order rules, `compressImage`, the shared patterns on `/kit` | `/kit` on a phone: every pattern in every state |
 | P4.1 Products and categories | P5.1 | 5.12 | Add a product with 2 variants, a photo and stock 3 |
 | P4.2 Shop settings | P5.1 | 5.13 sections 1 to 5 | Set look, hours, order types, a GCash account with QR |
 | P4.3 Storefront browse | P5.2 | 5.1 to 5.4 | Browse, search, add with options, cart survives reload |
