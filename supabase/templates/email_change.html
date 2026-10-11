@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Confirm your new email</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#18181b;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;">
+      <tr>
+        <td align="center" style="padding:24px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:420px;background:#ffffff;border-radius:12px;">
+            <tr>
+              <td style="padding:28px 24px;">
+                <p style="margin:0 0 4px;font-size:14px;color:#71717a;">Smart App PH</p>
+                <h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">Confirm your new email</h1>
+                <p style="margin:0 0 20px;font-size:15px;line-height:1.5;">Enter this code to confirm {{ .NewEmail }} as your new email.</p>
+                <p style="margin:0 0 20px;font-size:36px;font-weight:700;letter-spacing:8px;text-align:center;font-family:'SFMono-Regular',Menlo,Consolas,monospace;">{{ .Token }}</p>
+                <p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:#52525b;">This code expires in 15 minutes. Don't share it with anyone.</p>
+                <p style="margin:0;font-size:14px;line-height:1.5;color:#52525b;">If you didn't ask to change your email, ignore this email and your account stays as it is.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -50,6 +50,7 @@ One line per decision. Newest phase at the bottom. The system paper wins if a li
 - P2-1: Storefront is light-only at launch, themed by the shop's 60/30/10 colours; the dashboard has light and dark.
 - P2-2: Migrations reach the hosted project only through the `db-deploy` GitHub Action on `dev`.
 - P2-3: Words live in `packages/core/src/words.ts`; Menu/Products-style words come from `VOCAB[businessType]` only.
+- P2-4: Auth emails use 6-digit codes only (no links), sent by Resend SMTP from mail.webserbisyo.com.
 - P2-5: Platform domain is `webserbisyo.com`, used only through subdomains so the existing site is untouched: storefront `shop.webserbisyo.com/<slug>`, dashboard `app.webserbisyo.com`, auth email from `mail.webserbisyo.com`.
 - P2-6: The UI kit is the 51 components in `docs/ui-kit.md`, installed in P2 (not P4); more only when a screen needs one.
 - P2-7: Shop colours reach the storefront only as `--shop-60/30/10` (+ `-foreground`) through `ShopTheme`; shared components keep the platform tokens, so a Button looks the same in both apps.

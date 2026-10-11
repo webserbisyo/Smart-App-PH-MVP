@@ -56,3 +56,66 @@ and the **publishable** key only, never the secret key:
 Copy `apps/storefront/.env.example` and `apps/dashboard/.env.example` to `.env.local` in the same
 folder and fill in the two values each. Then `pnpm install` and `pnpm dev` (storefront on
 http://localhost:3000, dashboard on http://localhost:5173).
+
+## 4. Resend and Auth email (decision P2-4)
+
+Every Supabase Auth email (sign-up, sign-in, password reset, email change) is a 6-digit code, never a
+link, sent through Resend from `codes@mail.webserbisyo.com`. The Resend API key goes only into Supabase
+settings. Never into chat, code or a commit.
+
+### 4.1 DNS records for `mail.webserbisyo.com`
+
+`mail.webserbisyo.com` is already added in Resend (region Tokyo, `ap-northeast-1`). Add these four
+records where `webserbisyo.com`'s DNS is managed. Names are relative to `webserbisyo.com`; some hosts
+want the full name (for example `send.mail.webserbisyo.com`).
+
+| Type | Name | Value | Priority | TTL |
+| --- | --- | --- | --- | --- |
+| TXT | `resend._domainkey.mail` | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDPZhadLTclI/LpT8R/BoFKgK3sKpbHgBxFcLj3yYYxwPYvgFaearCCeoV6W87Z1cqpFJjjgMnpfeaV8ObK7fPp1D/Y5uAX+IUUcmRhLsIe5zKzNByO99gcnAzvakuwLM4hgVFjK5RUtZhz1ipNESeNNSheammEuawpsUOGrGCv3QIDAQAB` | | Auto |
+| MX | `send.mail` | `feedback-smtp.ap-northeast-1.amazonses.com` | 10 | 60 |
+| TXT | `send.mail` | `v=spf1 include:amazonses.com ~all` | | 60 |
+| CNAME | `rsend.mail` | `send.forge.rmta.net` | | 60 |
+
+Add only these new records. Do not change the existing MX, SPF or TXT records on `webserbisyo.com`
+itself; they serve your current email. Then Resend → Domains → `mail.webserbisyo.com` → Verify, and
+wait for "Verified". If the values in Resend ever differ from this table, Resend wins.
+
+### 4.2 Resend API key
+
+Resend → API Keys → Create: name `supabase-smtp`, permission "Sending access", domain
+`mail.webserbisyo.com`. Copy it straight into step 4.3; Resend shows it once.
+
+### 4.3 Supabase SMTP
+
+Supabase → Authentication → Emails → SMTP Settings → enable custom SMTP:
+
+| Field | Value |
+| --- | --- |
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | the `supabase-smtp` API key |
+| Sender email | `codes@mail.webserbisyo.com` |
+| Sender name | `Smart App PH` |
+
+### 4.4 Supabase email templates
+
+Supabase → Authentication → Emails → Templates. For each one, paste the subject and the whole file:
+
+| Template | Subject | File |
+| --- | --- | --- |
+| Confirm sign up | `Your Smart App PH code` | `supabase/templates/confirmation.html` |
+| Magic link | `Your sign-in code` | `supabase/templates/magic_link.html` |
+| Reset password | `Reset your password` | `supabase/templates/recovery.html` |
+| Change email address | `Confirm your new email` | `supabase/templates/email_change.html` |
+
+### 4.5 Supabase Auth settings
+
+- Authentication → Sign In / Providers → Email: Confirm email on, Email OTP length `6`, Email OTP
+  expiration `900` seconds, minimum password length `8`.
+- Authentication → Rate Limits: emails sent per hour `100`.
+
+### 4.6 Check
+
+Resend → Emails → send a test from `codes@mail.webserbisyo.com` to your Gmail. It must arrive in the
+inbox, not spam. If codes stop arriving later, check Resend → Emails/Logs first, then Supabase → Logs → Auth.
