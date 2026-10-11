@@ -244,11 +244,11 @@ otp_expiry = 900
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Hosted: Resend SMTP is set by hand in the Supabase dashboard (docs/deploy.md, section 4).
+# Hosted: Resend SMTP is set in [remotes.production] at the end of this file.
 # Locally, emails go to the testing server above.
 
 # Auth emails show a 6-digit code, never a link (decision P2-4). The hosted project gets the same
-# subjects and bodies pasted by hand (docs/deploy.md, section 4).
+# subjects and bodies through `supabase config push` (db-deploy workflow).
 [auth.email.template.confirmation]
 subject = "Your Smart App PH code"
 content_path = "./supabase/templates/confirmation.html"
@@ -429,3 +429,26 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# Hosted project "Smart App PH MVP" (Singapore). `supabase config push` in the db-deploy workflow
+# applies the settings above with these overrides (decision P2-4). Local `supabase start` ignores
+# this block, so local emails keep going to the testing server.
+[remotes.production]
+project_id = "ssrveclilekzezcivclx"
+
+[remotes.production.auth]
+site_url = "https://app.webserbisyo.com"
+additional_redirect_urls = []
+
+[remotes.production.auth.rate_limit]
+email_sent = 100
+
+# Resend SMTP. The API key comes from the RESEND_API_KEY GitHub secret, never from this file.
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "codes@mail.webserbisyo.com"
+sender_name = "Smart App PH"
