@@ -33,7 +33,7 @@ other thread. Types are the Zod types in `@smartapp/core` (camelCase). Last upda
   `detail` carries the offending id when there is one (`item_unavailable`, `out_of_stock`).
 - **Parsing.** Every row and RPC result is parsed with its core Zod schema before it reaches a screen. No casts.
 - **Money** in centavos, **times** as ISO strings (UTC); display formatting is in core (`formatPeso`, `formatManila…`).
-- **Images.** Compression is browser code in `packages/ui/src/lib/image.ts` (`compressImage(file, { maxSize })`,
+- **Images.** Compression is browser code in `packages/ui/src/lib/compress-image.ts` (`compressImage(file, { maxSize })`,
   copied and trimmed from `reference/packages/ui/src/lib/crop-image.ts`). Upload helpers in `packages/api` take the
   already-compressed `Blob`. Public image URLs come from `mediaUrl(path, size)`; `size` is `'full' | 'thumb'`.
 - **Loading, empty, error.** Hooks are plain TanStack Query results; screens own those three states.
@@ -94,6 +94,10 @@ accounts and zones, `stampRule` (null until P5.5), `memberCount` (null when hidd
 database is what ordering obeys. The cart is client-side (localStorage per shop slug, `CartLine[]`), always
 re-priced with `quote_order` before Place order.
 
+Pickup time slots (`pickupSlots(hours, closures, now)` in core, built by P4.4) must follow the database rule:
+at least 15 minutes ahead, today or tomorrow in Manila time, inside business hours, not on a closed day. The
+Messenger text (`messengerOrderText(receipt, shopLink)`) is also core, built by P4.4.
+
 ## Slice 3: checkout and receipt (P5.3)
 
 | Name | Kind | Input | Output / notes |
@@ -124,9 +128,9 @@ Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavaila
 | `useAdvanceOrder()` | mutation | `{ orderId, toStatus, trackingUrl }` | `Order` (optimistic) |
 | `useCancelOrder()` | mutation | `{ orderId, reason }` | `Order` |
 
-Core rules the board uses (P5.4 puts them in `packages/core`, matching the SQL): `boardColumn(order)`,
+Core rules the board uses (`packages/core/src/order-rules.ts`: P4.0 copies them, P5.4 makes them match the SQL): `boardColumn(order)`,
 `nextActions(order, settings)` (the main step first: `verify_payment`, `mark_paid`, `start`, `mark_ready`, `out_for_delivery`, `complete`,
-), `canCancel(order)`, `timelineSteps(order, events)`, `isLate(order, now)`. A core test proves every open order can be finished.
+), `canCancel(order)`, `timelineSteps(order, events)`, `isLate(order, now)`. A core test proves every open order can be finished. Steps only move forward: there is no Undo.
 
 Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`, `not_paid`, `payment_not_pending`, `already_paid`.
 
