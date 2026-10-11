@@ -443,6 +443,10 @@ additional_redirect_urls = []
 [remotes.production.auth.rate_limit]
 email_sent = 100
 
+[remotes.production.auth.email]
+# One code per address per minute (hosted default; local keeps 1s for testing).
+max_frequency = "60s"
+
 # Resend SMTP. The API key comes from the RESEND_API_KEY GitHub secret, never from this file.
 [remotes.production.auth.email.smtp]
 enabled = true

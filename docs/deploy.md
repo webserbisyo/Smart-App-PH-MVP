@@ -4,7 +4,7 @@ Keys go into `.env.local`, GitHub settings and Vercel settings. Never into chat,
 
 ## 1. GitHub secrets (migrations)
 
-Migrations reach the hosted Supabase project only through the `db-deploy` workflow
+Migrations (and Auth settings, section 4) reach the hosted Supabase project only through the `db-deploy` workflow
 (`.github/workflows/db-deploy.yml`, decision P2-2). It runs on every push to `dev` that changes
 `supabase/migrations/**`, and by hand.
 
@@ -60,62 +60,43 @@ http://localhost:3000, dashboard on http://localhost:5173).
 ## 4. Resend and Auth email (decision P2-4)
 
 Every Supabase Auth email (sign-up, sign-in, password reset, email change) is a 6-digit code, never a
-link, sent through Resend from `codes@mail.webserbisyo.com`. The Resend API key goes only into Supabase
-settings. Never into chat, code or a commit.
+link, sent through Resend from `codes@mail.webserbisyo.com`. The Resend API key goes only into the
+`RESEND_API_KEY` GitHub secret. Never into chat, code or a commit.
 
 ### 4.1 DNS records for `mail.webserbisyo.com`
 
-`mail.webserbisyo.com` is already added in Resend (region Tokyo, `ap-northeast-1`). Add these four
-records where `webserbisyo.com`'s DNS is managed. Names are relative to `webserbisyo.com`; some hosts
-want the full name (for example `send.mail.webserbisyo.com`).
+`webserbisyo.com`'s DNS is on Vercel. These four records were added there on 2026-10-11 (Vercel →
+Domains → `webserbisyo.com`); the domain is in Resend (region Tokyo, `ap-northeast-1`). Nothing on
+`webserbisyo.com` itself was changed.
 
-| Type | Name | Value | Priority | TTL |
-| --- | --- | --- | --- | --- |
-| TXT | `resend._domainkey.mail` | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDPZhadLTclI/LpT8R/BoFKgK3sKpbHgBxFcLj3yYYxwPYvgFaearCCeoV6W87Z1cqpFJjjgMnpfeaV8ObK7fPp1D/Y5uAX+IUUcmRhLsIe5zKzNByO99gcnAzvakuwLM4hgVFjK5RUtZhz1ipNESeNNSheammEuawpsUOGrGCv3QIDAQAB` | | Auto |
-| MX | `send.mail` | `feedback-smtp.ap-northeast-1.amazonses.com` | 10 | 60 |
-| TXT | `send.mail` | `v=spf1 include:amazonses.com ~all` | | 60 |
-| CNAME | `rsend.mail` | `send.forge.rmta.net` | | 60 |
+| Type | Name | Value | Priority |
+| --- | --- | --- | --- |
+| TXT | `resend._domainkey.mail` | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDPZhadLTclI/LpT8R/BoFKgK3sKpbHgBxFcLj3yYYxwPYvgFaearCCeoV6W87Z1cqpFJjjgMnpfeaV8ObK7fPp1D/Y5uAX+IUUcmRhLsIe5zKzNByO99gcnAzvakuwLM4hgVFjK5RUtZhz1ipNESeNNSheammEuawpsUOGrGCv3QIDAQAB` | |
+| MX | `send.mail` | `feedback-smtp.ap-northeast-1.amazonses.com` | 10 |
+| TXT | `send.mail` | `v=spf1 include:amazonses.com ~all` | |
+| CNAME | `rsend.mail` | `send.forge.rmta.net` | |
 
-Add only these new records. Do not change the existing MX, SPF or TXT records on `webserbisyo.com`
-itself; they serve your current email. Then Resend → Domains → `mail.webserbisyo.com` → Verify, and
-wait for "Verified". If the values in Resend ever differ from this table, Resend wins.
+If Resend → Domains does not show "Verified", press Verify there. If the values in Resend ever differ
+from this table, Resend wins.
 
-### 4.2 Resend API key
+### 4.2 Resend API key → GitHub secret
 
 Resend → API Keys → Create: name `supabase-smtp`, permission "Sending access", domain
-`mail.webserbisyo.com`. Copy it straight into step 4.3; Resend shows it once.
+`mail.webserbisyo.com`. Paste it straight into GitHub → Settings → Secrets and variables → Actions →
+New repository secret `RESEND_API_KEY` (next to the section 1 secrets). Resend shows it once.
 
-### 4.3 Supabase SMTP
+### 4.3 Push the Auth settings
 
-Supabase → Authentication → Emails → SMTP Settings → enable custom SMTP:
+SMTP (`smtp.resend.com`, port 465, user `resend`, sender `codes@mail.webserbisyo.com`, name
+`Smart App PH`), the four templates in `supabase/templates/`, the code settings (6 digits, 900 seconds,
+confirm email on, password 8+) and 100 emails per hour all live in `supabase/config.toml`
+(`[remotes.production]` overrides the local values). Nothing is typed in the Supabase dashboard.
 
-| Field | Value |
-| --- | --- |
-| Host | `smtp.resend.com` |
-| Port | `465` |
-| Username | `resend` |
-| Password | the `supabase-smtp` API key |
-| Sender email | `codes@mail.webserbisyo.com` |
-| Sender name | `Smart App PH` |
+Actions → db-deploy → Run workflow (branch `dev`), tick "Push Auth config", Run. The "Show Auth config
+changes" step prints what changes. Every push to `dev` that changes `supabase/config.toml` or a
+template shows that diff again; it only applies when run by hand with the box ticked.
 
-### 4.4 Supabase email templates
-
-Supabase → Authentication → Emails → Templates. For each one, paste the subject and the whole file:
-
-| Template | Subject | File |
-| --- | --- | --- |
-| Confirm sign up | `Your Smart App PH code` | `supabase/templates/confirmation.html` |
-| Magic link | `Your sign-in code` | `supabase/templates/magic_link.html` |
-| Reset password | `Reset your password` | `supabase/templates/recovery.html` |
-| Change email address | `Confirm your new email` | `supabase/templates/email_change.html` |
-
-### 4.5 Supabase Auth settings
-
-- Authentication → Sign In / Providers → Email: Confirm email on, Email OTP length `6`, Email OTP
-  expiration `900` seconds, minimum password length `8`.
-- Authentication → Rate Limits: emails sent per hour `100`.
-
-### 4.6 Check
+### 4.4 Check
 
 Resend → Emails → send a test from `codes@mail.webserbisyo.com` to your Gmail. It must arrive in the
 inbox, not spam. If codes stop arriving later, check Resend → Emails/Logs first, then Supabase → Logs → Auth.
