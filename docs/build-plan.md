@@ -177,7 +177,7 @@ Before building, list the shadcn components and blocks each screen uses. Install
 5. Dashboard products:
    - list with search, sold-out and visibility switches
    - product editor with photos (compressed to WebP on upload), variants with price and stock, add-on groups
-   - categories
+   - categories, each with an icon: Fluent 3D, emoji or photo (decision UI-3)
 6. Dashboard home, customers and reports:
    - today's numbers, to-verify and waiting chips, members card, in progress list, best sellers
    - customers list with members marked
@@ -201,7 +201,7 @@ Goal: replace mock data with Supabase, one area at a time, with the logic in the
 ### Checkpoints
 
 1. Settings and catalog tables [7.3]:
-   - tables: business_hours, closures, payment_accounts, delivery_zones, categories, items, item_photos, item_variants, add-on tables
+   - tables: business_hours, closures, payment_accounts, delivery_zones, categories, items, item_photos, item_variants, add-on tables (categories with icon_kind and icon_value, decision UI-3)
    - RLS write rules for the owner
    - storage buckets shop-media (public) and payment-proofs (private) with folder rules
 

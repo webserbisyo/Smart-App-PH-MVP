@@ -13,7 +13,7 @@ Research for P2, 2026-10-11. Sources: system paper 4.1, 8.2, 9; build plan P4 "C
 | Tabler icons | All icons; filled variant for the selected nav item | `@tabler/icons-react`, re-exported from `@smartapp/ui/icons` |
 | Plus Jakarta Sans | The only font | `@fontsource-variable/plus-jakarta-sans`, self-hosted |
 | Recharts | Through shadcn `chart`, lazy-loaded | added by the CLI with `chart` |
-| Fluent Emoji 3D | Home shortcut tiles | **Not for the MVP**: they decorate POS-era tiles. Revisit after launch. |
+| Fluent Emoji 3D (Microsoft `fluentui-emoji`, MIT) | Category icons (section 8) | Not a package: a curated set of static WebP files, added in P4. No Home tiles in the MVP. |
 
 Everything installs as source files into `packages/ui/src/components/`. We own that code from then on.
 
@@ -125,3 +125,18 @@ One nav per device: never a dock and a sidebar at the same time. Breakpoints by 
 ## 7. Network: the component registries are blocked in cloud sessions
 
 `ui.shadcn.com` (and ReUI, DiceUI, Magic UI) answer 403 from cloud sessions, so `shadcn add` fails there. npm and GitHub work. Before running P2 in a cloud session, allow these hosts in the environment's network settings: `ui.shadcn.com`, `reui.io`, `diceui.com`, `magicui.design`.
+
+## 8. Category icons: Fluent 3D, emoji or photo (P4, saved in P5)
+
+Founder decision, 2026-10-11. Each category (Coffee, Milk tea, Shirts…) can show one of three icons, picked in the category editor:
+
+1. **Fluent 3D icon**, the default: a grid with search, from a curated set of about 120 shop-relevant icons (food, drinks, desserts, groceries, clothing, shoes, bags, beauty, gadgets, home, pets, gifts).
+2. **Emoji**: the phone's own emoji keyboard, saved as the emoji character.
+3. **Photo**: upload, compressed to a 256 px WebP like other shop images (P5.1 `shop-media` bucket).
+
+Source and licence: Microsoft's `fluentui-emoji` repository on GitHub (MIT licence), "3D" style. Not Emojipedia: its images are not licensed for reuse. The curated files are converted once to 128 px and 256 px WebP and committed under `packages/ui/src/assets/fluent/` with a typed list (`FLUENT_ICONS`: key, name, search words) and the MIT notice. Self-hosted, no CDN, about 5 KB each.
+
+Where it lands:
+- P4.5 (products, categories): the icon picker in the category editor, the icon on category chips in the storefront menu and dashboard lists; `Category` in `packages/core` gets `icon: { kind: 'fluent', key } | { kind: 'emoji', value } | { kind: 'image', path } | null`.
+- P5.1 (catalog tables): `categories.icon_kind` (check `fluent`, `emoji`, `image`) and `categories.icon_value`, with RLS like the rest of the table.
+- Not in P2.
