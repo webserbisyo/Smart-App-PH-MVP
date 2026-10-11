@@ -94,9 +94,20 @@ ReUI and DiceUI also bring `@tanstack/react-table` and `@dnd-kit/*`. Those are a
 | `StatusBadge` | icon + word + colour from `STATUS_TONE` in core. |
 | `Money` | `formatPeso`, no `.00` for whole pesos. |
 
+### Added in P4.0 (founder decision P4-F2, 2026-10-11), 6 → kit total 57
+
+| Component | Used on |
+| --- | --- |
+| DiceUI `responsive-dialog` | storefront cart, item sheet and filters: right drawer on desktop, bottom sheet on phones, one overlay |
+| DiceUI `qr-code` (+ npm `qrcode` 1.5.4) | shop QR in Settings and Share, order QR on the receipt |
+| DiceUI `stat` | Home "today" numbers, Reports totals |
+| DiceUI `status` | open/closed dot, live-orders dot, payment to-verify dot |
+| DiceUI `scroller` | storefront category tabs, orders board columns on phones |
+| shadcn `progress` | photo and proof upload progress, stamp progress line |
+
 ## 4. Add later, one command each (not installed)
 
-shadcn: accordion, aspect-ratio, carousel, command, context-menu, hover-card, kbd, menubar, navigation-menu, pagination, progress, resizable, slider, toggle, form (superseded by field). ReUI and DiceUI: kanban (the orders board is one next-step button per card, no drag), stepper, tags-input, combobox, qr-code (we use qrcode.react). Magic UI: everything else.
+shadcn: accordion, aspect-ratio, carousel, command, context-menu, hover-card, kbd, menubar, navigation-menu, pagination, resizable, slider, toggle, form (superseded by field). ReUI and DiceUI: kanban (the orders board is one next-step button per card, no drag), stepper (dropped, decision P4-F3: checkout is one page), tags-input, combobox. A new timeline is not needed: the installed ReUI `timeline` already does horizontal. Magic UI: everything else.
 
 ## 5. Responsive plan (blueprint section 11, paper 9.3)
 

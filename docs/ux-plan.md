@@ -286,14 +286,16 @@ Who runs them: the build plan gives screens to Antigravity; the prompts work in 
 
 Stepper checkout; image cropper; date-range pickers and % comparisons on Home; payment-mix donut; shortcut tiles on Home; a list/grid layout switch; product reviews, wishlist, coupons (promotions are roadmap 4); QR scanner in the dashboard (roadmap 1); push notifications (roadmap 7); kanban drag on the board; dark mode on the storefront (decision P2-1); swipe-to-delete in the cart; animated page backgrounds.
 
-## 10. Decisions only the founder can make
+## 10. Founder decisions (approved 2026-10-11)
 
-| # | Question | Recommendation |
+All four were approved as recommended and are recorded in `docs/decisions.md` under "P4 screens" (P4-F1 to P4-F4).
+
+| # | Decision | Why |
 | --- | --- | --- |
-| F1 | Run P4 interleaved with P5 (P5.1 → P4.1, P4.2 → P5.2 → P4.3 …) instead of all P4 first? | Yes. No mock data, and every step is testable for real. |
-| F2 | Install the 6 components in section 4.1, plus the npm package `qrcode` (for the QR code)? | Yes. |
-| F3 | Drop the Stepper and a new timeline (section 4.2)? | Yes, drop. The timeline we have does horizontal. |
-| F4 | Give every new member 1 welcome stamp when they join? It needs one line in the P5.5 stamp rules. | Yes. Research shows pre-filled cards get finished faster; it is also a reason to join on the receipt. |
+| F1 | Run P4 interleaved with P5 (P4.0 → P5.1 → P4.1, P4.2 → P5.2 → P4.3 …), no mock data. | Every step is tested once, for real. |
+| F2 | Install the 6 components in section 4.1, plus the npm package `qrcode` 1.5.4. | Each replaces hand-written code on a launch screen. |
+| F3 | No Stepper and no new timeline (section 4.2). | Checkout is one page; the installed timeline does horizontal. |
+| F4 | Every new member gets 1 welcome stamp when they join (stamp rule in P5.5). | Pre-filled cards get finished faster; it is also a reason to join on the receipt. |
 
 ## Sources
 

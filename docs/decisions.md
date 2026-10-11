@@ -61,3 +61,17 @@ One line per decision. Newest phase at the bottom. The system paper wins if a li
 - P2-12: Dashboard module pages use one splat route (`/$`) and the registry picks the screen; `/kit` is its own route, outside the nav.
 - P2-13: Type packages (`@types/react`, `@types/react-dom`, `@types/node`, `@types/canvas-confetti`) were added as dev dependencies; they ship no runtime code.
 
+
+## P4 screens (2026-10-11, approved by the founder)
+
+Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/P4.0` to `P4.7`.
+
+- P4-F1: P4 has no mock data and runs interleaved with P5: P4.0 (after P3b) → P5.1 → P4.1, P4.2 → P5.2 → P4.3 → P5.3 → P4.4 → P5.4 → P4.5 → P5.5 → P4.6 → P5.6 → P4.7. Why: each screen is built and tested once, on real data from the seeded shops `juans-cafe` (food) and `tala-apparel` (retail); the first build's mock data cost tokens and broke.
+- P4-F2: Six kit additions, installed in P4.0: DiceUI `responsive-dialog`, `qr-code`, `stat`, `status`, `scroller` and shadcn `progress`, plus npm `qrcode` 1.5.4 (the DiceUI QR code needs it). Kit total 57. `qrcode.react` is dropped. Why: each one replaces code we would otherwise write by hand for a launch screen (one cart overlay instead of two, shop and receipt QR, Home numbers, status dots, category tabs, upload and stamp progress).
+- P4-F3: No stepper and no new timeline component. Why: checkout is one short page (Baymard: the questions asked matter more than steps), the ReUI stepper ships an `eslint-disable`, and the installed ReUI `timeline` already supports `orientation="horizontal"`.
+- P4-F4: Every new member gets 1 welcome stamp when they join (stamp rule in P5.5, shown in P4.6). Why: pre-filled cards get finished faster (Kivetz et al., endowed progress), and it gives customers a reason to join from the receipt.
+- P4-1: Stamp cards and members stay in the MVP; they are the main selling point.
+- P4-2: UX-1 to UX-9 in `docs/ux-plan.md` section 1 are the screen rules: no mock data; shared parts first on `/kit`; only the F2 additions; one photo-first storefront layout (no list/grid switch); one-page checkout; the ReUI timeline for order status; status = icon + word + colour from one table in `packages/core`; Home has no "% vs last week" chips or date-range pickers; every screen ships with loading, empty, error and offline states and 0 console errors.
+- P4-3: P4.0 owns these shared files, and later checkpoints reuse them instead of making a second copy: `packages/core/src/money.ts`, `time.ts`, `status-look.ts`, `order-rules.ts` (`nextActions`, `boardColumn`, `timelineSteps`, `canCancel`, `isLate`, `itemsSummary`; P5.4 makes them match the SQL), `phone.ts`, and `packages/ui/src/lib/compress-image.ts`.
+- P4-4: Orders have no Undo, because the backend has no reverse steps; a wrong step is fixed by cancelling. Completing an unpaid cash or COD order needs Mark paid first (`not_paid`).
+- P4-5: UI-3's Fluent category icons are built in P4.0 (110 icons copied into `reference/` from the old repo, then into `packages/ui/src/assets/fluent/`) and picked in P4.1.
