@@ -143,7 +143,7 @@ Built once on installed parts, used by both apps. Each takes words and data as p
 
 ## 5. Screen plan
 
-Phone wireframes for the main screens are in system paper 9.4. This section adds structure, behaviour and states. "Hook" names come from the backend plan (`/mnt/project-files/plans/api-surface.md`); the P4 prompts match those names.
+Phone wireframes for the main screens are in system paper 9.4. This section adds structure, behaviour and states. Hook names come from the backend plan (`docs/api-surface.md`); the P4 prompts use those names.
 
 ### 5.1 Storefront home `/[shop]` (P4.3)
 
@@ -190,7 +190,7 @@ Then the totals (`OrderLines` summary from `quote_order`), the privacy line with
 - Transfer and not yet paid: a prominent "Upload proof" card (amber): `PhotoField` + reference number + Submit. After submit: "Checking your payment". Rejected: red alert with the reason + upload again.
 - `OrderLines`, total, payment method.
 - Actions: "Send order to our Messenger" (filled), "Copy order details", "Save receipt" (the browser's share/print), and the members card: "Join to earn stamps · this order counts" (P4.6).
-- Live: `useOrderLive(token)` (realtime or a 15 s poll). A status change animates the timeline step.
+- Live: `useOrderLive(token)` (Realtime broadcast, 15 s poll fallback). A status change animates the timeline step.
 - Install prompt after the first order (paper 14): a small card "Add Juan's Café to your home screen", Android uses the browser's install prompt, iPhone opens the steps (P4.6).
 
 ### 5.7 My orders `/[shop]/orders` (P4.4 guest, P4.6 member)
@@ -210,7 +210,7 @@ Signed out: "Join to earn stamps" explainer with the shop's rule ("Buy 10, get �
 
 - Phone: `tabs` New 3 · Preparing 2 · Ready 1 · Out · Done today. Tablet: 2 to 3 columns. Laptop: 4 to 5 columns. Desktop ≥ 1280: the board with the order detail in a side panel.
 - `OrderCard`: `#042` · type icon · age ("4 min", amber at 10, red at 20), name + Member badge, items summary ("2× Iced Latte, Ensaymada"), total + `PaymentBadge`, and one full-width next-step button from `nextActions()` (Verify payment / Mark paid / Start / Mark ready / Out for delivery / Complete). "⋯" holds Cancel, Print slip, Call, Message.
-- Optimistic step with an "Undo" toast for 5 s (not for Cancel, which asks for a reason first).
+- Optimistic step; errors revert the card with the reason. No Undo (the server has no reverse steps). Cancel asks for a reason first.
 - Search by number or name; "Find by number" field for the counter.
 - Empty column: quiet text. Realtime off (offline): `OfflineBanner` + a Refresh button.
 
@@ -271,14 +271,14 @@ Loading (skeleton in the content's shape) · empty (Fluent icon, one line, one a
 
 | Checkpoint | Runs after | Builds | Phone test (both shops) |
 | --- | --- | --- | --- |
-| P4.0 Kit additions and shared patterns | P3b (any time before P4.1) | Section 4: 6 components, Fluent icons, core money/time/order rules, `compressImage`, the shared patterns on `/kit` | `/kit` on a phone: every pattern in every state |
+| P4.0 Kit additions and shared patterns | P3b (any time before P4.1) | Section 4: 6 components, Fluent icons, core money, time and status look, `compressImage`, the shared patterns on `/kit` (order rules come from P5.4) | `/kit` on a phone: every pattern in every state |
 | P4.1 Products and categories | P5.1 | 5.12 | Add a product with 2 variants, a photo and stock 3 |
 | P4.2 Shop settings | P5.1 | 5.13 sections 1 to 5 | Set look, hours, order types, a GCash account with QR |
 | P4.3 Storefront browse | P5.2 | 5.1 to 5.4 | Browse, search, add with options, cart survives reload |
 | P4.4 Checkout and receipt | P5.3 | 5.5 to 5.7 (guest) | Walk-in cash and pickup GCash orders end to end |
 | P4.5 Orders board and detail | P5.4 | 5.9 to 5.11 | Verify, start, ready, out, complete; receipt updates live |
 | P4.6 Members | P5.5 | 5.8, member parts of 5.4 and 5.7, Stamp card settings | Join, stamps add, reward applies |
-| P4.7 Home, customers, reports | P5.6, P5.7 | 5.14 to 5.16 | Numbers match the demo data |
+| P4.7 Home, customers, reports | P5.6 | 5.14 to 5.16 | Numbers match the demo data |
 
 Who runs them: the build plan gives screens to Antigravity; the prompts work in Claude Code too. Run each in one place only.
 
