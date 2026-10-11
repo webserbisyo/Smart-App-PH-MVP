@@ -77,7 +77,7 @@ The project "Smart App PH MVP" already exists (Singapore, empty). Do not create 
 
 ### 5. Vercel (2.5)
 
-Add `apps/dashboard/vercel.json` with a rewrite of every path to `/index.html` (SPA). Write `docs/deploy.md` with the exact Vercel import settings below and the env var names. You cannot create the Vercel projects; the founder does that by hand.
+Add `apps/dashboard/vercel.json` with a rewrite of every path to `/index.html` (SPA). Add `apps/storefront/vercel.json` with `"regions": ["sin1"]` so the storefront's server code runs in Singapore, next to Supabase (Vercel's default is Washington). Write `docs/deploy.md` with the exact Vercel import settings below and the env var names. You cannot create the Vercel projects; the founder does that by hand.
 
 ## Do not build
 
@@ -107,7 +107,6 @@ Keys go into `.env.local`, GitHub and Vercel settings, never into chat.
 2. **Vercel**: the two projects `storefront` and `dashboard` already exist (they fail to build until this checkpoint adds Next.js and Vite). Check their settings:
    - `storefront`: Root Directory `apps/storefront`, Framework Next.js, Node.js 24.x, default install and build commands, "Include files outside the root directory" on.
    - `dashboard`: Root Directory `apps/dashboard`, Framework Vite, Output Directory `dist`, Node.js 24.x, same include setting.
-   - `storefront` → Settings → Functions → Function Region: **Singapore (sin1)**, next to the Supabase project. The default (Washington, iad1) adds a US round trip to every server-rendered page.
    - Env vars (Production and Preview) from Supabase → Project Settings → API Keys: the URL and the **publishable** key only. Never the secret key.
    - Production Branch stays `main`; every push to `dev` gets preview links.
    - Domains come in P6: `shop.webserbisyo.com` on `storefront`, `app.webserbisyo.com` on `dashboard`. Do not touch `webserbisyo.com` itself or `www`; they stay as they are.
@@ -122,6 +121,7 @@ Keys go into `.env.local`, GitHub and Vercel settings, never into chat.
 - No page scrolls sideways at 390 px.
 - `pnpm check` is green locally and in the `check` workflow; the `db-deploy` workflow runs green by hand.
 - Both Vercel preview links open on a phone.
+- The storefront deployment shows region `sin1` in Vercel.
 
 ## Finish
 
