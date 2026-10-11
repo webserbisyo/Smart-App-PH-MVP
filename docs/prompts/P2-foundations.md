@@ -103,9 +103,10 @@ Add `apps/dashboard/vercel.json` with a rewrite of every path to `/index.html` (
 Keys go into `.env.local`, GitHub and Vercel settings, never into chat.
 
 1. **GitHub secrets** (repo Settings → Secrets and variables → Actions): secrets `SUPABASE_ACCESS_TOKEN` (supabase.com → Account → Access Tokens) and `SUPABASE_DB_PASSWORD` (the project's database password); variable `SUPABASE_PROJECT_REF` (Project Settings → General → Reference ID). Then run the `db-deploy` workflow once by hand.
-2. **Vercel**, two projects from the same repo (Add New → Project → import `Smart-App-PH-MVP`):
-   - `smartapp-storefront`: Root Directory `apps/storefront`, Framework Next.js, Node.js 24.x, default install and build commands, "Include files outside the root directory" on.
-   - `smartapp-dashboard`: Root Directory `apps/dashboard`, Framework Vite, Output Directory `dist`, Node.js 24.x, same include setting.
+2. **Vercel**: the two projects `storefront` and `dashboard` already exist (they fail to build until this checkpoint adds Next.js and Vite). Check their settings:
+   - `storefront`: Root Directory `apps/storefront`, Framework Next.js, Node.js 24.x, default install and build commands, "Include files outside the root directory" on.
+   - `dashboard`: Root Directory `apps/dashboard`, Framework Vite, Output Directory `dist`, Node.js 24.x, same include setting.
+   - `storefront` → Settings → Functions → Function Region: **Singapore (sin1)**, next to the Supabase project. The default (Washington, iad1) adds a US round trip to every server-rendered page.
    - Env vars (Production and Preview) from Supabase → Project Settings → API Keys: the URL and the **publishable** key only. Never the secret key.
    - Production Branch stays `main`; every push to `dev` gets preview links.
 3. **Local** (only if running on your own computer): copy each `.env.example` to `.env.local` and fill in the two values.
