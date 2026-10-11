@@ -39,7 +39,7 @@ Screens, React Hook Form + Zod resolver, every text from the words file:
 
 ### 3. Shop setup and approval (3.3)
 
-- **Setup** (signed in, no shop): business type as two big cards (Food: "Menu, Kitchen"; Retail: "Products, Packing"), shop name, link name prefilled from the name (lowercase, hyphens), live `slug_available` check (debounced 400 ms) showing `domain/<slug>`, then `create_my_shop`.
+- **Setup** (signed in, no shop): business type as two big cards (Food: "Menu, Kitchen"; Retail: "Products, Packing"), shop name, link name prefilled from the name (lowercase, hyphens), live `slug_available` check (debounced 400 ms) showing `shop.webserbisyo.com/<slug>`, then `create_my_shop`.
 - **Waiting for approval** (pending): the shop name, "We will approve your shop soon", a Refresh button, Log out. No polling; refetch on window focus.
 - **Suspended**: "Your shop is paused. Message us to reactivate.", Log out.
 - After the founder runs the approve SQL, Refresh lands on the dashboard Home.
@@ -61,7 +61,7 @@ Storefront:
 ### 5. Customer sign-in on the storefront (3.5)
 
 - Account page (`/[shop]/account`): signed out shows "Sign in with your email" → email → 6-digit code (`signInWithOtp` with `shouldCreateUser: true`, then `verifyOtp` type `email`). Signed in shows the email and Sign out.
-- One customer session for the whole storefront domain; being a member of a shop is a per-shop `customers` row that arrives in P5.5. Nothing in this checkpoint creates customer rows.
+- One customer session for the whole storefront host (`shop.webserbisyo.com`); being a member of a shop is a per-shop `customers` row that arrives in P5.5. Nothing in this checkpoint creates customer rows.
 - The storefront never reads `tenant_members`; the dashboard requires a `tenant_members` owner row. A customer login therefore never reaches the dashboard (it has no password and no shop).
 
 ## Do not build
@@ -75,7 +75,7 @@ Storefront:
 - `pnpm check` green. Unit-test the mapping and error-code functions in `packages/api` and the guard decision function (pure function of session + shop → redirect) in the dashboard.
 - No packages beyond `@supabase/supabase-js` and `@supabase/ssr` without asking. No `any`, no casts, no `@ts-ignore`. Never read or print `.env.local`.
 - Add to `docs/decisions.md` under "## Phase 3":
-  - P3-1: One customer login per platform domain; membership is per shop (a `customers` row, P5.5).
+  - P3-1: One customer login for the storefront host; membership is per shop (a `customers` row, P5.5).
   - P3-2: Owners can change only the shop name and settings, and only while active; slug, status, plan and paid_until change only by founder SQL.
   - P3-3: `create_my_shop` makes default hours from P5.1, when `business_hours` exists.
 
