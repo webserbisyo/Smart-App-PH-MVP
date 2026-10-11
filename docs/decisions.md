@@ -84,3 +84,7 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   only the names in `docs/api-surface.md`. Why: screens built on fake data had to be rewired in the first build.
 - P5-15: Deleting payment proofs after 30 days moves to P6 (needs an Edge Function or a scheduled script; Supabase
   blocks deleting storage files from SQL).
+- P5-16: Every new member gets 1 welcome stamp when they join a shop whose stamp card is on (ledger reason
+  `welcome`, once per member per shop; built in P5.5). Why: a card that starts with a stamp already filled gets
+  finished faster, and it gives guests a reason to join from the receipt (screens thread decision F4, approved by
+  the founder 2026-10-11).

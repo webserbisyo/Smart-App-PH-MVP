@@ -98,7 +98,7 @@ Storefront:
 ### 5. Customer sign-in on the storefront (3.5)
 
 - Account page (`/[shop]/account`): signed out shows "Sign in with your email" → email → 6-digit code. Signed in
-  shows the email and Sign out. Plain and functional; the member card comes in P4.5.
+  shows the email and Sign out. Plain and functional; the member card comes in P4.6.
 - One customer login for the storefront host (`shop.webserbisyo.com`); being a member of a shop is a per-shop
   `customers` row that arrives in P5.5. Nothing here creates customer rows.
 - The storefront never reads `tenant_members`; the dashboard requires an owner row. A customer login therefore
@@ -106,8 +106,8 @@ Storefront:
 
 ## Do not build
 
-- No `customers` table, `join_as_member`, stamps or member card (P5.5, P4.5).
-- No setup checklist (P4), no settings screens (P4.1), no Google or social login, no captcha on sign-up, no
+- No `customers` table, `join_as_member`, stamps or member card (P5.5, P4.6).
+- No setup checklist (P4), no settings screens (P4.2), no Google or social login, no captcha on sign-up, no
   staff logins, no admin screen.
 
 ## Rules

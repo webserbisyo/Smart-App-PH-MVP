@@ -138,12 +138,12 @@ Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`
 
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
-| `useJoinAsMember()` | mutation | `{ slug, name, phone, orderToken }` | `MemberAccount`; `orderToken` is any token this device holds for the shop (links past guest orders) |
+| `useJoinAsMember()` | mutation | `{ slug, name, phone, orderToken }` | `MemberAccount`; `orderToken` is any token this device holds for the shop (links past guest orders). A first join on a shop with an active stamp card includes 1 welcome stamp (decision P5-16). Joining again returns the same account, not an error |
 | `useMyAccount(slug)` | query | | `MemberAccount \| null` (null: signed in but not a member here) |
 | `useSaveMyAddress()`, `useRemoveMyAddress()` | mutation | `CustomerAddress` | |
 | `useStampRule(tenantId)`, `useSaveStampRule()` | query, mutation | `StampRule` | dashboard |
 
-Error codes: `not_signed_in`, `phone_needs_order`, `already_member`.
+Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unavailable` comes from `useQuote` and `usePlaceOrder` when `useReward` is set.
 
 ## Slice 6: home, customers, reports (P5.6, dashboard)
 
