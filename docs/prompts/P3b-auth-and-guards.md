@@ -124,8 +124,10 @@ Storefront:
 
 - A new owner signs up, enters the 6-digit code, sets up "Juan's Cafe" (food, link `juans-cafe`) and sees
   "Waiting for approval". After I run the approve SQL and tap Refresh, they reach Home. Same for "Tala Apparel"
-  (retail, `tala-apparel`) with a second email. (Tip: Gmail `you+cafe@gmail.com` and `you+tala@gmail.com` both
-  reach your inbox and count as different emails.)
+  (retail, `tala-apparel`) with a second email. (Tip: if your Gmail is `yourname@gmail.com`, sign up
+  the first shop as `yourname+cafe@gmail.com` and the second as `yourname+tala@gmail.com`. Both reach your normal
+  inbox, but Supabase treats them as two different owners. Use exactly the links `juans-cafe` and `tala-apparel`:
+  they become the demo shops in P5.2, decision P5-13.)
 - A taken or reserved link name is refused on the setup screen.
 - A logged-out visit to any dashboard page goes to Log in, and after logging in returns to that page.
 - Forgot password with a code works; the old password stops working.

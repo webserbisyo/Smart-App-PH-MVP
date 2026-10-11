@@ -28,7 +28,7 @@ the pull request into `dev`, then start the next one. Run each checkpoint in one
 No mock data: each P4 step builds on the real API from the P5 step before it. The names every screen may call are
 in `docs/api-surface.md`.
 
-## Moved to P6 (decided 2026-10-11)
+## Moved to P6 (approved by the founder 2026-10-11, `docs/decisions.md` P5-6 and P5-15)
 
 - Cloudflare Turnstile on checkout (until then: per-phone and per-shop limits in the database).
 - Deleting payment proofs after 30 days (needs an Edge Function or a scheduled script; Supabase blocks deleting

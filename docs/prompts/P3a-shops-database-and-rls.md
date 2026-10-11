@@ -151,7 +151,7 @@ the Supabase SQL editor.
 
 ### 5. Docs
 
-`docs/decisions.md`, new section "## Phase 3":
+`docs/decisions.md`, new section "## Phase 3", placed after "## Phase 2" and before "## Backend plan":
 - P3-1: Default privileges revoke table and function access from `anon` and `authenticated` in `public`; every
   grant is explicit.
 - P3-2: Owners change only the shop name and settings, and only while active; slug, status, plan, paid_until and
