@@ -41,7 +41,10 @@ const CART_TEXT = words.cart.bar(0, '₱0');
  */
 export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
   const pathname = usePathname();
-  const [cartOpen, setCartOpen] = useState(false);
+  // One cart per device: the desktop sheet and the phone drawer each keep their own open state, so opening
+  // one never also mounts the other's overlay on top of it.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const base = `/${slug}`;
   const entries = [
     { key: 'home', href: base, label: words.nav.home, icon: <IconHome />, activeIcon: <IconHomeFilled /> },
@@ -54,9 +57,6 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
     link: <Link href={entry.href} />,
     active: entry.href === base ? pathname === base : pathname.startsWith(entry.href),
   }));
-  const openCart = () => {
-    setCartOpen(true);
-  };
 
   return (
     <>
@@ -80,13 +80,16 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
             </Link>
           ))}
         </nav>
-        <Button onClick={openCart} aria-label={words.cart.open} className="bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80">
+        <Button
+          onClick={() => {
+            setSheetOpen(true);
+          }} aria-label={words.cart.open} className="bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80">
           <IconShoppingBag aria-hidden="true" />
           <span className="tabular">{CART_TEXT}</span>
         </Button>
       </header>
-      <Sheet open={cartOpen} onOpenChange={setCartOpen}>
-        <SheetContent side="right" className="hidden lg:flex">
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right">
           <SheetHeader>
             <SheetTitle>{words.cart.title}</SheetTitle>
           </SheetHeader>
@@ -96,10 +99,14 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
 
       {/* Phones and tablets: bottom tab bar, cart bar floating above it, cart as a bottom sheet. */}
       <div className="lg:hidden">
-        <CartBar text={CART_TEXT} onClick={openCart} aria-label={`${words.cart.open}: ${CART_TEXT}`} />
+        <CartBar
+          text={CART_TEXT}
+          onClick={() => {
+            setDrawerOpen(true);
+          }} aria-label={`${words.cart.open}: ${CART_TEXT}`} />
         <StoreTabBar label={words.nav.label} items={items} />
-        <Drawer open={cartOpen} onOpenChange={setCartOpen} showSwipeHandle>
-          <DrawerContent className="pb-safe lg:hidden">
+        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} showSwipeHandle>
+          <DrawerContent className="pb-safe">
             <DrawerHeader>
               <DrawerTitle>{words.cart.title}</DrawerTitle>
             </DrawerHeader>
