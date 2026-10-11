@@ -124,10 +124,19 @@ export type SalesReport = z.infer<typeof SalesReport>;
 const OwnerShop = { tenantId: Uuid };
 
 export const dbFunctions = {
-  /** Owner (shop setup): creates the tenant (pending), membership, settings and default hours. */
+  /**
+   * Owner (shop setup): creates the tenant (pending), membership and settings. Default hours come with
+   * P5.1, whose migration replaces this function (decision P3-3). Errors: not_signed_in, already_has_shop,
+   * invalid, slug_invalid, slug_reserved, slug_taken.
+   */
   create_my_shop: {
     input: z.strictObject({ businessType: BusinessType, name: z.string().trim().min(1).max(80), slug: Slug }),
     output: Tenant,
+  },
+  /** Signed in (shop setup): false for an invalid, reserved or taken link name. Beyond paper 7.4 (decision P3-4). */
+  slug_available: {
+    input: z.strictObject({ slug: z.string() }),
+    output: z.boolean(),
   },
   /** Anyone: shop info, open status, catalog, payment accounts, zones and members count. */
   get_storefront: {

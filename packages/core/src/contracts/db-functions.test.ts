@@ -7,9 +7,10 @@ import type { DbFunctionInput, DbFunctionName } from './db-functions';
 
 const { ids } = sample;
 
-/** System paper 7.4, in order. */
+/** System paper 7.4, in order, plus slug_available (decision P3-4). */
 const PAPER_FUNCTIONS = [
   'create_my_shop',
+  'slug_available',
   'get_storefront',
   'quote_order',
   'place_order',
@@ -41,6 +42,10 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
   create_my_shop: {
     input: { businessType: 'food', name: "Juan's Cafe", slug: 'juans-cafe' },
     output: { ...sample.tenant, status: 'pending', plan: null, paidUntil: null },
+  },
+  slug_available: {
+    input: { slug: 'juans-cafe' },
+    output: true,
   },
   get_storefront: {
     input: { slug: 'juans-cafe' },
@@ -157,7 +162,7 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
 };
 
 describe('database function contracts', () => {
-  it('list exactly the functions of system paper 7.4', () => {
+  it('list exactly the functions of system paper 7.4 and the P3 additions', () => {
     expect(DB_FUNCTION_NAMES).toEqual(PAPER_FUNCTIONS);
   });
 
