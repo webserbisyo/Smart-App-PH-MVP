@@ -2,6 +2,8 @@
 
 Build Plan v1.1, Phase 2, checkpoints 2.1 to 2.5. Checkpoint 2.6 (Resend) is a separate prompt, `docs/prompts/P2.6-resend-email.md`, because it needs DNS changes on the platform domain. System paper sections 8.1, 8.2, 8.3, 9.1 to 9.3.
 
+**Before running it in a cloud session:** allow `ui.shadcn.com`, `reui.io`, `diceui.com` and `magicui.design` in the environment's network settings (the component registries are blocked by default; npm and GitHub work). Attach `webserbisyo/Smart-App-PH` read-only too, for the old `BottomDock`.
+
 To run it, paste this one line into a Claude Code session on `webserbisyo/Smart-App-PH-MVP`:
 
 > Read docs/prompts/P2-foundations.md and do exactly that checkpoint.
@@ -14,7 +16,7 @@ Both apps run locally and on Vercel preview links, in the final look, with both 
 
 ## Read first
 
-`CLAUDE.md`, `docs/stack-versions.md`, `docs/decisions.md`, system paper 8.1 to 8.3 and 9.1 to 9.3, and `reference/README.md`. Start with a short plan that lists every file you will create or change, then build.
+`CLAUDE.md`, `docs/ui-kit.md` (component list and responsive plan), `docs/stack-versions.md`, `docs/decisions.md`, system paper 8.1 to 8.3 and 9.1 to 9.3, and `reference/README.md`. Start with a short plan that lists every file you will create or change, then build.
 
 ## Build only
 
@@ -24,7 +26,7 @@ Install at the exact versions in `docs/stack-versions.md` (check the latest patc
 
 - `apps/storefront`: `next`, `react`, `react-dom`, `@tailwindcss/postcss`. App Router under `src/app`. `next.config.ts` with `transpilePackages: ['@smartapp/ui', '@smartapp/core', '@smartapp/api']` (the packages export TypeScript source).
 - `apps/dashboard`: `vite`, `@vitejs/plugin-react`, `react`, `react-dom`, `@tanstack/react-router` (code-based routes, no router plugin), `@tanstack/react-query`, `@tailwindcss/vite`, `react-hook-form`, `@hookform/resolvers`.
-- `packages/ui`: `tailwindcss`, `@tabler/icons-react`, `@fontsource-variable/plus-jakarta-sans`, and the packages the shadcn CLI adds for `button` (`class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css`, Radix slot). React is a peer dependency.
+- `packages/ui`: `tailwindcss`, `@tabler/icons-react`, `@fontsource-variable/plus-jakarta-sans`, and every package the shadcn CLI adds for the components in `docs/ui-kit.md` section 3 (Base UI, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css`, Recharts, `@tanstack/react-table`, `@dnd-kit/*`, the drawer and toast packages). React is a peer dependency.
 - `packages/api`: `@tanstack/react-query` only for now (Supabase client packages come in P3b).
 - Root: `supabase` CLI as a devDependency, pinned. pnpm 10 blocks install scripts: add only the packages that truly need one to `onlyBuiltDependencies` in `pnpm-workspace.yaml`, and list them in your final reply.
 - `eslint-plugin-react-hooks` in the root ESLint config for `apps/**` and `packages/ui/**`.
@@ -38,7 +40,9 @@ Replace the placeholder `typecheck` and `lint` scripts in both apps with real `t
 - `packages/ui/src/styles/tokens.css`: copy-and-trim from `reference/packages/ui/src/styles/tokens.css`. Keep navy, logo blue, marigold (celebrations only), member green, neutral greys, status colours, light and dark. Drop ReUI-only names.
 - `packages/ui/src/styles/globals.css`: `@import "tailwindcss"`, `tw-animate-css`, the tokens, the font, and an `@theme inline` block mapping tokens to Tailwind colours, radius and `--font-sans: "Plus Jakarta Sans Variable"`. Dark mode by a `.dark` class (custom variant), not the media query, so the dashboard can offer a switch later.
 - Shop colours: `--shop-60`, `--shop-30`, `--shop-10` plus their `-foreground` text colours, set on a wrapper element from the shop's three hex colours. Put the contrast picker (`readableTextOn(hex)`: black or white text, whichever passes 4.5:1) in `packages/core/src/color.ts` with tests; `packages/ui` exports a tiny `ShopTheme` component that sets the variables.
-- shadcn: one `components.json` in `packages/ui` (aliases into `packages/ui/src`), `button` installed with the shadcn CLI, exported from `@smartapp/ui`. Each app's CSS imports `@smartapp/ui/globals.css` and adds `@source` for `packages/ui/src` so Tailwind sees the classes.
+- shadcn: one `components.json` in `packages/ui`, style `base-nova` (Base UI), Tabler as the icon library, aliases into `packages/ui/src`, and the `@reui`, `@diceui` and `@magicui` registries. Each app's CSS imports `@smartapp/ui/globals.css` and adds `@source` for `packages/ui/src` so Tailwind sees the classes.
+- **UI kit:** install exactly the 51 components and blocks in `docs/ui-kit.md` section 3, nothing from section 4. Blocks go to `packages/ui/src/blocks/` as starting points. Fix every installed file to pass our lint (no casts: set CSS variables through a typed style helper; no `any`); never loosen a rule. Map each component to our tokens (navy, logo blue, member green, marigold only to celebrate). Export from `@smartapp/ui` subpaths (`@smartapp/ui/components/button`), not one barrel.
+- **Kit page:** a dashboard route `/kit` (not in the nav) that shows every installed component in light and dark, at phone and desktop width, so I can check them on a phone.
 - Prove it: the same `<Button>` in its default and `variant="outline"` renders identically in both apps (same font, colour, radius, height 44 px) before going on.
 
 ### 3. Two layouts with empty pages (2.3)
@@ -55,14 +59,15 @@ Storefront (`apps/storefront`):
 Dashboard (`apps/dashboard`):
 - Copy-and-trim the module type and registry from `reference/apps/dashboard/src/app/module.ts`, `registry.ts` and `reference/packages/core/src/modules.ts`: `defineAppModule({ id, nav: { label, icon, order, placement }, routes })`. Registry in `src/app/registry.ts`, one line per feature. A new feature is a new folder plus one registry line.
 - Features with a `module.ts` and one empty screen each: `home`, `orders`, `products`, `customers`, `reports`, `settings`. (`auth` comes in P3b.) Screens are lazy-loaded.
-- Shell, copy-and-trim from `reference/apps/dashboard/src/app/shell/` and `reference/packages/ui/src/patterns/AppShell.tsx`:
-  - desktop: navy sidebar (Home, Orders, Products, Customers, Reports, Settings), collapsible to icons, shop name and logo placeholder on top, account at the bottom
+- Shell, copy-and-trim from `reference/apps/dashboard/src/app/shell/` and `reference/packages/ui/src/patterns/AppShell.tsx`, built on the shadcn `sidebar` (start from block `sidebar-07`). Phone dock: copy-and-trim `BottomDock` from the old repo (`webserbisyo/Smart-App-PH`, branch `redesign/v3-home`, `packages/ui/src/patterns/BottomDock.tsx`) into `packages/ui/src/patterns/`. No raised centre button: its job was Sell (POS), which is not in the MVP.
+  - laptop and desktop (≥ 1024 px): navy sidebar 248 px (Home, Orders, Products, Customers, Reports, Settings), collapsible to the 72 px icon rail and remembered, shop name and logo placeholder on top, account at the bottom
+  - tablet (768 to 1023 px): the icon rail, opening over the page
   - phone: bottom bar Home · Orders · Products · Customers · More, where More opens a sheet with Reports and Settings
   - top bar with breadcrumbs built from the route
   - a light/dark switch in the account menu, saved in localStorage
 - No POS, staff, dine-in or other areas from the reference shell.
 
-Both apps: no page scrolls sideways at 390 px; touch targets ≥ 44 px.
+Both apps: no page scrolls sideways at 390 px; touch targets ≥ 44 px; one nav per device; the phone rules in `docs/ui-kit.md` section 6 (safe areas, `100dvh`, 16 px inputs, dock hidden while the keyboard is open, press states, View Transitions with reduced motion).
 
 ### 4. Supabase link (2.4)
 
@@ -82,7 +87,7 @@ Add `apps/dashboard/vercel.json` with a rewrite of every path to `/index.html` (
 ## Do not build
 
 - No Supabase client code, auth, migrations or tables (P3).
-- No screens beyond empty pages, no mock data beyond the two-shop stub, no other shadcn components (P4 installs them once, as a set).
+- No screens beyond empty pages, no mock data beyond the two-shop stub, no components beyond `docs/ui-kit.md` section 3, no Fluent 3D tiles.
 - No PWA manifest, service worker or icons (P5.2 and P6).
 - No dark mode on the storefront, no theme editor, no shop subdomains.
 - No Resend or SMTP setup (P2.6).
@@ -97,6 +102,7 @@ Add `apps/dashboard/vercel.json` with a rewrite of every path to `/index.html` (
   - P2-1: Storefront is light-only at launch, themed by the shop's 60/30/10 colours; the dashboard has light and dark.
   - P2-2: Migrations reach the hosted project only through the `db-deploy` GitHub Action on `dev`.
   - P2-5: Platform domain is `webserbisyo.com`, used only through subdomains so the existing site is untouched: storefront `shop.webserbisyo.com/<slug>`, dashboard `app.webserbisyo.com`, auth email from `mail.webserbisyo.com`.
+  - P2-6: The UI kit is the 51 components in `docs/ui-kit.md`, installed in P2 (not P4); more only when a screen needs one.
   - P2-3: Words live in `packages/core/src/words.ts`; Menu/Products-style words come from `VOCAB[businessType]` only.
 
 ## What the founder does by hand (put these steps in `docs/deploy.md` and in your final reply)
@@ -118,6 +124,8 @@ Keys go into `.env.local`, GitHub and Vercel settings, never into chat.
 - `/juans-cafe` shows Menu in the bottom bar and Juan's colours; `/tala-apparel` shows Products and Tala's colours.
 - Dashboard: sidebar on desktop, bottom bar with More on phone, breadcrumbs, every empty page reachable.
 - The same Button looks identical in both apps; dashboard light and dark both look right.
+- `/kit` on the dashboard shows all 51 components, readable in light and dark on my phone.
+- Phone dock, tablet rail and desktop sidebar each appear at their width, never two at once.
 - No page scrolls sideways at 390 px.
 - `pnpm check` is green locally and in the `check` workflow; the `db-deploy` workflow runs green by hand.
 - Both Vercel preview links open on a phone.
