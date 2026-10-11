@@ -1,0 +1,3 @@
+@import '@smartapp/ui/globals.css';
+/* Tailwind does not scan node_modules; the shared components live in packages/ui. */
+@source '../../../../packages/ui/src';

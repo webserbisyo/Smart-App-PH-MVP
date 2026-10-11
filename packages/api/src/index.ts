@@ -1,2 +1,2 @@
-// Empty until its checkpoint: Phase 2 adds Supabase clients; Phase 4 adds mock data.
-export {};
+// @smartapp/api: back-end access. Supabase clients come in P3b; mock data in P4.
+export * from './stubs';

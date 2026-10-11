@@ -1,4 +1,4 @@
-// @smartapp/core: business logic shared by both apps. Zod schemas and types only in P1.
+// @smartapp/core: business logic shared by both apps: Zod schemas and types, colour rules, words.
 // No React and no Supabase here (enforced by eslint.config.js).
 export * from './schemas/primitives';
 export * from './schemas/enums';
@@ -22,3 +22,7 @@ export * from './schemas/customer-address';
 export * from './schemas/stamp-rule';
 export * from './schemas/loyalty-entry';
 export * from './contracts/db-functions';
+export * from './color';
+export * from './vocab';
+export * from './words';
+export * from './modules';

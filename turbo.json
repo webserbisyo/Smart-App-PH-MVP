@@ -14,6 +14,24 @@
     },
     "test": {
       "outputs": []
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**"
+      ],
+      "env": [
+        "NEXT_PUBLIC_*",
+        "VITE_*"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

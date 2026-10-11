@@ -1,0 +1,28 @@
+// The icons both apps use, re-exported so screens import from one place. Tabler only;
+// the selected nav item shows the filled variant.
+export {
+  IconBuildingStore,
+  IconChartBar,
+  IconChevronLeft,
+  IconChevronRight,
+  IconDots,
+  IconGripVertical,
+  IconHome,
+  IconHomeFilled,
+  IconLayoutSidebar,
+  IconMoon,
+  IconPackage,
+  IconReceipt,
+  IconReceiptFilled,
+  IconSettings,
+  IconSettingsFilled,
+  IconShoppingBag,
+  IconShoppingBagCheck,
+  IconSun,
+  IconToolsKitchen2,
+  IconUpload,
+  IconUser,
+  IconUserFilled,
+  IconUsers,
+  IconX,
+} from '@tabler/icons-react';

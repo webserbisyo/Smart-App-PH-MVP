@@ -10,5 +10,9 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@smartapp/core": "workspace:*",
+    "@tanstack/react-query": "5.104.2"
   }
 }

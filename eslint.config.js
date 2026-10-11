@@ -2,6 +2,7 @@
 // The import rules below enforce the folder map in CLAUDE.md (system paper 8.3).
 // They are proven by tooling/lint-rules.test.ts against tooling/lint-fixtures/.
 import { defineConfig, globalIgnores } from 'eslint/config';
+import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
 /** Dashboard feature areas from system paper 8.3. A new area is added here too. */
@@ -56,7 +57,7 @@ function noOtherFeatures(own) {
 const restrict = (patterns) => ({ 'no-restricted-imports': ['error', { patterns }] });
 
 export default defineConfig(
-  globalIgnores(['**/node_modules/**', '**/dist/**', '**/.turbo/**', 'reference/**', `${FIXTURES}/**`]),
+  globalIgnores(['**/node_modules/**', '**/dist/**', '**/.next/**', '**/next-env.d.ts', '**/.turbo/**', 'reference/**', `${FIXTURES}/**`]),
   tseslint.configs.strictTypeChecked,
   {
     languageOptions: {
@@ -86,6 +87,10 @@ export default defineConfig(
   {
     files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
     ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    files: ['apps/**/*.{ts,tsx}', 'packages/ui/**/*.{ts,tsx}'],
+    ...reactHooks.configs.flat['recommended-latest'],
   },
 
   // Import rules (system paper 8.3). For each file only the last matching block applies,

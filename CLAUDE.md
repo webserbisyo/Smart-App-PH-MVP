@@ -42,6 +42,8 @@ tooling/               lint rule tests and their fixtures
 ```
 pnpm install                       # Node 24 LTS, pnpm (version pinned in package.json)
 pnpm check                         # typecheck + lint + test on every package (turbo)
+pnpm dev                           # storefront on :3000, dashboard on :5173
+pnpm build                         # both apps (CI runs check, then build)
 pnpm --filter @smartapp/core test  # one task in one package: @smartapp/<storefront|dashboard|ui|core|api|tooling>
 ```
 

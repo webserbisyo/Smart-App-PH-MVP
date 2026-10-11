@@ -1,7 +1,7 @@
 # Stack versions
 
-Exact versions, no `^`. "P1" means installed now; "P2" means the target for Phase 2, re-checked with
-`npm view <pkg> version` when it is installed. Versions checked on 2026-10-11.
+Exact versions, no `^`. "P1"/"P2" means installed in that phase; "later" rows are targets, re-checked with
+`npm view <pkg> version` when they are installed. Versions checked on 2026-10-11.
 
 ## Runtime and tooling
 
@@ -15,26 +15,37 @@ Exact versions, no `^`. "P1" means installed now; "P2" means the target for Phas
 | eslint | 10.12.0 | P1 | flat config, `eslint.config.js` |
 | typescript-eslint | 8.71.1 | P1 | strict type-checked |
 | vitest | 5.0.3 | P1 | |
-| supabase (CLI) | 2.120.0 | P2 | P2.4 |
+| supabase (CLI) | 2.120.0 | P2 | root devDependency; same version in `db-deploy` |
+| eslint-plugin-react-hooks | 7.1.1 | P2 | apps and packages/ui |
 
 ## Apps and shared packages (system paper 8.2)
 
 | Layer | Package | Version | Status | Notes |
 | --- | --- | --- | --- | --- |
-| Storefront | next | 16.4.0 | P2 | never below 16.3.8 (security fixes); App Router; `proxy.ts`, not middleware; params are async |
-| Storefront, dashboard | react, react-dom | 19.3.0 | P2 | |
-| Dashboard | vite | 8.3.4 | P2 | builds a static app for Capacitor |
-| Dashboard | @tanstack/react-router | 1.170.42 | P2 | code-based routes |
-| Data | @tanstack/react-query | 5.104.1 | P2 | hooks live in packages/api |
-| Styling | tailwindcss (+ @tailwindcss/vite, @tailwindcss/postcss) | 4.3.3 | P2 | CSS-first, one tokens file |
-| Components | shadcn (CLI) | 4.21.4 | P2 | components installed into packages/ui |
-| Icons | @tabler/icons-react | 3.49.0 | P2 | |
-| Forms | react-hook-form | 7.90.0 | P2 | dashboard |
-| Forms | @hookform/resolvers | 5.9.1 | P2 | Zod resolver |
-| QR codes | qrcode.react | 4.2.0 | P2 | receipt QR, shop QR |
-| Backend | @supabase/supabase-js | 2.117.3 | P2 | only in packages/api |
-| Backend | @supabase/ssr | 0.12.7 | P2 | storefront cookie sessions, only in packages/api |
+| Storefront | next | 16.4.0 | P2 installed | never below 16.3.8 (security fixes); App Router; `proxy.ts`, not middleware; params are async |
+| Storefront, dashboard | react, react-dom | 19.3.0 | P2 installed | |
+| Dashboard | vite (+ @vitejs/plugin-react 6.1.2) | 8.3.4 | P2 installed | builds a static app for Capacitor |
+| Dashboard | @tanstack/react-router | 1.170.42 | P2 installed | code-based routes |
+| Data | @tanstack/react-query | 5.104.2 | P2 installed | hooks live in packages/api |
+| Styling | tailwindcss (+ @tailwindcss/vite, @tailwindcss/postcss) | 4.3.3 | P2 installed | CSS-first, one tokens file |
+| Components | shadcn (CLI, run with `pnpm dlx`, not installed) | 4.21.4 | P2 used | components installed into packages/ui |
+| Icons | @tabler/icons-react | 3.49.0 | P2 installed | |
+| Forms | react-hook-form | 7.90.0 | P2 installed | dashboard |
+| Forms | @hookform/resolvers | 5.9.1 | P2 installed | Zod resolver |
+| QR codes | qrcode.react | 4.2.0 | later | receipt QR, shop QR |
+| Backend | @supabase/supabase-js | 2.117.3 | P3b | only in packages/api |
+| Backend | @supabase/ssr | 0.12.7 | P3b | storefront cookie sessions, only in packages/api |
 | Native (later) | @capacitor/core | 8.5.3 | after launch | Capacitor 8 |
+
+UI kit packages added by the shadcn CLI with the components (`packages/ui`, P2 installed): @base-ui/react 1.9.0,
+@base-ui/utils 0.5.0, class-variance-authority 0.7.1, clsx 2.1.1, tailwind-merge 3.7.0, tw-animate-css 1.4.0,
+@fontsource-variable/plus-jakarta-sans 5.3.0, recharts 3.8.0, sonner 2.0.8, input-otp 1.5.0, react-day-picker 10.0.2,
+date-fns 4.4.0, @tanstack/react-table 9.2.8, @dnd-kit/core 6.3.1, @dnd-kit/sortable 10.0.0, @dnd-kit/modifiers 9.0.0,
+@dnd-kit/utilities 3.2.2, motion 14.1.0 (number ticker), canvas-confetti 1.9.4. Types: @types/react 19.3.0,
+@types/react-dom 19.3.0, @types/node 24.19.2, @types/canvas-confetti 1.9.0. Env checks use zod 4.6.6 in both apps.
+
+pnpm `onlyBuiltDependencies`: none needed. No installed package needs an install script (Supabase CLI, Tailwind
+oxide and lightningcss ship platform binaries as optional dependencies).
 
 Services (no package): Supabase (Postgres, Auth, Storage, Realtime, pg_cron), Vercel (two projects),
 Resend (Supabase Auth SMTP), Cloudflare Turnstile.

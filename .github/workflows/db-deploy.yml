@@ -1,0 +1,35 @@
+name: db-deploy
+
+# Migrations reach the hosted Supabase project only from here (decision P2-2): on push to dev when a
+# migration changes, or by hand (Actions → db-deploy → Run workflow).
+on:
+  push:
+    branches: [dev]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+concurrency:
+  group: db-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0 # same as the root devDependency
+      - name: Check the secrets are set
+        run: |
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do
+            if [ -z "${!name}" ]; then echo "::error::$name is not set (see docs/deploy.md)"; exit 1; fi
+          done
+      - name: Link the project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Push migrations
+        run: supabase db push

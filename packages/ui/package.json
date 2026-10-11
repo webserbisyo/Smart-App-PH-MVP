@@ -3,12 +3,61 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#components/*": "./src/components/*.tsx",
+    "#blocks/*": "./src/blocks/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*.ts",
+    "#patterns/*": "./src/patterns/*.tsx"
+  },
   "exports": {
-    ".": "./src/index.ts"
+    "./globals.css": "./src/styles/globals.css",
+    "./components/*": "./src/components/*.tsx",
+    "./blocks/*": "./src/blocks/*.tsx",
+    "./lib/*": "./src/lib/*.ts",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./patterns/*": "./src/patterns/*.tsx",
+    "./icons": "./src/icons.ts",
+    "./shop-theme": "./src/shop-theme.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "@base-ui/utils": "0.5.0",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/modifiers": "9.0.0",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "@fontsource-variable/plus-jakarta-sans": "5.3.0",
+    "@smartapp/core": "workspace:*",
+    "@tabler/icons-react": "3.49.0",
+    "@tanstack/react-table": "9.2.8",
+    "canvas-confetti": "1.9.4",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "date-fns": "4.4.0",
+    "input-otp": "1.5.0",
+    "motion": "14.1.0",
+    "react-day-picker": "10.0.2",
+    "recharts": "3.8.0",
+    "sonner": "2.0.8",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.3",
+    "tw-animate-css": "1.4.0"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "1.9.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "peerDependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   }
 }
