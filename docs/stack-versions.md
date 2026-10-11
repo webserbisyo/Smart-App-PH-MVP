@@ -32,7 +32,7 @@ Exact versions, no `^`. "P1"/"P2" means installed in that phase; "later" rows ar
 | Icons | @tabler/icons-react | 3.49.0 | P2 installed | |
 | Forms | react-hook-form | 7.90.0 | P2 installed | dashboard |
 | Forms | @hookform/resolvers | 5.9.1 | P2 installed | Zod resolver |
-| QR codes | qrcode.react | 4.2.0 | later | receipt QR, shop QR |
+| QR codes | qrcode (via DiceUI `qr-code`) | 1.5.4 | P4.0 | receipt QR, shop QR; replaces qrcode.react (decision P4-F2) |
 | Backend | @supabase/supabase-js | 2.117.3 | P3b | only in packages/api |
 | Backend | @supabase/ssr | 0.12.7 | P3b | storefront cookie sessions, only in packages/api |
 | Native (later) | @capacitor/core | 8.5.3 | after launch | Capacitor 8 |

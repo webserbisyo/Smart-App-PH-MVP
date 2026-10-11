@@ -24,3 +24,4 @@ the old code has POS, staff, dine-in, shipping and vouchers that the MVP does no
 | `apps/dashboard/src/app/shell/ShellFrame.tsx` | Dashboard shell frame: sidebar, top bar, bottom bar | P2.3 |
 | `apps/dashboard/src/app/shell/TenantShell.tsx` | Shell for a signed-in owner's shop | P2.3, P3.4 (guards) |
 | `packages/ui/src/patterns/AppShell.tsx` | Shared layout pattern behind the shell | P2.3 |
+| `packages/ui/src/assets/objects/` | 110 Fluent Emoji 3D icons (Microsoft `fluentui-emoji`, MIT, 128 px WebP, about 4 kB each), `index.ts` key → URL, `LICENSE.md` | P4.0 (category icons, decision UI-3) |
