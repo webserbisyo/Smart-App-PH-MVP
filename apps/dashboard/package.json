@@ -1,0 +1,36 @@
+{
+  "name": "@smartapp/dashboard",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "5.9.1",
+    "@smartapp/api": "workspace:*",
+    "@smartapp/core": "workspace:*",
+    "@smartapp/ui": "workspace:*",
+    "@tailwindcss/vite": "4.3.3",
+    "@tanstack/react-query": "5.104.2",
+    "@tanstack/react-router": "1.170.42",
+    "@tanstack/react-table": "9.2.8",
+    "@vitejs/plugin-react": "6.1.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-hook-form": "7.90.0",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.4",
+    "zod": "4.6.6"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  }
+}

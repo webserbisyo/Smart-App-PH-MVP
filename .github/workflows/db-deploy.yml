@@ -1,0 +1,48 @@
+name: db-deploy
+
+# Migrations reach the hosted Supabase project only from here (decision P2-2): on push to dev when a
+# migration changes, or by hand (Actions → db-deploy → Run workflow).
+# Auth settings (Resend SMTP, email templates, decision P2-4) from supabase/config.toml are shown as
+# a diff, and pushed only when someone runs this by hand with "Push Auth config" ticked.
+on:
+  push:
+    branches: [dev]
+    paths: ['supabase/migrations/**', 'supabase/config.toml', 'supabase/templates/**']
+  workflow_dispatch:
+    inputs:
+      push_auth_config:
+        description: Push Auth config (SMTP, templates) after the diff
+        type: boolean
+        default: false
+
+concurrency:
+  group: db-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0 # same as the root devDependency
+      - name: Check the secrets are set
+        run: |
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF RESEND_API_KEY; do
+            if [ -z "${!name}" ]; then echo "::error::$name is not set (see docs/deploy.md)"; exit 1; fi
+          done
+      - name: Link the project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Push migrations
+        run: supabase db push
+      - name: Show Auth config changes
+        run: supabase config diff
+      - name: Push Auth config
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.push_auth_config }}
+        run: supabase config push --yes

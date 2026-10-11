@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "iconLibrary": "tabler",
+  "aliases": {
+    "components": "#components",
+    "ui": "#components",
+    "lib": "#lib",
+    "hooks": "#hooks",
+    "utils": "#lib/utils"
+  },
+  "registries": {
+    "@reui": "https://reui.io/r/{style}/{name}.json",
+    "@diceui": "https://diceui.com/r/{style}/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}"
+  }
+}

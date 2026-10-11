@@ -1,0 +1,45 @@
+import { z } from 'zod';
+
+import { Fulfillment, OrderStatus, PaymentMethod, PaymentStatus } from './enums';
+import { Centavos, IsoDateTime, ManilaDate, PhPhone, Uuid } from './primitives';
+
+/** A placed order (table `orders`). Amounts are computed by the database. */
+export const Order = z
+  .object({
+    id: Uuid,
+    tenantId: Uuid,
+    /** Gap-free number per shop per business date, shown as #042. */
+    orderNo: z.int().positive(),
+    businessDate: ManilaDate,
+    /** Secret link for the receipt page, /shop/o/{token}. */
+    token: z.string().min(8),
+    fulfillment: Fulfillment,
+    status: OrderStatus,
+    paymentStatus: PaymentStatus,
+    paymentMethod: PaymentMethod,
+    customerId: Uuid.nullable(),
+    customerName: z.string().min(1),
+    customerPhone: PhPhone,
+    addressLine: z.string().nullable(),
+    landmark: z.string().nullable(),
+    deliveryZoneId: Uuid.nullable(),
+    deliveryFee: Centavos,
+    pickupAt: IsoDateTime.nullable(),
+    notes: z.string().nullable(),
+    subtotal: Centavos,
+    discountTotal: Centavos,
+    total: Centavos,
+    trackingUrl: z.url().nullable(),
+    cancelReason: z.string().nullable(),
+    clientKey: Uuid,
+    placedAt: IsoDateTime,
+    paidAt: IsoDateTime.nullable(),
+    readyAt: IsoDateTime.nullable(),
+    completedAt: IsoDateTime.nullable(),
+    cancelledAt: IsoDateTime.nullable(),
+  })
+  .refine((order) => order.total === order.subtotal - order.discountTotal + order.deliveryFee, {
+    message: 'total must equal subtotal - discountTotal + deliveryFee.',
+    path: ['total'],
+  });
+export type Order = z.infer<typeof Order>;

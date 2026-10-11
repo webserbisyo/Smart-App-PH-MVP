@@ -1,0 +1,284 @@
+/*
+ * One stylesheet for both apps. Each app imports `@smartapp/ui/globals.css` and adds an `@source` line for
+ * packages/ui/src (workspace packages sit in node_modules, which Tailwind doesn't scan).
+ */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource-variable/plus-jakarta-sans';
+@import './tokens.css';
+
+/* Dark mode follows a .dark class on <html> (the dashboard's switch), not the system setting.
+   A .light wrapper inside a dark page stays light (the /kit page shows both side by side). */
+@custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
+
+/* Base UI marks orientation as data-orientation. */
+@custom-variant data-horizontal (&:where([data-orientation='horizontal']));
+@custom-variant data-vertical (&:where([data-orientation='vertical']));
+
+/* Which shell is showing, set by AppShell on its root from useFormFactor (data-shell). */
+@custom-variant shell-phone (&:where([data-shell='phone'], [data-shell='phone'] *));
+@custom-variant shell-tablet (&:where([data-shell='tablet'], [data-shell='tablet'] *));
+@custom-variant shell-desktop (&:where([data-shell='desktop'], [data-shell='desktop'] *));
+/* While the on-screen keyboard is open (AppShell sets data-keyboard). */
+@custom-variant keyboard-open (&:where([data-keyboard='open'], [data-keyboard='open'] *));
+
+/* Safe-area padding for notches and home bars (needs viewport-fit=cover). */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Content clears the floating dock: dock + offset + safe area + 16 px. */
+@utility pb-dock {
+  padding-bottom: calc(var(--dock-height) + var(--dock-offset) + env(safe-area-inset-bottom) + 1rem);
+}
+/* Bars that sit directly above the dock or tab bar (cart bar, save bar). */
+:root {
+  --above-dock: calc(var(--dock-height) + var(--dock-offset) + env(safe-area-inset-bottom) + 0.5rem);
+}
+@utility bottom-above-dock {
+  bottom: var(--above-dock);
+}
+
+/* Numbers that line up in columns (money, counts). */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Horizontal chip rows that scroll without a visible bar. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Motion tokens as utilities, so apps never need arbitrary values. */
+@utility duration-fast {
+  transition-duration: var(--duration-fast);
+}
+@utility duration-base {
+  transition-duration: var(--duration-base);
+}
+@utility duration-slow {
+  transition-duration: var(--duration-slow);
+}
+
+/* Press feedback: scale to 0.98 over 120 ms; no tap delay. */
+@utility pressable {
+  touch-action: manipulation;
+  transition-property: transform, background-color, color, opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out-soft);
+  &:active:not(:disabled):not([aria-disabled='true']) {
+    transform: scale(0.98);
+  }
+}
+
+/* Hover tint only on devices that can hover; a press tint everywhere. */
+@utility hover-surface {
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover);
+    }
+  }
+  &:active {
+    background-color: var(--active);
+  }
+}
+
+@theme inline {
+  --breakpoint-3xl: 105rem;
+  --spacing: 0.25rem;
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-background: var(--background);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-axis: var(--chart-axis);
+  --color-chart-grid: var(--chart-grid);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-soft-foreground: var(--destructive-soft-foreground);
+  --color-destructive-text: var(--destructive-text);
+  --color-faint-foreground: var(--faint-foreground);
+  --color-focus: var(--focus);
+  --color-focus-foreground: var(--focus-foreground);
+  --color-foreground: var(--foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-highlight-hover: var(--highlight-hover);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-highlight-soft-foreground: var(--highlight-soft-foreground);
+  --color-highlight-text: var(--highlight-text);
+  --color-member: var(--member);
+  --color-member-foreground: var(--member-foreground);
+  --color-member-hover: var(--member-hover);
+  --color-member-soft: var(--member-soft);
+  --color-member-soft-foreground: var(--member-soft-foreground);
+  --color-member-text: var(--member-text);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-hover: var(--info-hover);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-foreground: var(--info-soft-foreground);
+  --color-info-text: var(--info-text);
+  --color-input: var(--input);
+  --color-invert: var(--invert);
+  --color-invert-foreground: var(--invert-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-navy: var(--navy);
+  --color-navy-accent: var(--navy-accent);
+  --color-navy-border: var(--navy-border);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-navy-muted-foreground: var(--navy-muted-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-primary-text: var(--primary-text);
+  --color-ring: var(--ring);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-hover: var(--success-hover);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-success-text: var(--success-text);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-warning-text: var(--warning-text);
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-selected: var(--selected);
+  --color-selected-foreground: var(--selected-foreground);
+  --color-overlay: var(--overlay);
+  --color-skeleton: var(--skeleton);
+  --color-primary-edge: var(--primary-edge);
+  --color-shop-60: var(--shop-60);
+  --color-shop-60-foreground: var(--shop-60-foreground);
+  --color-shop-30: var(--shop-30);
+  --color-shop-30-foreground: var(--shop-30-foreground);
+  --color-shop-10: var(--shop-10);
+  --color-shop-10-foreground: var(--shop-10-foreground);
+  --radius-sm: calc(var(--radius) - 6px); /* 6: badges */
+  --radius-md: calc(var(--radius) - 4px); /* 8: small controls */
+  --radius-lg: var(--radius); /* 12: buttons, inputs */
+  --radius-xl: calc(var(--radius) + 4px); /* 16: cards */
+  --radius-2xl: calc(var(--radius) + 12px); /* 24: sheets, hero */
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --ease-soft: var(--ease-out-soft);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+  }
+  button,
+  a,
+  [role='button'] {
+    touch-action: manipulation;
+  }
+  /* Touch screens: 16 px text in fields so iOS doesn't zoom in. */
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+}
+
+/* Page changes: fade and rise 8 px; a plain fade with reduced motion. */
+::view-transition-old(smartapp-page) {
+  animation: smartapp-page-out var(--duration-fast-exit) var(--ease-out-soft) both;
+}
+::view-transition-new(smartapp-page) {
+  animation: smartapp-page-in var(--duration-base) var(--ease-out-soft) both;
+}
+@keyframes smartapp-page-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes smartapp-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(smartapp-page) {
+    animation-name: smartapp-page-fade;
+  }
+  @keyframes smartapp-page-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tablet: the sidebar is the 72 px icon rail; opened, it lies over the page instead of pushing it. */
+[data-shell='tablet'] [data-slot='sidebar-gap'] {
+  width: var(--sidebar-width-icon);
+}
+[data-shell='tablet'] [data-state='expanded'] [data-slot='sidebar-container'] {
+  box-shadow: var(--elevation-lg);
+}
