@@ -61,3 +61,30 @@ One line per decision. Newest phase at the bottom. The system paper wins if a li
 - P2-12: Dashboard module pages use one splat route (`/$`) and the registry picks the screen; `/kit` is its own route, outside the nav.
 - P2-13: Type packages (`@types/react`, `@types/react-dom`, `@types/node`, `@types/canvas-confetti`) were added as dev dependencies; they ship no runtime code.
 
+
+## Backend plan (2026-10-11, approved by the founder)
+
+Recommended in the "Plan backend: P3a, P3b, P5" thread and approved by the founder on 2026-10-11. The checkpoint
+prompts build them; their P5 numbers stay the same so later checkpoints add only the other P5 lines.
+
+- P5-5: Only GCash, Maya and bank orders expire unpaid (`orders.expires_at`, default 30 minutes); cash and COD
+  orders wait for the owner. Why: a cash customer may arrive late and still pay; an unpaid transfer order would
+  otherwise hold stock forever.
+- P5-6: Cloudflare Turnstile moves to P6. Until then `place_order` is limited in the database: at most 3 unpaid
+  orders per phone per 30 minutes and 30 orders per shop per minute. Why: fewer moving parts for launch, and the
+  limits stop the same spam without a third-party script.
+- P5-10: A member's past guest orders are linked to their account only with proof: an order token from that phone,
+  or the same email. Otherwise joining asks them to join from a receipt. Why: anyone can type someone else's phone
+  number; linking by phone alone would show strangers another person's orders and stamps.
+- P5-13: The two shops made in P3b, Juan's Cafe (`juans-cafe`, food) and Tala Apparel (`tala-apparel`, retail),
+  become the demo shops: `select private.demo_setup();` (P5.2) fills them with a real catalog, and
+  `private.demo_reset` (P5.6) refills them with orders. Why: one pair of test shops for every checkpoint, owned by the
+  founder, with no second set to keep in step.
+- P5-14: No mock data in the apps. Each P4 screens step runs after the P5 step that builds its API, and screens call
+  only the names in `docs/api-surface.md`. Why: screens built on fake data had to be rewired in the first build.
+- P5-15: Deleting payment proofs after 30 days moves to P6 (needs an Edge Function or a scheduled script; Supabase
+  blocks deleting storage files from SQL).
+- P5-16: Every new member gets 1 welcome stamp when they join a shop whose stamp card is on (ledger reason
+  `welcome`, once per member per shop; built in P5.5). Why: a card that starts with a stamp already filled gets
+  finished faster, and it gives guests a reason to join from the receipt (screens thread decision F4, approved by
+  the founder 2026-10-11).
