@@ -10,18 +10,19 @@ the pull request into `dev`, then start the next one. Run each checkpoint in one
 | P2.6 | `P2.6-resend-email.md` | email codes through Resend | done |
 | P3a | `P3a-shops-database-and-rls.md` | shops, owners, settings tables + security tests | no |
 | P3b | `P3b-auth-and-guards.md` | owner sign-up/login, shop setup, approval, guards, customer sign-in | auth pages only |
+| P4.0 | `P4.0-kit-and-shared-patterns.md` | shared building blocks on `/kit` (screens thread) | parts only |
 | P5.1 | `P5.1-settings-catalog-storage.md` | settings + catalog tables, photo storage, catalog API | no |
-| P4.1 | (screens thread) | dashboard Settings + Products on real data | yes |
+| P4.1, P4.2 | `P4.1-products-and-categories.md`, `P4.2-shop-settings.md` | dashboard Products and Settings on real data | yes |
 | P5.2 | `P5.2-storefront-read-and-demo-shops.md` | real shop pages, demo shops, install per shop | no |
-| P4.2 | (screens thread) | storefront home, menu, item sheet, cart | yes |
+| P4.3 | `P4.3-storefront-browse.md` | storefront home, menu, item sheet, cart | yes |
 | P5.3 | `P5.3-order-engine.md` | prices, orders, payment proofs, live receipt | no |
-| P4.3 | (screens thread) | checkout + receipt | yes |
+| P4.4 | `P4.4-checkout-and-receipt.md` | checkout + receipt | yes |
 | P5.4 | `P5.4-owner-order-handling.md` | verify, mark paid, next step, cancel, expiry, chime events | no |
-| P4.4 | (screens thread) | orders board + order detail | yes |
+| P4.5 | `P4.5-orders-board-and-detail.md` | orders board + order detail | yes |
 | P5.5 | `P5.5-members-and-stamps.md` | members, stamps, rewards | no |
-| P4.5 | (screens thread) | member sign-in, member card, my orders | yes |
+| P4.6 | `P4.6-members-and-stamps.md` | member sign-in, member card, my orders | yes |
 | P5.6 | `P5.6-home-reports-and-demo-reset.md` | Home numbers, reports, CSV, `demo_reset` | no |
-| P4.6 | (screens thread) | dashboard Home, Customers, Reports | yes |
+| P4.7 | `P4.7-home-customers-reports.md` | dashboard Home, Customers, Reports | yes |
 | P6 | later | speed, PWA polish, production, launch | |
 
 No mock data: each P4 step builds on the real API from the P5 step before it. The names every screen may call are

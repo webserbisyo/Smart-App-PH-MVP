@@ -1,6 +1,6 @@
 # API surface (packages/api)
 
-What the screens (P4) can rely on, slice by slice. The backend checkpoints (P3b, P5.1 to P5.6) build exactly
+What the screens (P4.0 to P4.7) can rely on, slice by slice. The backend checkpoints (P3b, P5.1 to P5.6) build exactly
 these names; the screen checkpoints call only these. If a name must change, change it here first and tell the
 other thread. Types are the Zod types in `@smartapp/core` (camelCase). Last updated 2026-10-11.
 
@@ -9,12 +9,12 @@ other thread. Types are the Zod types in `@smartapp/core` (camelCase). Last upda
 | Slice | Backend checkpoint | Then the screens |
 | --- | --- | --- |
 | 0 | P3a database (shops, owners, RLS), P3b auth + guards | (auth screens are in P3b) |
-| 1 | P5.1 settings, catalog, storage, uploads | P4.1 dashboard Settings + Products |
-| 2 | P5.2 `get_storefront`, demo shops (catalog), shop manifest | P4.2 storefront home, menu, item sheet, cart |
-| 3 | P5.3 order engine + live order updates | P4.3 checkout + receipt |
-| 4 | P5.4 owner order handling, expiry job, audit log | P4.4 orders board + order detail |
-| 5 | P5.5 members and stamps | P4.5 member sign-in sheet, member card, my orders |
-| 6 | P5.6 home numbers, reports, CSV, `demo_reset` | P4.6 dashboard Home, Customers, Reports |
+| 1 | P5.1 settings, catalog, storage, uploads | P4.0 shared parts (can run any time after P3b), P4.1 Products, P4.2 Settings |
+| 2 | P5.2 `get_storefront`, demo shops (catalog), shop manifest | P4.3 storefront home, menu, item sheet, cart |
+| 3 | P5.3 order engine + live order updates | P4.4 checkout + receipt |
+| 4 | P5.4 owner order handling, expiry job, audit log | P4.5 orders board + order detail |
+| 5 | P5.5 members and stamps | P4.6 member sign-in sheet, member card, my orders |
+| 6 | P5.6 home numbers, reports, CSV, `demo_reset` | P4.7 dashboard Home, Customers, Reports |
 
 ## Conventions (all slices)
 
@@ -71,6 +71,7 @@ Error codes: `already_has_shop`, `slug_taken`, `slug_reserved`, `slug_invalid`, 
 | `useCatalog(tenantId)` | query | | `CatalogItem[]`: item + photos + variants + option group ids, all statuses |
 | `useSaveItem()` | mutation | `ItemDraft` (item, variants ≥ 1, photo paths in order, option group ids) | `CatalogItem`, one transaction (`save_item`) |
 | `useSetItemStatus()` | mutation | `{ itemId, status }` | active / hidden / archived |
+| `useDeleteItem()` | mutation | `{ itemId }` | from P5.3 on, an item with orders raises `item_has_orders` (archive it instead) |
 | `useSetVariantSoldOut()` | mutation | `{ variantId, isSoldOut }` | |
 | `useSetStock()` | mutation | `{ variantId, stockOnHand }` | `set_stock`, logged |
 | `useOptionGroups`, `useSaveOptionGroup`, `useRemoveOptionGroup` | | `OptionGroup` with options | |
@@ -124,10 +125,10 @@ Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavaila
 | `useCancelOrder()` | mutation | `{ orderId, reason }` | `Order` |
 
 Core rules the board uses (P5.4 puts them in `packages/core`, matching the SQL): `boardColumn(order)`,
-`nextAction(order, settings)` (`verify_payment`, `mark_paid`, `start`, `mark_ready`, `out_for_delivery`, `complete`,
-or none), `canCancel(order)`.
+`nextActions(order, settings)` (the main step first: `verify_payment`, `mark_paid`, `start`, `mark_ready`, `out_for_delivery`, `complete`,
+), `canCancel(order)`, `timelineSteps(order, events)`, `isLate(order, now)`. A core test proves every open order can be finished.
 
-Error codes: `not_allowed`, `not_found`, `invalid_transition`, `not_paid`, `payment_not_pending`, `already_paid`.
+Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`, `not_paid`, `payment_not_pending`, `already_paid`.
 
 ## Slice 5: members and stamps (P5.5)
 
