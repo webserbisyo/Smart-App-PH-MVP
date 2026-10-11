@@ -1,0 +1,1 @@
+-- Local seed data. Empty until P5.2 adds the demo shops (decision P5-13).

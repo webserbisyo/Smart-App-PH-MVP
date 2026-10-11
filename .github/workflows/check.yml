@@ -21,3 +21,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm build
+
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0 # same as the root devDependency and db-deploy
+      - name: Start the database
+        run: supabase db start
+      - name: Database tests
+        run: supabase test db
+      - name: Generated types match the migrations
+        run: |
+          supabase gen types typescript --local --schema public > packages/api/src/database.types.ts
+          git diff --exit-code packages/api/src/database.types.ts || {
+            echo "::error::packages/api/src/database.types.ts is out of date. Run pnpm db:types and commit it."
+            exit 1
+          }

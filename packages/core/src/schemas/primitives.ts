@@ -7,12 +7,25 @@ export type Centavos = z.infer<typeof Centavos>;
 export const Uuid = z.uuid();
 export type Uuid = z.infer<typeof Uuid>;
 
+/**
+ * Link names a shop cannot take: app routes, platform words and short paths. Mirrored by
+ * `private.is_reserved_slug` in the first migration (a test keeps the two lists equal).
+ */
+export const RESERVED_SLUGS = [
+  'app', 'api', 'admin', 'www', 'mail', 'auth', 'login', 'signup', 'account', 'orders', 'cart', 'checkout',
+  'menu', 'o', 'i', 's', 'static', 'assets', '_next', 'manifest', 'sw', 'favicon', 'robots', 'sitemap',
+  'privacy', 'terms', 'about', 'pricing', 'help', 'support', 'status', 'dashboard', 'demo', 'shop', 'shops',
+] as const;
+
+const reserved: ReadonlySet<string> = new Set(RESERVED_SLUGS);
+
 /** A shop's link name, for example `juans-cafe`. */
 export const Slug = z
   .string()
   .min(3)
   .max(40)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, digits and single hyphens.');
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, digits and single hyphens.')
+  .refine((value) => !reserved.has(value), 'This link name is reserved. Try another.');
 export type Slug = z.infer<typeof Slug>;
 
 /** Philippine mobile number in international form: `+639` and 9 digits. */

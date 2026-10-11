@@ -62,6 +62,14 @@ One line per decision. Newest phase at the bottom. The system paper wins if a li
 - P2-13: Type packages (`@types/react`, `@types/react-dom`, `@types/node`, `@types/canvas-confetti`) were added as dev dependencies; they ship no runtime code.
 
 
+## Phase 3
+
+- P3-1: Default privileges revoke table and function access from `anon` and `authenticated` in `public` (and EXECUTE from PUBLIC globally for functions made by `postgres`); every grant is explicit.
+- P3-2: Owners change only the shop name and settings, and only while active; slug, status, plan, paid_until and is_demo change only by founder SQL.
+- P3-3: `create_my_shop` adds default hours from P5.1, when `business_hours` exists.
+- P3-4: `slug_available` and `private.try_uuid` were added beyond paper 7.4.
+- P3-4a: `packages/api/src/database.types.ts` is generated; only the lint rule `no-redundant-type-constituents` is off for that one file, because the generator writes `never | …` unions.
+
 ## P4 screens (2026-10-11, approved by the founder)
 
 Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/P4.0` to `P4.7`.

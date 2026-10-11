@@ -12,7 +12,10 @@
     "check": "turbo run typecheck lint test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "db:start": "supabase db start",
+    "db:test": "supabase test db",
+    "db:types": "supabase gen types typescript --local --schema public > packages/api/src/database.types.ts"
   },
   "devDependencies": {
     "eslint": "10.12.0",
