@@ -1,3 +1,4 @@
+import { useMyShop } from '@smartapp/api';
 import { WORDS } from '@smartapp/core';
 import {
   Sidebar,
@@ -19,6 +20,7 @@ const words = WORDS.dashboard;
 
 /** Started from shadcn block sidebar-07: navy sidebar that collapses to the 72 px icon rail. */
 export function AppSidebar({ items }: { items: readonly ShellNavItem[] }) {
+  const shop = useMyShop();
   return (
     <Sidebar collapsible="icon" aria-label={words.nav.label}>
       <SidebarHeader className="h-(--topbar-height-desktop) justify-center">
@@ -26,7 +28,7 @@ export function AppSidebar({ items }: { items: readonly ShellNavItem[] }) {
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-accent text-sidebar-accent-foreground">
             <IconBuildingStore aria-hidden="true" className="size-5" />
           </span>
-          <span className="truncate text-base font-semibold group-data-[collapsible=icon]:hidden">{words.shell.shopPlaceholder}</span>
+          <span className="truncate text-base font-semibold group-data-[collapsible=icon]:hidden">{shop.data?.name ?? words.shell.shopPlaceholder}</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

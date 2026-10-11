@@ -10,6 +10,7 @@ export {
   IconHome,
   IconHomeFilled,
   IconLayoutSidebar,
+  IconLogout,
   IconMoon,
   IconPackage,
   IconReceipt,

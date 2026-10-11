@@ -1,2 +1,12 @@
-// @smartapp/api: back-end access. Supabase clients come in P3b; mock data in P4.
+// @smartapp/api: the only code that talks to Supabase. Names follow docs/api-surface.md.
+export * from './client';
+export * from './provider';
+export * from './keys';
+export * from './errors';
+export * from './auth/auth';
+export * from './auth/hooks';
+export * from './shops/shops';
+export * from './shops/hooks';
+export { tenantFromRow } from './shops/mappers';
+// The storefront layout still uses the stub until P5.2.
 export * from './stubs';
