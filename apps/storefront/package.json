@@ -1,0 +1,11 @@
+{
+  "name": "@smartapp/storefront",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "echo \"no source until Phase 2\"",
+    "lint": "echo \"no source until Phase 2\"",
+    "test": "vitest run --passWithNoTests"
+  }
+}

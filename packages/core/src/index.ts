@@ -1,0 +1,24 @@
+// @smartapp/core: business logic shared by both apps. Zod schemas and types only in P1.
+// No React and no Supabase here (enforced by eslint.config.js).
+export * from './schemas/primitives';
+export * from './schemas/enums';
+export * from './schemas/shop';
+export * from './schemas/tenant-member';
+export * from './schemas/business-hours';
+export * from './schemas/delivery-zone';
+export * from './schemas/payment-account';
+export * from './schemas/category';
+export * from './schemas/item';
+export * from './schemas/variant';
+export * from './schemas/option-group';
+export * from './schemas/cart-line';
+export * from './schemas/order-payload';
+export * from './schemas/order';
+export * from './schemas/order-line';
+export * from './schemas/order-event';
+export * from './schemas/payment';
+export * from './schemas/customer';
+export * from './schemas/customer-address';
+export * from './schemas/stamp-rule';
+export * from './schemas/loyalty-entry';
+export * from './contracts/db-functions';

@@ -1,0 +1,9 @@
+node_modules/
+.turbo/
+dist/
+*.tsbuildinfo
+.DS_Store
+
+# env files: never commit, except the examples
+.env*
+!.env.example
