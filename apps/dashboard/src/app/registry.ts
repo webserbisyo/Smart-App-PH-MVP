@@ -1,5 +1,4 @@
-import { buildNav, findModuleRoute } from '@smartapp/core';
-import type { NavEntry } from '@smartapp/core';
+import { findModuleRoute } from '@smartapp/core';
 
 import { customersModule } from '../features/customers/module';
 import { homeModule } from '../features/home/module';
@@ -19,8 +18,6 @@ export const registry: readonly AppModule[] = [
   reportsModule,
   settingsModule,
 ];
-
-export const nav: readonly NavEntry[] = buildNav(registry);
 
 /** The module route for a path, or `null` (not found). */
 export function routeFor(path: string) {

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import type { Vocab } from '../vocab';
 import { WORDS } from '../words';
 
 // Every failure the apps can show. Database functions raise these codes (`raise exception '<code>'`), and
@@ -14,6 +15,7 @@ export const API_ERROR_CODES = [
   'slug_taken',
   'variant_required',
   'category_not_empty',
+  'item_has_orders',
   'not_allowed',
   // auth
   'invalid_code',
@@ -30,7 +32,14 @@ export const API_ERROR_CODES = [
 export const ApiErrorCode = z.enum(API_ERROR_CODES);
 export type ApiErrorCode = z.infer<typeof ApiErrorCode>;
 
-/** The words for an error code. Later slices add a `vocab` argument for codes that name the catalog. */
-export function errorWords(code: ApiErrorCode): string {
+type VocabErrorCode = keyof typeof WORDS.vocabErrors;
+
+function hasVocabWords(code: ApiErrorCode): code is VocabErrorCode {
+  return Object.hasOwn(WORDS.vocabErrors, code);
+}
+
+/** The words for an error code; with the shop's vocab, codes about the catalog say "menu item" or "product". */
+export function errorWords(code: ApiErrorCode, vocab?: Vocab): string {
+  if (vocab && hasVocabWords(code)) return WORDS.vocabErrors[code](vocab.item.toLowerCase());
   return WORDS.errors[code];
 }

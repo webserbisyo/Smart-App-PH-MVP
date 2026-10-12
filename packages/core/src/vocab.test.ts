@@ -11,7 +11,7 @@ describe('VOCAB', () => {
   });
 
   it('says Menu and Kitchen for food, Products and Packing for retail', () => {
-    expect(VOCAB.food).toEqual({ catalog: 'Menu', item: 'Item', prep: 'Kitchen' });
+    expect(VOCAB.food).toEqual({ catalog: 'Menu', item: 'Menu item', prep: 'Kitchen' });
     expect(VOCAB.retail).toEqual({ catalog: 'Products', item: 'Product', prep: 'Packing' });
   });
 });
