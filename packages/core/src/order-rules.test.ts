@@ -4,6 +4,11 @@ import {
   ACTION_TO_STATUS,
   boardColumn,
   canCancel,
+  canRecordPayment,
+  needsRefund,
+  paymentToReview,
+  recordMethod,
+  rejectionReason,
   canStartUnpaid,
   isLate,
   itemsSummary,
@@ -200,5 +205,36 @@ describe('itemsSummary', () => {
       { qty: 1, itemName: 'Water', variantName: 'Regular' },
     ]);
     expect(summary).toEqual({ lines: ['2x Iced Latte, Large', '1x Ensaymada'], more: 1 });
+  });
+});
+
+describe('payment rules for the order detail', () => {
+  const at = (minutes: number) => new Date(Date.UTC(2026, 9, 11, 1, minutes)).toISOString();
+  const rejected = { status: 'rejected' as const, createdAt: at(1), rejectReason: 'Short by 20' };
+  const waiting = { status: 'pending' as const, createdAt: at(5), rejectReason: null };
+
+  it('reviews only the latest waiting proof of an open order', () => {
+    const pending = order({ paymentMethod: 'gcash', paymentStatus: 'pending' });
+    expect(paymentToReview(pending, [rejected, waiting])).toBe(waiting);
+    expect(paymentToReview({ ...pending, status: 'cancelled' }, [waiting])).toBeNull();
+    expect(paymentToReview(order({ paymentMethod: 'gcash' }), [rejected])).toBeNull();
+  });
+
+  it('shows the last rejection while a new proof is awaited', () => {
+    expect(rejectionReason(order({ paymentMethod: 'gcash' }), [rejected])).toBe('Short by 20');
+    expect(rejectionReason(order({ paymentMethod: 'gcash', paymentStatus: 'pending' }), [rejected, waiting])).toBeNull();
+  });
+
+  it('records cash on delivery for delivery and cash for the rest, only while open and unpaid', () => {
+    expect(recordMethod({ fulfillment: 'delivery' })).toBe('cod');
+    expect(recordMethod({ fulfillment: 'pickup' })).toBe('cash');
+    expect(canRecordPayment(order())).toBe(true);
+    expect(canRecordPayment(order({ paymentStatus: 'pending' }))).toBe(false);
+    expect(canRecordPayment(order({ status: 'expired' }))).toBe(false);
+  });
+
+  it('flags a paid cancelled order for a refund by hand', () => {
+    expect(needsRefund(order({ status: 'cancelled', paymentStatus: 'paid' }))).toBe(true);
+    expect(needsRefund(order({ status: 'cancelled' }))).toBe(false);
   });
 });
