@@ -3,10 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   BUSINESS_TYPES,
   CashMethod,
+  CONSENT_CHANNELS,
   FULFILLMENTS,
   ITEM_STATUSES,
+  LINE_PROBLEMS,
   LOYALTY_REASONS,
   MEMBER_ROLES,
+  ORDER_ACTORS,
+  ORDER_EVENT_KINDS,
   ORDER_STATUSES,
   OrderStatus,
   PAYMENT_METHODS,
@@ -36,6 +40,10 @@ describe('enums', () => {
     expect(ITEM_STATUSES).toEqual(['active', 'hidden', 'archived']);
     expect(LOYALTY_REASONS).toEqual(['earned', 'redeemed', 'reversed', 'manual']);
     expect(MEMBER_ROLES).toEqual(['owner']);
+    expect(ORDER_EVENT_KINDS).toEqual(['status', 'payment_submitted', 'payment_confirmed', 'payment_rejected']);
+    expect(ORDER_ACTORS).toEqual(['customer', 'owner', 'system']);
+    expect(LINE_PROBLEMS).toEqual(['item_unavailable', 'out_of_stock', 'invalid_options']);
+    expect(CONSENT_CHANNELS).toEqual(['privacy', 'sms', 'email', 'push']);
   });
   it('reject values from later phases', () => {
     expect(OrderStatus.safeParse('voided').success).toBe(false);

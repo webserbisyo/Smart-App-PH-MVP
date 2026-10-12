@@ -15,6 +15,7 @@ import type {
   OrderEvent,
   OrderLine,
   OrderPayload,
+  QuotePayload,
   Payment,
   PaymentAccount,
   Shop,
@@ -185,6 +186,15 @@ export const orderPayload = {
   privacyConsent: true,
 } satisfies OrderPayload;
 
+export const quotePayload = {
+  fulfillment: orderPayload.fulfillment,
+  lines: orderPayload.lines,
+  paymentMethod: orderPayload.paymentMethod,
+  pickupAt: orderPayload.pickupAt,
+  delivery: orderPayload.delivery,
+  useReward: orderPayload.useReward,
+} satisfies QuotePayload;
+
 export const order = {
   id: ids.order,
   tenantId: ids.tenant,
@@ -210,6 +220,7 @@ export const order = {
   trackingUrl: null,
   cancelReason: null,
   clientKey: ids.clientKey,
+  expiresAt: null,
   placedAt: now,
   paidAt: '2026-10-11T07:07:00+00:00',
   readyAt: null,
@@ -236,8 +247,10 @@ export const orderLine = {
 export const orderEvent = {
   id: ids.event,
   orderId: ids.order,
+  kind: 'status',
   fromStatus: 'placed',
   toStatus: 'preparing',
+  actor: 'owner',
   note: null,
   createdAt: now,
 } satisfies OrderEvent;

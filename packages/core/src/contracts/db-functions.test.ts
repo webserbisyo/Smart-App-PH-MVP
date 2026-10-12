@@ -90,10 +90,11 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
     },
   },
   quote_order: {
-    input: { slug: 'juans-cafe', payload: sample.orderPayload },
+    input: { slug: 'juans-cafe', payload: sample.quotePayload },
     output: {
       lines: [
         {
+          lineIndex: 0,
           itemId: ids.item,
           variantId: ids.variant,
           itemName: 'Iced Latte',
@@ -103,6 +104,7 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
           optionsTotal: 3000,
           qty: 2,
           lineTotal: 36000,
+          note: 'less ice',
         },
       ],
       subtotal: 36000,
@@ -110,7 +112,7 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
       deliveryFee: 0,
       total: 36000,
       rewardApplied: false,
-      problems: [],
+      problems: [{ lineIndex: 1, code: 'out_of_stock', variantId: ids.variant }],
     },
   },
   place_order: {

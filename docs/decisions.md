@@ -159,3 +159,32 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
 - P5-21: The per-shop install file (`/<slug>/manifest.webmanifest`) uses the shop's logo when there is one, plus
   platform icons (`apps/storefront/public/icons/icon-192.png` and `icon-512.png`, maskable). Per-shop generated
   icons stay in P6.
+
+- P5-4 (P5.3, 2026-10-12): `order_events` has `kind` (`status`, `payment_submitted`, `payment_confirmed`,
+  `payment_rejected`) and `actor` (`customer`, `owner`, `system`); payment steps are events too, so the receipt
+  timeline shows them. Payment events have no from/to status. `created_at` uses the clock, so two steps in one
+  transaction keep their order. Closes P1-5.
+- P5-7: Order live updates use Realtime Broadcast from a trigger: a public `order:<token>` topic for the receipt and
+  a private `shop:<tenantId>` topic for the dashboard (only that shop's members may join it). The receipt polls
+  every 15 seconds while its channel is not joined.
+- P5-22: A guest checkout reuses a guest customer row found by phone as it is, and never links or changes a
+  member's row (one with a login): that order gets no customer. Why: a phone number proves nothing (same reason as
+  P5-10); P5.5 adds the signed-in member path. Customer stats (`order_count`, `total_spent`, `last_order_at`) are
+  kept by the owner's order actions in P5.4, not at placing time.
+- P5-23: `quote_order` takes a `QuotePayload` (the choices only: fulfillment, lines, payment method, pickup time,
+  delivery, reward), so the checkout can show totals before the form is filled. Its `problems` are
+  `{ lineIndex, code, variantId }` with `code` one of `item_unavailable`, `out_of_stock`, `invalid_options` (worded
+  by `errorWords`); problem lines are left out of `lines` and the totals. `place_order` raises the first one, with
+  the variant id as the error detail. A sold-out add-on and a wrong number of add-ons are both `invalid_options`.
+- P5-24: Error codes added: the slice 3 list plus `not_found` (an unknown receipt link; `getOrder` returns `null`).
+  `payment_unavailable` covers a method the order type does not allow (cash for delivery, COD outside delivery,
+  cash for pickup without pay-later) and a transfer with no active account. A scheduled pickup is allowed while the
+  shop is closed or busy now, as long as the pickup time itself is open.
+- P5-25: `delivery_zones` gained `unique (id, tenant_id)` so orders point at zones with a composite key like every
+  other child (P5-1). A product with order lines cannot be deleted (`item_has_orders`, a trigger); deleting a whole
+  shop still works. Proof uploads are limited to 10 files per order folder in the storage policy, and anon may run
+  only `private.order_accepts_proof` and `private.try_uuid` (for that policy).
+- P5-26: `usePlaceOrder` takes the payload without `clientKey` (`OrderInput`): the hook keeps one key per checkout,
+  reuses it on a retry and starts a new one after a success. `useQuote(slug, payload | null)` waits while the
+  payload is null. `useMyOrderTokens` keeps the last 20 receipt tokens per shop in localStorage
+  (`smartapp.orders.<slug>`).

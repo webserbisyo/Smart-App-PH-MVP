@@ -6,14 +6,14 @@ import { Customer } from '../schemas/customer';
 import { CustomerAddress } from '../schemas/customer-address';
 import { DeliveryZone } from '../schemas/delivery-zone';
 import { CatalogItem } from '../schemas/catalog-item';
-import { BusinessType, CashMethod, OrderStatus, SortKind, TransferMethod } from '../schemas/enums';
+import { BusinessType, CashMethod, LineProblem, OrderStatus, SortKind, TransferMethod } from '../schemas/enums';
 import { ItemDraft } from '../schemas/item-draft';
 import { Item, ItemPhoto } from '../schemas/item';
 import { OptionGroup } from '../schemas/option-group';
 import { Order } from '../schemas/order';
 import { OrderEvent } from '../schemas/order-event';
 import { OrderLine, OrderLineOption } from '../schemas/order-line';
-import { OrderPayload } from '../schemas/order-payload';
+import { OrderPayload, QuotePayload } from '../schemas/order-payload';
 import { Payment } from '../schemas/payment';
 import { PaymentAccount } from '../schemas/payment-account';
 import { PublicShop, Tenant } from '../schemas/shop';
@@ -47,8 +47,9 @@ export const Storefront = z.object({
 });
 export type Storefront = z.infer<typeof Storefront>;
 
-/** A cart line priced by the database. */
+/** A cart line priced by the database; `lineIndex` is its place in the payload's lines. */
 export const QuoteLine = z.object({
+  lineIndex: z.int().nonnegative(),
   itemId: Uuid,
   variantId: Uuid,
   itemName: z.string().min(1),
@@ -58,6 +59,7 @@ export const QuoteLine = z.object({
   optionsTotal: Centavos,
   qty: z.int().positive(),
   lineTotal: Centavos,
+  note: z.string().nullable(),
 });
 export type QuoteLine = z.infer<typeof QuoteLine>;
 
@@ -68,8 +70,11 @@ export const Quote = z.object({
   deliveryFee: Centavos,
   total: Centavos,
   rewardApplied: z.boolean(),
-  /** Lines that cannot be ordered as they are (sold out, not enough stock, hidden). */
-  problems: z.array(z.object({ lineIndex: z.int().nonnegative(), message: z.string().min(1) })),
+  /**
+   * Lines that cannot be ordered as they are (gone or sold out, wrong add-ons, not enough stock). They are left out of
+   * `lines` and the totals; the screen shows `errorWords(code)` on the line with Remove.
+   */
+  problems: z.array(z.object({ lineIndex: z.int().nonnegative(), code: LineProblem, variantId: Uuid })),
 });
 export type Quote = z.infer<typeof Quote>;
 
@@ -165,7 +170,7 @@ export const dbFunctions = {
   },
   /** Anyone: recomputes prices, fees, reward and stock from the database before placing. */
   quote_order: {
-    input: z.strictObject({ slug: Slug, payload: OrderPayload }),
+    input: z.strictObject({ slug: Slug, payload: QuotePayload }),
     output: Quote,
   },
   /** Anyone: validates, reserves stock, numbers the order; a retry with the same clientKey returns the same order. */

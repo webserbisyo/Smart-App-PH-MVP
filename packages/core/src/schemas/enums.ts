@@ -42,6 +42,26 @@ export type TransferMethod = z.infer<typeof TransferMethod>;
 export const CashMethod = PaymentMethod.extract(['cash', 'cod']);
 export type CashMethod = z.infer<typeof CashMethod>;
 
+/** What an order timeline step records (decision P5-4): a status change or a payment step. */
+export const ORDER_EVENT_KINDS = ['status', 'payment_submitted', 'payment_confirmed', 'payment_rejected'] as const;
+export const OrderEventKind = z.enum(ORDER_EVENT_KINDS);
+export type OrderEventKind = z.infer<typeof OrderEventKind>;
+
+/** Who took an order step. */
+export const ORDER_ACTORS = ['customer', 'owner', 'system'] as const;
+export const OrderActor = z.enum(ORDER_ACTORS);
+export type OrderActor = z.infer<typeof OrderActor>;
+
+/** Why one cart line cannot be ordered as it is (quote_order `problems`). */
+export const LINE_PROBLEMS = ['item_unavailable', 'out_of_stock', 'invalid_options'] as const;
+export const LineProblem = z.enum(LINE_PROBLEMS);
+export type LineProblem = z.infer<typeof LineProblem>;
+
+/** What a customer agreed to (table `consents`, append-only). */
+export const CONSENT_CHANNELS = ['privacy', 'sms', 'email', 'push'] as const;
+export const ConsentChannel = z.enum(CONSENT_CHANNELS);
+export type ConsentChannel = z.infer<typeof ConsentChannel>;
+
 export const PAYMENT_REVIEW_STATUSES = ['pending', 'confirmed', 'rejected'] as const;
 export const PaymentReviewStatus = z.enum(PAYMENT_REVIEW_STATUSES);
 export type PaymentReviewStatus = z.infer<typeof PaymentReviewStatus>;

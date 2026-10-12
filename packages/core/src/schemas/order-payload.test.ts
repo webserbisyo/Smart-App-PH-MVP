@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { cartLine, orderPayload } from '../test/samples';
+import { cartLine, orderPayload, quotePayload } from '../test/samples';
 
-import { OrderPayload } from './order-payload';
+import { OrderPayload, QuotePayload } from './order-payload';
 
 describe('order-payload', () => {
   it('a valid OrderPayload parses', () => {
@@ -33,5 +33,18 @@ describe('order-payload', () => {
   });
   it('needs at least one line', () => {
     expect(OrderPayload.safeParse({ ...orderPayload, lines: [] }).success).toBe(false);
+  });
+});
+
+describe('quote-payload', () => {
+  const quote = quotePayload;
+  it('a quote needs only the choices', () => {
+    expect(QuotePayload.parse(quote)).toEqual(quote);
+  });
+  it('rejects a price field (strict)', () => {
+    expect(QuotePayload.safeParse({ ...quote, total: 1 }).success).toBe(false);
+  });
+  it('keeps the fulfillment rules', () => {
+    expect(QuotePayload.safeParse({ ...quote, paymentMethod: 'cod' }).success).toBe(false);
   });
 });

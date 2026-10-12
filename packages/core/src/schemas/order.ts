@@ -32,6 +32,8 @@ export const Order = z
     trackingUrl: z.url().nullable(),
     cancelReason: z.string().nullable(),
     clientKey: Uuid,
+    /** When an unpaid transfer order expires; null for cash and COD, and once a proof is sent. */
+    expiresAt: IsoDateTime.nullable(),
     placedAt: IsoDateTime,
     paidAt: IsoDateTime.nullable(),
     readyAt: IsoDateTime.nullable(),

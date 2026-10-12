@@ -143,7 +143,7 @@ export function timelineSteps(
 ): TimelineStep[] {
   const reachedAt = new Map<OrderStatus, string>([['placed', order.placedAt]]);
   for (const event of events) {
-    if (event.toStatus !== 'placed') reachedAt.set(event.toStatus, event.createdAt);
+    if (event.toStatus !== null && event.toStatus !== 'placed') reachedAt.set(event.toStatus, event.createdAt);
   }
   const flow = flowFor(order.fulfillment);
   const ended = order.status === 'cancelled' || order.status === 'expired';

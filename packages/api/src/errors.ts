@@ -51,8 +51,9 @@ export function toApiError(error: unknown): ApiError {
   const code = text(field(error, 'code'));
 
   if (message !== null) {
+    // A database code may carry a detail, such as the variant id of a line that cannot be ordered.
     const fromDatabase = ApiErrorCode.safeParse(message);
-    if (fromDatabase.success) return new ApiError(fromDatabase.data);
+    if (fromDatabase.success) return new ApiError(fromDatabase.data, text(field(error, 'details')));
   }
   if (code !== null) {
     const fromAuth = AUTH_CODES[code];

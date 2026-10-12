@@ -65,6 +65,52 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"consents": {
+                  Row: {
+                    "channel": string,"created_at": string,"customer_id": string,"granted": boolean,"id": string,"source": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "channel": string,"created_at"?: string,"customer_id": string,"granted": boolean,"id"?: string,"source": string,"tenant_id": string
+                  }
+                  Update: {
+                    "channel"?: string,"created_at"?: string,"customer_id"?: string,"granted"?: boolean,"id"?: string,"source"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "consents_customer_id_tenant_id_fkey"
+      columns: ["customer_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "consents_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"customers": {
+                  Row: {
+                    "created_at": string,"email": string | null,"id": string,"last_order_at": string | null,"member_since": string | null,"name": string,"notes": string | null,"order_count": number,"phone": string,"tags": (string)[],"tenant_id": string,"total_spent": number,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"last_order_at"?: string | null,"member_since"?: string | null,"name": string,"notes"?: string | null,"order_count"?: number,"phone": string,"tags"?: (string)[],"tenant_id": string,"total_spent"?: number,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"last_order_at"?: string | null,"member_since"?: string | null,"name"?: string,"notes"?: string | null,"order_count"?: number,"phone"?: string,"tags"?: (string)[],"tenant_id"?: string,"total_spent"?: number,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "customers_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"delivery_zones": {
                   Row: {
                     "created_at": string,"eta_text": string | null,"fee": number,"id": string,"is_active": boolean,"name": string,"sort": number,"tenant_id": string
@@ -241,6 +287,122 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"order_counters": {
+                  Row: {
+                    "business_date": string,"last_no": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "business_date": string,"last_no": number,"tenant_id": string
+                  }
+                  Update: {
+                    "business_date"?: string,"last_no"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_counters_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"order_events": {
+                  Row: {
+                    "actor": string,"created_at": string,"from_status": string | null,"id": string,"kind": string,"note": string | null,"order_id": string,"tenant_id": string,"to_status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actor": string,"created_at"?: string,"from_status"?: string | null,"id"?: string,"kind": string,"note"?: string | null,"order_id": string,"tenant_id": string,"to_status"?: string | null
+                  }
+                  Update: {
+                    "actor"?: string,"created_at"?: string,"from_status"?: string | null,"id"?: string,"kind"?: string,"note"?: string | null,"order_id"?: string,"tenant_id"?: string,"to_status"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_events_order_id_tenant_id_fkey"
+      columns: ["order_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "order_events_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"order_items": {
+                  Row: {
+                    "id": string,"item_id": string | null,"item_name": string,"line_total": number,"note": string | null,"options": NonNullable<Json>,"options_total": number,"order_id": string,"qty": number,"sort": number,"tenant_id": string,"unit_price": number,"variant_id": string | null,"variant_name": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"item_id"?: string | null,"item_name": string,"line_total": number,"note"?: string | null,"options"?: NonNullable<Json>,"options_total"?: number,"order_id": string,"qty": number,"sort"?: number,"tenant_id": string,"unit_price": number,"variant_id"?: string | null,"variant_name": string
+                  }
+                  Update: {
+                    "id"?: string,"item_id"?: string | null,"item_name"?: string,"line_total"?: number,"note"?: string | null,"options"?: NonNullable<Json>,"options_total"?: number,"order_id"?: string,"qty"?: number,"sort"?: number,"tenant_id"?: string,"unit_price"?: number,"variant_id"?: string | null,"variant_name"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_items_item_id_tenant_id_fkey"
+      columns: ["item_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "order_items_order_id_tenant_id_fkey"
+      columns: ["order_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "order_items_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "order_items_variant_id_tenant_id_fkey"
+      columns: ["variant_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "item_variants"
+      referencedColumns: ["id","tenant_id"]
+    }
+                  ]
+                },"orders": {
+                  Row: {
+                    "address_line": string | null,"business_date": string,"cancel_reason": string | null,"cancelled_at": string | null,"client_key": string,"completed_at": string | null,"customer_id": string | null,"customer_name": string,"customer_phone": string,"delivery_fee": number,"delivery_zone_id": string | null,"discount_total": number,"expires_at": string | null,"fulfillment": string,"id": string,"landmark": string | null,"notes": string | null,"order_no": number,"paid_at": string | null,"payment_method": string,"payment_status": string,"pickup_at": string | null,"placed_at": string,"ready_at": string | null,"status": string,"subtotal": number,"tenant_id": string,"token": string,"total": number,"tracking_url": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_line"?: string | null,"business_date": string,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"client_key": string,"completed_at"?: string | null,"customer_id"?: string | null,"customer_name": string,"customer_phone": string,"delivery_fee"?: number,"delivery_zone_id"?: string | null,"discount_total"?: number,"expires_at"?: string | null,"fulfillment": string,"id"?: string,"landmark"?: string | null,"notes"?: string | null,"order_no": number,"paid_at"?: string | null,"payment_method": string,"payment_status"?: string,"pickup_at"?: string | null,"placed_at"?: string,"ready_at"?: string | null,"status"?: string,"subtotal": number,"tenant_id": string,"token": string,"total": number,"tracking_url"?: string | null
+                  }
+                  Update: {
+                    "address_line"?: string | null,"business_date"?: string,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"client_key"?: string,"completed_at"?: string | null,"customer_id"?: string | null,"customer_name"?: string,"customer_phone"?: string,"delivery_fee"?: number,"delivery_zone_id"?: string | null,"discount_total"?: number,"expires_at"?: string | null,"fulfillment"?: string,"id"?: string,"landmark"?: string | null,"notes"?: string | null,"order_no"?: number,"paid_at"?: string | null,"payment_method"?: string,"payment_status"?: string,"pickup_at"?: string | null,"placed_at"?: string,"ready_at"?: string | null,"status"?: string,"subtotal"?: number,"tenant_id"?: string,"token"?: string,"total"?: number,"tracking_url"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "orders_customer_id_tenant_id_fkey"
+      columns: ["customer_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "orders_delivery_zone_id_tenant_id_fkey"
+      columns: ["delivery_zone_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "delivery_zones"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "orders_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"payment_accounts": {
                   Row: {
                     "account_name": string,"account_number": string,"bank_name": string | null,"created_at": string,"id": string,"is_active": boolean,"method": string,"qr_path": string | null,"sort": number,"tenant_id": string
@@ -255,6 +417,32 @@ isOneToOne: false
                   Relationships: [
                     {
       foreignKeyName: "payment_accounts_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"payments": {
+                  Row: {
+                    "amount": number,"created_at": string,"id": string,"method": string,"order_id": string,"proof_path": string | null,"reference_no": string | null,"reference_norm": string | null,"reject_reason": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"status": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"created_at"?: string,"id"?: string,"method": string,"order_id": string,"proof_path"?: string | null,"reference_no"?: string | null,"reference_norm"?: string | null,"reject_reason"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: string,"tenant_id": string
+                  }
+                  Update: {
+                    "amount"?: number,"created_at"?: string,"id"?: string,"method"?: string,"order_id"?: string,"proof_path"?: string | null,"reference_no"?: string | null,"reference_norm"?: string | null,"reject_reason"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payments_order_id_tenant_id_fkey"
+      columns: ["order_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "payments_tenant_id_fkey"
       columns: ["tenant_id"]
 isOneToOne: false
       referencedRelation: "tenants"
@@ -353,8 +541,17 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"get_order":
+{ Args: { "p_token": string }; Returns: Json
+                           },
 "get_storefront":
 { Args: { "p_slug": string }; Returns: Json
+                           },
+"place_order":
+{ Args: { "p_payload": Json,"p_slug": string }; Returns: Json
+                           },
+"quote_order":
+{ Args: { "p_payload": Json,"p_slug": string }; Returns: Json
                            },
 "save_item":
 { Args: { "p_item": Json }; Returns: Json
@@ -383,6 +580,9 @@ isOneToOne: false
       } },
 "slug_available":
 { Args: { "p_slug": string }; Returns: boolean
+                           },
+"submit_payment_proof":
+{ Args: { "p_method": string,"p_proof_path": string,"p_reference_no": string,"p_token": string }; Returns: Json
                            }
           }
           Enums: {

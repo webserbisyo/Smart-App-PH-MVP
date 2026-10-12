@@ -166,6 +166,13 @@ describe('timelineSteps', () => {
     expect(steps[3]?.at).toBeNull();
   });
 
+  it('skips payment steps, which have no status', () => {
+    const withPayment = [...events, { toStatus: null, createdAt: '2026-10-11T01:06:00Z' }];
+    expect(timelineSteps({ status: 'ready', fulfillment: 'pickup', placedAt: PLACED_AT }, withPayment)).toEqual(
+      timelineSteps({ status: 'ready', fulfillment: 'pickup', placedAt: PLACED_AT }, events),
+    );
+  });
+
   it('shows a completed order as all done', () => {
     const steps = timelineSteps({ status: 'completed', fulfillment: 'walk_in', placedAt: PLACED_AT }, events);
     expect(steps.every((step) => step.state === 'done')).toBe(true);
