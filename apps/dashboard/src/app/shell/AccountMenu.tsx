@@ -1,16 +1,18 @@
+import { useSession, useSignOut } from '@smartapp/api';
 import { WORDS } from '@smartapp/core';
 import { Avatar, AvatarFallback } from '@smartapp/ui/components/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@smartapp/ui/components/dropdown-menu';
-import { IconMoon, IconSun } from '@smartapp/ui/icons';
+import { IconLogout, IconMoon, IconSun } from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 
 import { setTheme, useTheme } from './theme';
@@ -20,6 +22,9 @@ const words = WORDS.dashboard.shell;
 /** The account button and menu: who is signed in (P3b) and the light/dark switch, remembered on this device. */
 export function AccountMenu({ showName = false }: { showName?: boolean }) {
   const theme = useTheme();
+  const session = useSession();
+  const signOut = useSignOut();
+  const email = session.data?.email ?? null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -30,13 +35,13 @@ export function AccountMenu({ showName = false }: { showName?: boolean }) {
         )}
       >
         <Avatar className="size-8">
-          <AvatarFallback>?</AvatarFallback>
+          <AvatarFallback>{email ? email.charAt(0).toUpperCase() : '?'}</AvatarFallback>
         </Avatar>
         {showName ? <span className="min-w-0 flex-1 truncate text-sm font-medium group-data-[collapsible=icon]:hidden">{words.account}</span> : null}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side={showName ? 'top' : 'bottom'} className="min-w-56">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>{words.signedOut}</DropdownMenuLabel>
+          <DropdownMenuLabel className="truncate">{email ? WORDS.dashboard.auth.signedInAs(email) : words.signedOut}</DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -57,6 +62,17 @@ export function AccountMenu({ showName = false }: { showName?: boolean }) {
             </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="min-h-11"
+          disabled={signOut.isPending}
+          onClick={() => {
+            signOut.mutate();
+          }}
+        >
+          <IconLogout aria-hidden="true" />
+          {WORDS.dashboard.auth.logOut}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

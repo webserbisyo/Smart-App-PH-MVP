@@ -69,6 +69,9 @@ One line per decision. Newest phase at the bottom. The system paper wins if a li
 - P3-3: `create_my_shop` adds default hours from P5.1, when `business_hours` exists.
 - P3-4: `slug_available` and `private.try_uuid` were added beyond paper 7.4.
 - P3-4a: `packages/api/src/database.types.ts` is generated; only the lint rule `no-redundant-type-constituents` is off for that one file, because the generator writes `never | …` unions.
+- P3-5: One customer login for the storefront host; membership is per shop (a `customers` row, P5.5). One login can be both a customer and an owner.
+- P3-6: `packages/api` exposes plain functions (client first) and hooks; screens use only the names in `docs/api-surface.md`.
+- P3-7: Auth pages (log in, sign up, forgot password, setup, waiting, paused) are routes outside the shell, guarded by one pure `decideRoute`. The 6-digit code input (`CodeInput`) and `useCountdown` live in `packages/ui` because both apps use them.
 
 ## P4 screens (2026-10-11, approved by the founder)
 

@@ -26,3 +26,5 @@ export * from './color';
 export * from './vocab';
 export * from './words';
 export * from './modules';
+export * from './contracts/errors';
+export * from './slug';
