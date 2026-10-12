@@ -13,3 +13,11 @@ export function slugFromName(name: string): string {
     .slice(0, 40)
     .replace(/-+$/g, '');
 }
+
+/** Where every shop's storefront lives (decision: subdomains only, `shop.webserbisyo.com/<slug>`). */
+export const STOREFRONT_ORIGIN = 'https://shop.webserbisyo.com';
+
+/** A shop's public link. */
+export function shopUrl(slug: string): string {
+  return `${STOREFRONT_ORIGIN}/${slug}`;
+}

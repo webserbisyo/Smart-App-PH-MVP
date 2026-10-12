@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { contrastRatio, luminance, MIN_TEXT_CONTRAST, readableTextOn } from './color';
+import { contrastRatio, luminance, MIN_TEXT_CONTRAST, readableTextOn, THEME_PRESET_KEYS, THEME_PRESETS, themeContrastIssues } from './color';
 
 describe('luminance', () => {
   it('is 0 for black and 1 for white', () => {
@@ -42,5 +42,17 @@ describe('readableTextOn', () => {
     for (const hex of ['#2456d3', '#c90f1a', '#0a7e3a', '#f5af20', '#777777', '#5bafde']) {
       expect(contrastRatio(hex, readableTextOn(hex))).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
     }
+  });
+});
+
+describe('themeContrastIssues', () => {
+  it('passes every preset', () => {
+    for (const key of THEME_PRESET_KEYS) expect(themeContrastIssues(THEME_PRESETS[key])).toEqual([]);
+  });
+
+  it('flags a light button on a light page and a mid-tone colour', () => {
+    expect(themeContrastIssues({ primary: '#FFFFFF', secondary: '#F4F7FA', accent: '#FFE8A3' })).toEqual(['buttonsOnBackground']);
+    expect(themeContrastIssues({ primary: '#FFFFFF', secondary: '#F4F7FA', accent: '#7A7A7A' })).toEqual(['buttonsOnBackground']);
+    expect(themeContrastIssues({ primary: '#FFFFFF', secondary: '#F4F7FA', accent: '#2456D3' })).toEqual([]);
   });
 });

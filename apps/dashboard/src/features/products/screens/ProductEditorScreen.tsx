@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useBlocker, useLocation, useNavigate } from '@tanstack/react-router';
+import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -34,6 +34,7 @@ import { PageBody } from '@smartapp/ui/patterns/PageBody';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
+import { LeaveGuard } from '../../../app/LeaveGuard';
 import { useShop, useVocab } from '../../../app/shop';
 import { CategoryDialog } from '../components/CategoryDialog';
 import { CountInput } from '../components/CountInput';
@@ -109,12 +110,6 @@ function Editor({ item, categories, shopGroups, catalog }: EditorProps) {
   const name = useWatch({ control: form.control, name: 'name' });
   const busy = saving || deleteItem.isPending || setStatus.isPending;
   const disabled = busy || !online;
-
-  const blocker = useBlocker({
-    shouldBlockFn: () => form.formState.isDirty && !leaving.current,
-    enableBeforeUnload: () => form.formState.isDirty && !leaving.current,
-    withResolver: true,
-  });
 
   const leaveTo = (path: string) => {
     leaving.current = true;
@@ -363,22 +358,7 @@ function Editor({ item, categories, shopGroups, catalog }: EditorProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={blocker.status === 'blocked'}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{words.leaveTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{words.leaveText}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button variant="outline" onClick={() => blocker.reset?.()}>
-              {words.stay}
-            </Button>
-            <Button variant="destructive" onClick={() => blocker.proceed?.()}>
-              {words.leave}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+<LeaveGuard when={() => form.formState.isDirty && !leaving.current} />
     </PageBody>
   );
 }

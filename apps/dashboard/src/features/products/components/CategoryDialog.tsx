@@ -36,7 +36,7 @@ import { PhotoField } from '@smartapp/ui/patterns/PhotoField';
 
 import { useVocab } from '../../../app/shop';
 import { lastEmoji } from '../emoji';
-import { useMediaUpload } from '../hooks/useMediaUpload';
+import { useMediaUpload } from '../../../app/media';
 
 const words = WORDS.dashboard.products.category;
 const shared = WORDS.shared;

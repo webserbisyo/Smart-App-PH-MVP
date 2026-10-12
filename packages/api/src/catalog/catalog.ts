@@ -150,17 +150,13 @@ export async function saveOptionGroup(client: ApiClient, tenantId: string, draft
   const removal = await removed;
   throwIfError(removal.error);
 
-  const rows = group.options.map((option, index) => ({
-    ...(option.id === null ? {} : { id: option.id }),
-    tenant_id: tenantId,
-    group_id: groupId,
-    name: option.name.trim(),
-    price_delta: option.priceDelta,
-    is_sold_out: option.isSoldOut,
-    sort: index,
-  }));
-  if (rows.length > 0) {
-    const { error } = await client.from('options').upsert(rows);
+  // Saved choices are updated (owners may not rewrite their key columns) and new ones added.
+  const choices = group.options.map((option, index) => ({ id: option.id, name: option.name.trim(), price_delta: option.priceDelta, is_sold_out: option.isSoldOut, sort: index }));
+  const updates = choices.flatMap(({ id, ...values }) => (id === null ? [] : [client.from('options').update(values).eq('id', id).eq('group_id', groupId)]));
+  for (const { error } of await Promise.all(updates)) throwIfError(error);
+  const added = choices.flatMap(({ id, ...values }) => (id === null ? [{ ...values, tenant_id: tenantId, group_id: groupId }] : []));
+  if (added.length > 0) {
+    const { error } = await client.from('options').insert(added);
     throwIfError(error);
   }
 

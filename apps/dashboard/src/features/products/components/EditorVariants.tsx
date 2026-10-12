@@ -10,7 +10,8 @@ import { Switch } from '@smartapp/ui/components/switch';
 import { IconPlus, IconTrash } from '@smartapp/ui/icons';
 import { PesoField } from '@smartapp/ui/patterns/PesoField';
 
-import { emptyVariant, row } from '../form';
+import { row } from '../../../app/form-path';
+import { emptyVariant } from '../form';
 import type { ProductForm } from '../form';
 
 import { CountInput } from './CountInput';

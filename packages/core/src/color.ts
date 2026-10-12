@@ -36,3 +36,38 @@ export function readableTextOn(hex: string): TextColor {
   if (onBlack >= MIN_TEXT_CONTRAST) return '#000000';
   return onWhite >= onBlack ? '#ffffff' : '#000000';
 }
+
+/** A shop's three colours: 60 background, 30 cards and bars, 10 buttons and highlights (`#RRGGBB`). */
+export interface ThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+}
+
+export const THEME_PRESET_KEYS = ['uling', 'kape', 'ube', 'dagat'] as const;
+export type ThemePresetKey = (typeof THEME_PRESET_KEYS)[number];
+
+/** Ready-made colour sets for Shop look (ux-plan 5.13); each passes `themeContrastIssues`. */
+export const THEME_PRESETS: Readonly<Record<ThemePresetKey, ThemeColors>> = {
+  uling: { primary: '#1F1F1F', secondary: '#2C2C2C', accent: '#F5A524' },
+  kape: { primary: '#FBF6F0', secondary: '#EFE3D3', accent: '#6F4E37' },
+  ube: { primary: '#FAF7FD', secondary: '#EDE5F7', accent: '#6B3FA0' },
+  dagat: { primary: '#F3F9FC', secondary: '#DDEFF7', accent: '#0B6E99' },
+};
+
+/** Which part of a theme is hard to read. */
+export type ContrastIssue = 'background' | 'cards' | 'buttons' | 'buttonsOnBackground';
+
+/**
+ * The places where a theme falls below 4.5:1: text on each colour (black or white, whichever reads better) and the
+ * buttons against the background (a light button on a light page disappears).
+ */
+export function themeContrastIssues(colors: ThemeColors): ContrastIssue[] {
+  const issues: ContrastIssue[] = [];
+  const textPasses = (hex: string) => contrastRatio(hex, readableTextOn(hex)) >= MIN_TEXT_CONTRAST;
+  if (!textPasses(colors.primary)) issues.push('background');
+  if (!textPasses(colors.secondary)) issues.push('cards');
+  if (!textPasses(colors.accent)) issues.push('buttons');
+  if (contrastRatio(colors.accent, colors.primary) < MIN_TEXT_CONTRAST) issues.push('buttonsOnBackground');
+  return issues;
+}

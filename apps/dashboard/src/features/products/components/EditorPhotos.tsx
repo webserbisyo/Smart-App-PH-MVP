@@ -8,7 +8,7 @@ import { IMAGE_SIZES } from '@smartapp/ui/lib/compress-image';
 import { PhotoField } from '@smartapp/ui/patterns/PhotoField';
 
 import { MAX_PHOTOS } from '../form';
-import { useMediaUpload } from '../hooks/useMediaUpload';
+import { useMediaUpload } from '../../../app/media';
 
 const words = WORDS.dashboard.products.editor;
 

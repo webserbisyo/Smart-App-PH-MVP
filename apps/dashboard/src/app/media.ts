@@ -2,7 +2,7 @@ import { uploadShopMedia, useApiClient } from '@smartapp/api';
 import type { MediaKind } from '@smartapp/core';
 import { compressImage, IMAGE_SIZES } from '@smartapp/ui/lib/compress-image';
 
-import { useShop } from '../../../app/shop';
+import { useShop } from './shop';
 
 /**
  * The `upload` a `PhotoField` needs: the photo it already made smaller, plus the small list copy made here,
