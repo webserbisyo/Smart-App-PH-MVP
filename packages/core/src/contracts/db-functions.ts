@@ -9,6 +9,7 @@ import { CatalogItem } from '../schemas/catalog-item';
 import { BusinessType, CashMethod, LineProblem, OrderStatus, PaymentStatus, SortKind, TransferMethod } from '../schemas/enums';
 import { ItemDraft } from '../schemas/item-draft';
 import { Item, ItemPhoto } from '../schemas/item';
+import { LoyaltyEntry } from '../schemas/loyalty-entry';
 import { OptionGroup } from '../schemas/option-group';
 import { Order } from '../schemas/order';
 import { OrderEvent } from '../schemas/order-event';
@@ -106,12 +107,17 @@ export const ShopOrderChange = z.object({
 });
 export type ShopOrderChange = z.infer<typeof ShopOrderChange>;
 
+/**
+ * A member's own view of a shop: their details (never the owner's notes or tags), stamps, the active stamp card or
+ * null, the latest 20 orders and stamp movements (newest first), and saved addresses.
+ */
 export const MemberAccount = z.object({
   customer: Customer,
   stamps: z.int().nonnegative(),
   stampRule: StampRule.nullable(),
   rewardReady: z.boolean(),
   orders: z.array(Order),
+  history: z.array(LoyaltyEntry),
   addresses: z.array(CustomerAddress),
 });
 export type MemberAccount = z.infer<typeof MemberAccount>;
@@ -241,15 +247,24 @@ export const dbFunctions = {
     input: z.strictObject({ orderId: Uuid, reason: z.string().trim().min(1).max(200) }),
     output: Order,
   },
-  /** Signed-in customer: links the customer row (by phone or email) to the login and sets memberSince. */
+  /**
+   * Signed-in customer: joins the shop. A guest row with this phone is linked only with proof: orderToken is an order
+   * of this shop placed with this phone, or the row's email is the login's verified email (decision P5-10). The first
+   * join with the stamp card on adds 1 welcome stamp (P5-16). Joining again returns the same account.
+   */
   join_as_member: {
-    input: z.strictObject({ slug: Slug, name: z.string().trim().min(1).max(80), phone: PhPhone }),
+    input: z.strictObject({
+      slug: Slug,
+      name: z.string().trim().min(1).max(80),
+      phone: PhPhone,
+      orderToken: z.string().min(8).nullable(),
+    }),
     output: MemberAccount,
   },
-  /** Signed-in customer: stamps, orders and saved addresses in this shop. */
+  /** Signed-in customer: stamps, orders and saved addresses in this shop; null when not a member here. */
   get_my_account: {
     input: z.strictObject({ slug: Slug }),
-    output: MemberAccount,
+    output: MemberAccount.nullable(),
   },
   /** Owner: Home numbers for today (Manila date). */
   get_dashboard_today: {

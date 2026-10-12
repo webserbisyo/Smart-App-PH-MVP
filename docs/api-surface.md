@@ -143,9 +143,9 @@ Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`
 
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
-| `useJoinAsMember()` | mutation | `{ slug, name, phone, orderToken }` | `MemberAccount`; `orderToken` is any token this device holds for the shop (links past guest orders). A first join on a shop with an active stamp card includes 1 welcome stamp (decision P5-16). Joining again returns the same account, not an error |
-| `useMyAccount(slug)` | query | | `MemberAccount \| null` (null: signed in but not a member here) |
-| `useSaveMyAddress()`, `useRemoveMyAddress()` | mutation | `CustomerAddress` | |
+| `useJoinAsMember()` | mutation | `{ slug, name, phone, orderToken }` | `MemberAccount`; `orderToken` is any token this device holds for the shop (links past guest orders); `null` sends the newest one this device holds. A first join on a shop with an active stamp card includes 1 welcome stamp (decision P5-16). Joining again returns the same account, not an error |
+| `useMyAccount(slug)` | query | | `MemberAccount \| null` (null: signed in but not a member here; waits while signed out). `MemberAccount.history` is the latest 20 stamp movements |
+| `useSaveMyAddress(slug)`, `useRemoveMyAddress(slug)` | mutation | `AddressInput` (`CustomerAddress` with `id: null` to add), address id | refresh `useMyAccount(slug)` |
 | `useStampRule(tenantId)`, `useSaveStampRule()` | query, mutation | `StampRule` | dashboard |
 
 Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unavailable` comes from `useQuote` and `usePlaceOrder` when `useReward` is set.

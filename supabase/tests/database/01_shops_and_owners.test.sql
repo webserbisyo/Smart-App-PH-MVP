@@ -238,12 +238,12 @@ reset role;
 
 -- Nothing in private is executable by clients except the membership helpers, the slug check and, from P5.1, the
 -- path helper (storage policies) and the CatalogItem builder (save_item runs as the caller), and from P5.3 the
--- payment-proof upload check, which anon runs too.
+-- payment-proof upload check, which anon runs too, and from P5.5 the member's own-rows helper (policies).
 select is(
   (select array_agg(p.proname::text order by p.proname)
    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'private' and has_function_privilege('authenticated', p.oid, 'execute')),
-  array['catalog_item_json', 'is_active_shop_owner', 'is_reserved_slug', 'is_shop_member', 'order_accepts_proof', 'try_uuid'],
+  array['catalog_item_json', 'is_active_shop_owner', 'is_reserved_slug', 'is_shop_member', 'my_customer_ids', 'order_accepts_proof', 'try_uuid'],
   'authenticated executes only the listed private helpers'
 );
 select is(

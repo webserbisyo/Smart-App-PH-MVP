@@ -111,6 +111,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"customer_addresses": {
+                  Row: {
+                    "address_line": string,"created_at": string,"customer_id": string,"id": string,"is_default": boolean,"label": string,"landmark": string | null,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_line": string,"created_at"?: string,"customer_id": string,"id"?: string,"is_default"?: boolean,"label"?: string,"landmark"?: string | null,"tenant_id": string
+                  }
+                  Update: {
+                    "address_line"?: string,"created_at"?: string,"customer_id"?: string,"id"?: string,"is_default"?: boolean,"label"?: string,"landmark"?: string | null,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "customer_addresses_customer_id_tenant_id_fkey"
+      columns: ["customer_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "customer_addresses_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"customers": {
                   Row: {
                     "created_at": string,"email": string | null,"id": string,"last_order_at": string | null,"member_since": string | null,"name": string,"notes": string | null,"order_count": number,"phone": string,"tags": (string)[],"tenant_id": string,"total_spent": number,"user_id": string | null
@@ -257,6 +283,58 @@ isOneToOne: false
       foreignKeyName: "items_tenant_id_fkey"
       columns: ["tenant_id"]
 isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"loyalty_ledger": {
+                  Row: {
+                    "created_at": string,"customer_id": string,"delta": number,"id": string,"order_id": string | null,"reason": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"customer_id": string,"delta": number,"id"?: string,"order_id"?: string | null,"reason": string,"tenant_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"customer_id"?: string,"delta"?: number,"id"?: string,"order_id"?: string | null,"reason"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "loyalty_ledger_customer_id_tenant_id_fkey"
+      columns: ["customer_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "loyalty_ledger_order_id_tenant_id_fkey"
+      columns: ["order_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "loyalty_ledger_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"loyalty_rules": {
+                  Row: {
+                    "is_active": boolean,"min_order_total": number,"reward_amount": number,"reward_label": string,"stamps_needed": number,"tenant_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "is_active"?: boolean,"min_order_total"?: number,"reward_amount"?: number,"reward_label"?: string,"stamps_needed"?: number,"tenant_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "is_active"?: boolean,"min_order_total"?: number,"reward_amount"?: number,"reward_label"?: string,"stamps_needed"?: number,"tenant_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "loyalty_rules_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: true
       referencedRelation: "tenants"
       referencedColumns: ["id"]
     }
@@ -540,7 +618,27 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "customer_stamp_balances": {
+                  Row: {
+                    "customer_id": string | null,"stamps": number | null,"tenant_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "loyalty_ledger_customer_id_tenant_id_fkey"
+      columns: ["customer_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "loyalty_ledger_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "advance_order":
@@ -567,11 +665,17 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"get_my_account":
+{ Args: { "p_slug": string }; Returns: Json
+                           },
 "get_order":
 { Args: { "p_token": string }; Returns: Json
                            },
 "get_storefront":
 { Args: { "p_slug": string }; Returns: Json
+                           },
+"join_as_member":
+{ Args: { "p_name": string,"p_order_token"?: string,"p_phone": string,"p_slug": string }; Returns: Json
                            },
 "place_order":
 { Args: { "p_payload": Json,"p_slug": string }; Returns: Json

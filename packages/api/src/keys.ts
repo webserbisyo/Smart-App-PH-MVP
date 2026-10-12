@@ -26,4 +26,6 @@ export const qk = {
   orderDetail: (orderId: string) => ['order-detail', orderId] as const,
   proofUrl: (path: string) => ['proof-url', path] as const,
   dashboardToday: (tenantId: string) => ['dashboard-today', tenantId] as const,
+  myAccount: (slug: string) => ['my-account', slug] as const,
+  stampRule: (tenantId: string) => ['stamp-rule', tenantId] as const,
 };

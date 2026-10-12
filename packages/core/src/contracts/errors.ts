@@ -41,6 +41,9 @@ export const API_ERROR_CODES = [
   'not_paid',
   'payment_not_pending',
   'already_paid',
+  // members (P5.5)
+  'phone_needs_order',
+  'phone_in_use',
   // auth
   'invalid_code',
   'code_expired',

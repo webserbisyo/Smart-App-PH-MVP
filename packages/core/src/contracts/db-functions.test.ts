@@ -37,6 +37,7 @@ const memberAccount = {
   stampRule: sample.stampRule,
   rewardReady: false,
   orders: [sample.order],
+  history: [sample.loyaltyEntry, { ...sample.loyaltyEntry, orderId: null, reason: 'welcome' }],
   addresses: [sample.customerAddress],
 };
 
@@ -144,7 +145,7 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
     output: { ...sample.order, status: 'cancelled', cancelReason: 'Customer asked to cancel', cancelledAt: sample.order.placedAt },
   },
   join_as_member: {
-    input: { slug: 'juans-cafe', name: 'Maria Santos', phone: '+639171234567' },
+    input: { slug: 'juans-cafe', name: 'Maria Santos', phone: '+639171234567', orderToken: 'pvMJIPoFaPcsBDVxhwb7gA' },
     output: memberAccount,
   },
   get_my_account: {
@@ -214,6 +215,17 @@ describe('database function contracts', () => {
   it('review_payment needs a reason to reject', () => {
     const input = { paymentId: ids.payment, approve: false, rejectReason: null };
     expect(dbFunctions.review_payment.input.safeParse(input).success).toBe(false);
+  });
+
+  it('get_my_account is null for a signed-in customer who is not a member', () => {
+    expect(dbFunctions.get_my_account.output.safeParse(null).success).toBe(true);
+  });
+
+  it('join_as_member takes a receipt token or none, and a welcome stamp parses', () => {
+    const input = { slug: 'juans-cafe', name: 'Maria Santos', phone: '+639171234567', orderToken: null };
+    expect(dbFunctions.join_as_member.input.safeParse(input).success).toBe(true);
+    expect(dbFunctions.join_as_member.input.safeParse({ ...input, orderToken: 'short' }).success).toBe(false);
+    expect(dbFunctions.join_as_member.output.parse(memberAccount).history[1]?.reason).toBe('welcome');
   });
 
   it('advance_order cannot jump to cancelled or expired', () => {
