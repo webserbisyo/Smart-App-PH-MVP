@@ -15,3 +15,6 @@ export * from './catalog/catalog';
 export * from './catalog/hooks';
 export * from './storefront/storefront';
 export * from './storefront/hooks';
+export * from './orders/orders';
+export * from './orders/hooks';
+export { MY_ORDERS_MAX, rememberMyOrder } from './orders/my-orders';

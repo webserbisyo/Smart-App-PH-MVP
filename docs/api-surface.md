@@ -106,9 +106,9 @@ Messenger text (`messengerOrderText(receipt, shopLink)`) is also core, built by 
 
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
-| `useQuote(slug, payload)` | query | `OrderPayload` (choices only) | `Quote`; `problems[]` by `lineIndex` for line issues; shop-level issues are errors |
-| `usePlaceOrder()` | mutation | `{ slug, payload }` | `{ orderId, orderNo, token }`; safe to retry with the same `clientKey` |
-| `useOrder(token)` | query | token | `OrderReceipt` (`qk.order(token)`) |
+| `useQuote(slug, payload)` | query | `QuotePayload` (choices only), or `null` to wait | `Quote`; `problems[]` (`lineIndex`, `code`, `variantId`) for line issues; shop-level issues are errors |
+| `usePlaceOrder()` | mutation | `{ slug, payload }` (`OrderInput`: `OrderPayload` without `clientKey`) | `{ orderId, orderNo, token }`; the hook keeps one `clientKey` per checkout, so a retry is safe |
+| `useOrder(token)` | query | token | `OrderReceipt`, or `null` for an unknown link (`qk.order(token)`) |
 | `useOrderLive(token)` | effect hook | token | joins public channel `order:<token>`, refetches `useOrder` on each change; polls every 15 s while not joined |
 | `uploadPaymentProof(client, { tenantId, token }, blob)` | function | | `{ path }` (`<tenantId>/<token>/<uuid>.webp`) |
 | `useSubmitPaymentProof()` | mutation | `{ token, method, referenceNo, proofPath }` | `Payment` |
@@ -117,7 +117,7 @@ Messenger text (`messengerOrderText(receipt, shopLink)`) is also core, built by 
 Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavailable`, `payment_unavailable`,
 `cod_not_allowed`, `pickup_time_invalid`, `zone_required`, `zone_invalid`, `item_unavailable`, `out_of_stock`,
 `invalid_options`, `reward_unavailable`, `rate_limited`, `order_not_payable`, `duplicate_reference`,
-`proof_missing`, `too_many_proofs`, `invalid`.
+`proof_missing`, `too_many_proofs`, `not_found`, `invalid`.
 
 ## Slice 4: orders board (P5.4, dashboard)
 
