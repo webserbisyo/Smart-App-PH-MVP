@@ -21,10 +21,55 @@ export const WORDS = {
       empty: 'Your cart is empty.',
       /** "Cart · 0 items ₱0". */
       bar: (items: number, total: string) => `Cart · ${String(items)} ${items === 1 ? 'item' : 'items'} ${total}`,
+      checkout: (total: string) => `Checkout · ${total}`,
+      remove: (name: string) => `Remove ${name}`,
+      unavailable: 'No longer available',
+      /** A line whose item the shop removed. */
+      gone: 'Removed item',
+      removeUnavailable: 'Remove the items that are no longer available to check out.',
+      seeCatalog: (catalog: string) => `See the ${catalog.toLowerCase()}`,
+    },
+    /** Why ordering is off: the alert under the shop header, and the Add buttons. */
+    status: {
+      closed: "We're closed right now.",
+      closedUntil: (when: string) => `We're closed. Orders open ${when}.`,
+      paused: "We're not taking orders right now. Please check back soon.",
+      closedShort: 'Closed now',
+      pausedShort: 'Orders paused',
+    },
+    home: {
+      members: (count: number) => `${String(count)} ${count === 1 ? 'member' : 'members'}`,
+      join: 'Join for stamps',
+      messenger: 'Message us on Messenger',
+      categories: 'Categories',
+      bestSellers: 'Best sellers',
+    },
+    menu: {
+      search: (catalog: string) => `Search the ${catalog.toLowerCase()}`,
+      noMatch: (query: string) => `No match for '${query}'`,
+      clear: 'Clear',
+      empty: (catalog: string) => `The ${catalog.toLowerCase()} is empty for now.`,
+      other: 'More',
+    },
+    item: {
+      size: 'Size',
+      chooseSize: 'Choose a size',
+      choose: (group: string) => `Choose ${group.toLowerCase()}`,
+      required: 'Required',
+      optional: 'Optional',
+      /** The rule of an add-on group: "Pick 1", "Up to 2", "Pick 1 to 3". */
+      rule: (min: number, max: number) =>
+        min === max ? `Pick ${String(min)}` : min === 0 ? `Up to ${String(max)}` : `Pick ${String(min)} to ${String(max)}`,
+      note: 'Note',
+      notePlaceholder: 'Anything we should know? (optional)',
+      add: (total: string) => `Add · ${total}`,
+      added: (name: string) => `Added ${name}`,
+      photos: (name: string) => `Photos of ${name}`,
     },
     empty: {
       home: 'Welcome! This page fills in soon.',
       catalog: (catalog: string) => `The ${catalog.toLowerCase()} will show up here.`,
+      checkout: 'Checkout comes in the next update. Your cart is saved.',
       orders: 'Your orders will show up here.',
       account: 'Your account and member card will show up here.',
     },
@@ -499,6 +544,10 @@ export const WORDS = {
       openUntil: (time: string) => `Open until ${time}`,
       opensAt: (time: string) => `Opens ${time}`,
       closedOpensAt: (time: string) => `Closed, opens ${time}`,
+      /** When the next opening is: "7:00 AM", "7:00 AM tomorrow", "Sat 7:00 AM". */
+      today: (time: string) => time,
+      tomorrow: (time: string) => `${time} tomorrow`,
+      onDay: (day: string, time: string) => `${day} ${time}`,
     },
     share: {
       title: 'Share your shop',

@@ -2,16 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 
-import { WORDS } from '@smartapp/core';
+import { formatPeso, WORDS } from '@smartapp/core';
 import { Button } from '@smartapp/ui/components/button';
-import {
-  ResponsiveDialog,
-  ResponsiveDialogContent,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-} from '@smartapp/ui/components/responsive-dialog';
 import {
   IconBuildingStore,
   IconHome,
@@ -27,6 +20,8 @@ import { cn } from '@smartapp/ui/lib/utils';
 import { CartBar } from '@smartapp/ui/patterns/CartBar';
 import { StoreTabBar } from '@smartapp/ui/patterns/StoreTabBar';
 
+import { useShop } from './ShopProvider';
+
 const words = WORDS.storefront;
 
 export interface StoreNavProps {
@@ -36,17 +31,15 @@ export interface StoreNavProps {
   catalogLabel: string;
 }
 
-/** Cart summary until the cart exists (P4.2). */
-const CART_TEXT = words.cart.bar(0, '₱0');
-
 /**
  * Storefront nav, one per device: phones and tablets get the bottom tab bar with the cart bar above it;
- * desktops (from 1024 px) get the top navigation. The cart is one overlay: a bottom sheet on phones and a drawer
- * on the right on wider screens.
+ * desktops (from 1024 px) get the top navigation. Both open the one cart sheet (ShopProvider). The cart bar
+ * bumps when an item is added.
  */
 export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
   const pathname = usePathname();
-  const [cartOpen, setCartOpen] = useState(false);
+  const { cart, added, openCart } = useShop();
+  const cartText = words.cart.bar(cart.count, formatPeso(cart.subtotal));
   const base = `/${slug}`;
   const entries = [
     { key: 'home', href: base, label: words.nav.home, icon: <IconHome />, activeIcon: <IconHomeFilled /> },
@@ -83,31 +76,20 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
           ))}
         </nav>
         <Button
-          onClick={() => {
-            setCartOpen(true);
-          }} aria-label={words.cart.open} className="bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80">
+          key={added}
+          onClick={openCart}
+          aria-label={`${words.cart.open}: ${cartText}`}
+          className={cn('bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80', added > 0 && 'bump')}
+        >
           <IconShoppingBag aria-hidden="true" />
-          <span className="tabular">{CART_TEXT}</span>
+          <span className="tabular">{cartText}</span>
         </Button>
       </header>
       {/* Phones and tablets: bottom tab bar with the cart bar floating above it. */}
       <div className="lg:hidden">
-        <CartBar
-          text={CART_TEXT}
-          onClick={() => {
-            setCartOpen(true);
-          }} aria-label={`${words.cart.open}: ${CART_TEXT}`} />
+        <CartBar key={added} text={cartText} onClick={openCart} aria-label={`${words.cart.open}: ${cartText}`} className={cn(added > 0 && 'bump')} />
         <StoreTabBar label={words.nav.label} items={items} />
       </div>
-
-      <ResponsiveDialog open={cartOpen} onOpenChange={setCartOpen} desktop="right">
-        <ResponsiveDialogContent>
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle>{words.cart.title}</ResponsiveDialogTitle>
-          </ResponsiveDialogHeader>
-          <p className="px-4 pb-6 text-muted-foreground">{words.cart.empty}</p>
-        </ResponsiveDialogContent>
-      </ResponsiveDialog>
     </>
   );
 }
