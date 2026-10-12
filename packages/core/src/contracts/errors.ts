@@ -12,6 +12,9 @@ export const API_ERROR_CODES = [
   'slug_invalid',
   'slug_reserved',
   'slug_taken',
+  'variant_required',
+  'category_not_empty',
+  'not_allowed',
   // auth
   'invalid_code',
   'code_expired',

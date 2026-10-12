@@ -117,3 +117,21 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   `welcome`, once per member per shop; built in P5.5). Why: a card that starts with a stamp already filled gets
   finished faster, and it gives guests a reason to join from the receipt (screens thread decision F4, approved by
   the founder 2026-10-11).
+
+## Phase 5
+
+- P5-1 (P5.1, 2026-10-12): Composite foreign keys keep every child row in its parent's shop: each parent has
+  `unique (id, tenant_id)` and each child points at `(parent_id, tenant_id)`. RLS checks the row's own `tenant_id`;
+  the key makes sure the parent is in the same shop. Update grants never include `tenant_id` or a parent key.
+- P5-2: Stock changes only through `set_stock` and the order functions; prices and names are plain owner edits.
+  Clients cannot write `item_variants.stock_on_hand` on insert or update.
+- P5-3: Images are compressed in the browser to two WebP sizes; `shop-media` paths are immutable
+  (`<tenantId>/<folder>/<uuid>.webp` and `-thumb.webp`) and cached for a year. Folders: `logos`, `covers`, `items`,
+  `categories`, `qr`.
+- P5-17: `shop-media` has an owner-only select policy on the shop's own folder. Why: Supabase Storage deletes a file
+  only when the caller can also select it, so without it removing a photo would silently keep the file; public
+  URLs still need no policy, and nobody can list another shop's files.
+- P5-18: `private.is_open_now` takes an optional time (`p_at`, default now) so the database tests can run the same
+  open/closed cases as `openState` in core (`packages/core/src/test/open-cases.ts`). `set_stock` takes a count of 0
+  or more; to stop counting, the item's `trackStock` is turned off.
+

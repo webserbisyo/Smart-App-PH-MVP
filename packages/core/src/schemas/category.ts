@@ -23,3 +23,7 @@ export const Category = z.object({
   icon: CategoryIcon.nullable(),
 });
 export type Category = z.infer<typeof Category>;
+
+/** A category as the editor saves it; `id` is null for a new one (it goes to the end of the list). */
+export const CategoryDraft = Category.omit({ tenantId: true, sort: true }).extend({ id: Uuid.nullable() });
+export type CategoryDraft = z.infer<typeof CategoryDraft>;

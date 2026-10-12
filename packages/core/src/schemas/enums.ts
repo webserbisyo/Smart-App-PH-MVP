@@ -58,3 +58,13 @@ export type LoyaltyReason = z.infer<typeof LoyaltyReason>;
 export const MEMBER_ROLES = ['owner'] as const;
 export const MemberRole = z.enum(MEMBER_ROLES);
 export type MemberRole = z.infer<typeof MemberRole>;
+
+/** What the owner can drag to sort (`save_sort_order`). */
+export const SORT_KINDS = ['categories', 'items', 'variants', 'photos', 'paymentAccounts', 'deliveryZones'] as const;
+export const SortKind = z.enum(SORT_KINDS);
+export type SortKind = z.infer<typeof SortKind>;
+
+/** What a shop-media upload is for; each has its own folder under the shop's id. */
+export const MEDIA_KINDS = ['logo', 'cover', 'item', 'category', 'qr'] as const;
+export const MediaKind = z.enum(MEDIA_KINDS);
+export type MediaKind = z.infer<typeof MediaKind>;

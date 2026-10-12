@@ -5,7 +5,9 @@ import { Category } from '../schemas/category';
 import { Customer } from '../schemas/customer';
 import { CustomerAddress } from '../schemas/customer-address';
 import { DeliveryZone } from '../schemas/delivery-zone';
-import { BusinessType, CashMethod, OrderStatus, TransferMethod } from '../schemas/enums';
+import { CatalogItem } from '../schemas/catalog-item';
+import { BusinessType, CashMethod, OrderStatus, SortKind, TransferMethod } from '../schemas/enums';
+import { ItemDraft } from '../schemas/item-draft';
 import { Item, ItemPhoto } from '../schemas/item';
 import { OptionGroup } from '../schemas/option-group';
 import { Order } from '../schemas/order';
@@ -125,9 +127,9 @@ const OwnerShop = { tenantId: Uuid };
 
 export const dbFunctions = {
   /**
-   * Owner (shop setup): creates the tenant (pending), membership and settings. Default hours come with
-   * P5.1, whose migration replaces this function (decision P3-3). Errors: not_signed_in, already_has_shop,
-   * invalid, slug_invalid, slug_reserved, slug_taken.
+   * Owner (shop setup): creates the tenant (pending), membership, settings and default hours (every day 08:00 to
+   * 20:00, added by P5.1, decision P3-3). Errors: not_signed_in, already_has_shop, invalid, slug_invalid,
+   * slug_reserved, slug_taken.
    */
   create_my_shop: {
     input: z.strictObject({ businessType: BusinessType, name: z.string().trim().min(1).max(80), slug: Slug }),
@@ -137,6 +139,24 @@ export const dbFunctions = {
   slug_available: {
     input: z.strictObject({ slug: z.string() }),
     output: z.boolean(),
+  },
+  /**
+   * Owner of an active shop (P5.1, security invoker): saves the item, its variants (at least one; the ones left out
+   * are archived), photo paths and option group links in one transaction. Errors: invalid, variant_required.
+   */
+  save_item: {
+    input: z.strictObject({ ...ItemDraft.shape, tenantId: Uuid }),
+    output: CatalogItem,
+  },
+  /** Owner of an active shop (P5.1): sets a variant's stock; above 0 clears sold out. Errors: not_allowed, invalid. */
+  set_stock: {
+    input: z.strictObject({ variantId: Uuid, stockOnHand: z.int().nonnegative() }),
+    output: Variant,
+  },
+  /** Owner of an active shop (P5.1, security invoker): rewrites sort for rows of one shop in the given order. */
+  save_sort_order: {
+    input: z.strictObject({ kind: SortKind, ids: z.array(Uuid).min(1) }),
+    output: z.null(),
   },
   /** Anyone: shop info, open status, catalog, payment accounts, zones and members count. */
   get_storefront: {

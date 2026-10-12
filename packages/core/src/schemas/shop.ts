@@ -54,3 +54,7 @@ export const Shop = Tenant.extend({
   settings: ShopSettings,
 });
 export type Shop = z.infer<typeof Shop>;
+
+/** The settings an owner changes (every field but the shop id). */
+export const ShopSettingsPatch = ShopSettings.omit({ tenantId: true }).partial();
+export type ShopSettingsPatch = z.infer<typeof ShopSettingsPatch>;

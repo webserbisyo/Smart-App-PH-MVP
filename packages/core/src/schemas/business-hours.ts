@@ -22,3 +22,10 @@ export const Closure = z.object({
   note: z.string().nullable(),
 });
 export type Closure = z.infer<typeof Closure>;
+
+/** One day's hours as Settings saves them (the whole week is replaced at once). */
+export const DayHours = BusinessHours.pick({ weekday: true, opensAt: true, closesAt: true }).refine(
+  (day) => day.opensAt !== day.closesAt,
+  { message: 'Opening and closing times must differ.', path: ['closesAt'] },
+);
+export type DayHours = z.infer<typeof DayHours>;
