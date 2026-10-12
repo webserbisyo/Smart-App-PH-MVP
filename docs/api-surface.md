@@ -125,9 +125,9 @@ Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavaila
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
 | `useOrders(tenantId, scope)` | query | `scope`: `{ kind: 'open' } \| { kind: 'day', date }` | `BoardOrder[]` (order + lines) |
-| `useOrderDetail(orderId)` | query | | `OrderReceipt` |
+| `useOrderDetail(orderId)` | query | | `OrderReceipt \| null` (with the normalised reference; `null` when not the owner's) |
 | `useShopOrdersLive(tenantId, { onNewOrder, onToVerify })` | effect hook | | private channel `shop:<tenantId>`; invalidates `qk.orders` and `qk.dashboardToday`; the callbacks drive the chime; polls every 15 s while not joined |
-| `useProofUrl(path)` | query | | signed URL, 5 minutes |
+| `useProofUrl(path)` | query | | signed URL, 5 minutes (renewed every 4) |
 | `useReviewPayment()` | mutation | `{ paymentId, approve, rejectReason }` | `Payment` |
 | `useRecordPayment()` | mutation | `{ orderId, method }` | `Payment` |
 | `useAdvanceOrder()` | mutation | `{ orderId, toStatus, trackingUrl }` | `Order` (optimistic) |
@@ -137,7 +137,7 @@ Core rules the board uses (`packages/core/src/order-rules.ts`: P4.0 copies them,
 `nextActions(order, settings)` (the main step first: `verify_payment`, `mark_paid`, `start`, `mark_ready`, `out_for_delivery`, `complete`,
 ), `canCancel(order)`, `timelineSteps(order, events)`, `isLate(order, now)`. A core test proves every open order can be finished. Steps only move forward: there is no Undo.
 
-Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`, `not_paid`, `payment_not_pending`, `already_paid`.
+Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`, `not_paid`, `payment_not_pending`, `already_paid`; also `invalid`, `payment_unavailable` (`cod` on a non-delivery order, `cash` on delivery) and `order_not_payable` (a cancelled or expired order).
 
 ## Slice 5: members and stamps (P5.5)
 

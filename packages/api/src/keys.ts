@@ -1,5 +1,7 @@
 import type { QuotePayload } from '@smartapp/core';
 
+import type { OrderScope } from './board/board';
+
 // Every query key, in one place. Screens never build keys by hand (docs/api-surface.md).
 export const qk = {
   session: ['session'] as const,
@@ -16,4 +18,12 @@ export const qk = {
   storefront: (slug: string) => ['storefront', slug] as const,
   quote: (slug: string, payload: QuotePayload | null) => ['quote', slug, payload] as const,
   order: (token: string) => ['order', token] as const,
+  /** Every board list of a shop; invalidate this to refresh them all. */
+  orders: (tenantId: string) => ['orders', tenantId] as const,
+  orderList: (tenantId: string, scope: OrderScope) => ['orders', tenantId, scope] as const,
+  /** Every board list of every shop (optimistic steps). */
+  allOrders: ['orders'] as const,
+  orderDetail: (orderId: string) => ['order-detail', orderId] as const,
+  proofUrl: (path: string) => ['proof-url', path] as const,
+  dashboardToday: (tenantId: string) => ['dashboard-today', tenantId] as const,
 };

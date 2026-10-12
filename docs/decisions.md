@@ -200,3 +200,26 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   reuses it on a retry and starts a new one after a success. `useQuote(slug, payload | null)` waits while the
   payload is null. `useMyOrderTokens` keeps the last 20 receipt tokens per shop in localStorage
   (`smartapp.orders.<slug>`).
+- P5-8 (P5.4, 2026-10-12): Completing an order requires it to be paid; the board shows Mark paid first for unpaid
+  cash and COD orders.
+- P5-9: `packages/core` `nextActions` and the SQL transitions share one table of test cases
+  (`packages/core/src/test/transition-cases.ts`, 32 rows). Vitest checks each row against `nextActions`; the pgTAP
+  test `05_owner_orders.test.sql` runs the same rows against `advance_order`, `record_payment` and `review_payment`,
+  and a Vitest check fails if the two lists differ.
+- P5-27: Cancelling or expiring an order adds back exactly what each line took, for lines whose variant still exists
+  and whose item still counts stock (`stock_on_hand` not null). If the owner recounted in between, the return goes on
+  top of the new count. Only open orders end this way, so stock comes back once.
+- P5-28: `record_payment` takes `cash` for walk-in and pickup and `cod` for delivery (`payment_unavailable`
+  otherwise); a GCash, Maya or bank order paid by hand takes that method. Starting an unpaid GCash, Maya or bank
+  order raises `not_paid`, the same as completing an unpaid one. A rejection reason is 3 to 200 characters (the
+  `review_payment` contract now says so too); a tracking link is `https://` and at most 500 characters. The reason and
+  the tracking link are optional database arguments (`default null`), so the generated types make them optional.
+- P5-29: `audit_log.action` is one of `payment_approved`, `payment_rejected`, `payment_recorded`, `order_cancelled`,
+  `stock_set` (`AUDIT_ACTIONS` in core); owners of an active shop read their shop's lines and nobody writes them
+  directly. Cancelling closes a proof still waiting (rejected, "Order cancelled") and puts the order back to unpaid; a
+  paid order keeps its payment and the timeline note ends with "(paid: refund by hand)".
+- P5-30: Slice 4 in `packages/api`: `BoardOrder` is `{ order, lines }` (core); `useOrders` and `useOrderDetail`
+  take `null` while there is no shop or order yet; query keys `qk.orders(tenantId)` (every list of a shop),
+  `qk.orderList`, `qk.orderDetail`, `qk.proofUrl` and `qk.dashboardToday`. The live channel logic is
+  `watchShopOrders` (no React, tested with fake timers); `useShopOrdersLive` wraps it. `useProofUrl` renews the
+  5-minute link every 4 minutes.

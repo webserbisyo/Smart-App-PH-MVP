@@ -88,3 +88,13 @@ export type SortKind = z.infer<typeof SortKind>;
 export const MEDIA_KINDS = ['logo', 'cover', 'item', 'category', 'qr'] as const;
 export const MediaKind = z.enum(MEDIA_KINDS);
 export type MediaKind = z.infer<typeof MediaKind>;
+
+/** What audit_log records (append-only): the owner's payment decisions, cancels and stock counts. */
+export const AUDIT_ACTIONS = ['payment_approved', 'payment_rejected', 'payment_recorded', 'order_cancelled', 'stock_set'] as const;
+export const AuditAction = z.enum(AUDIT_ACTIONS);
+export type AuditAction = z.infer<typeof AuditAction>;
+
+/** What an audit_log row is about. */
+export const AUDIT_TARGET_TYPES = ['order', 'payment', 'variant'] as const;
+export const AuditTargetType = z.enum(AUDIT_TARGET_TYPES);
+export type AuditTargetType = z.infer<typeof AuditTargetType>;

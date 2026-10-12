@@ -6,7 +6,7 @@ import { Customer } from '../schemas/customer';
 import { CustomerAddress } from '../schemas/customer-address';
 import { DeliveryZone } from '../schemas/delivery-zone';
 import { CatalogItem } from '../schemas/catalog-item';
-import { BusinessType, CashMethod, LineProblem, OrderStatus, SortKind, TransferMethod } from '../schemas/enums';
+import { BusinessType, CashMethod, LineProblem, OrderStatus, PaymentStatus, SortKind, TransferMethod } from '../schemas/enums';
 import { ItemDraft } from '../schemas/item-draft';
 import { Item, ItemPhoto } from '../schemas/item';
 import { OptionGroup } from '../schemas/option-group';
@@ -86,6 +86,25 @@ export const OrderReceipt = z.object({
   payments: z.array(Payment),
 });
 export type OrderReceipt = z.infer<typeof OrderReceipt>;
+
+/** One card on the owner's orders board: the order and its lines. */
+export const BoardOrder = z.object({
+  order: Order,
+  lines: z.array(OrderLine),
+});
+export type BoardOrder = z.infer<typeof BoardOrder>;
+
+/**
+ * The nudge on the private `shop:<tenantId>` channel when an order is placed or its status or payment changes. Only
+ * a nudge: the dashboard refetches through its queries, so RLS still decides what it reads.
+ */
+export const ShopOrderChange = z.object({
+  orderId: Uuid,
+  op: z.enum(['insert', 'update']),
+  status: OrderStatus,
+  paymentStatus: PaymentStatus,
+});
+export type ShopOrderChange = z.infer<typeof ShopOrderChange>;
 
 export const MemberAccount = z.object({
   customer: Customer,
@@ -196,7 +215,7 @@ export const dbFunctions = {
   /** Owner: approves or rejects a payment proof. A rejection needs a reason. */
   review_payment: {
     input: z
-      .strictObject({ paymentId: Uuid, approve: z.boolean(), rejectReason: z.string().trim().min(1).nullable() })
+      .strictObject({ paymentId: Uuid, approve: z.boolean(), rejectReason: z.string().trim().min(3).max(200).nullable() })
       .refine((input) => input.approve || input.rejectReason !== null, {
         message: 'A rejection needs a reason.',
         path: ['rejectReason'],
