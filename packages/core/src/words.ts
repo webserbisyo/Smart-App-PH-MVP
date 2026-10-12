@@ -517,6 +517,7 @@ export const WORDS = {
     slug_invalid: 'Use lowercase letters, numbers and single hyphens (3 to 40).',
     slug_reserved: 'This link name is reserved. Try another.',
     slug_taken: 'This link name is taken. Try another.',
+    shop_not_found: 'This shop link does not exist.',
     variant_required: 'Add at least one price.',
     category_not_empty: 'Move or remove everything in this category first.',
     item_has_orders: 'This has orders, so it cannot be deleted. Archive it instead.',

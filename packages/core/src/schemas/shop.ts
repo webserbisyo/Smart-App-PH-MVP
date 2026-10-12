@@ -58,3 +58,9 @@ export type Shop = z.infer<typeof Shop>;
 /** The settings an owner changes (every field but the shop id). */
 export const ShopSettingsPatch = ShopSettings.omit({ tenantId: true }).partial();
 export type ShopSettingsPatch = z.infer<typeof ShopSettingsPatch>;
+
+/** A shop as customers see it (the storefront): no plan, paid until or status, which are only the founder's. */
+export const PublicShop = Tenant.omit({ status: true, plan: true, paidUntil: true }).extend({
+  settings: ShopSettings,
+});
+export type PublicShop = z.infer<typeof PublicShop>;

@@ -34,3 +34,13 @@ select t.slug,
   (select count(*) from orders o where o.tenant_id = t.id and o.placed_at > now() - interval '30 days') as orders_30d,
   (select count(*) from customers c where c.tenant_id = t.id and c.member_since is not null) as members
 from tenants t order by orders_30d desc;
+
+-- Demo shops: set up or refresh catalog (juans-cafe and tala-apparel; keeps their owners)
+select private.demo_setup();
+
+-- Make me the owner of a demo shop (skipped if the shop already has an owner); put your email and the slug
+insert into tenant_members (tenant_id, user_id, role)
+select t.id, u.id, 'owner'
+from tenants t, auth.users u
+where t.slug = 'juans-cafe' and u.email = 'you@example.com'
+  and not exists (select 1 from tenant_members m where m.tenant_id = t.id and m.role = 'owner' and m.status = 'active');

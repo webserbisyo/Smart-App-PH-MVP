@@ -13,5 +13,5 @@ export * from './settings/settings';
 export * from './settings/hooks';
 export * from './catalog/catalog';
 export * from './catalog/hooks';
-// The storefront layout still uses the stub until P5.2.
-export * from './stubs';
+export * from './storefront/storefront';
+export * from './storefront/hooks';
