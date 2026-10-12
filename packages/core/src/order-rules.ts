@@ -1,10 +1,11 @@
 // Order rules (paper 6.4, 6.9): the next step, the board column, the timeline, cancel and late. One copy for every
 // screen that shows an order; P5.4's SQL (`advance_order`, `record_payment`) follows the same table of cases.
 // Steps only move forward: there is no Undo.
-import type { OrderStatus } from './schemas/enums';
+import type { CashMethod, OrderStatus } from './schemas/enums';
 import type { OrderEvent } from './schemas/order-event';
 import type { Order } from './schemas/order';
 import type { OrderLine } from './schemas/order-line';
+import type { Payment } from './schemas/payment';
 import type { ShopSettings } from './schemas/shop';
 import { minutesSince } from './time';
 import { WORDS } from './words';
@@ -18,8 +19,11 @@ export type RuleSettings = Pick<ShopSettings, 'payLaterPickup'>;
 export const ORDER_ACTIONS = ['verify_payment', 'mark_paid', 'start', 'mark_ready', 'out_for_delivery', 'complete'] as const;
 export type OrderAction = (typeof ORDER_ACTIONS)[number];
 
+/** The statuses `advance_order` moves an order to. */
+export type AdvanceStatus = Extract<OrderStatus, 'preparing' | 'ready' | 'out_for_delivery' | 'completed'>;
+
 /** The status an action moves the order to (payment actions keep the status). */
-export const ACTION_TO_STATUS: Readonly<Partial<Record<OrderAction, OrderStatus>>> = {
+export const ACTION_TO_STATUS: Readonly<Partial<Record<OrderAction, AdvanceStatus>>> = {
   start: 'preparing',
   mark_ready: 'ready',
   out_for_delivery: 'out_for_delivery',
@@ -77,6 +81,44 @@ export function nextActions(order: RuleOrder, settings: RuleSettings): OrderActi
     case 'expired':
       return [];
   }
+}
+
+/** Paid in full (the order may complete). */
+export function isPaid(order: Pick<RuleOrder, 'paymentStatus'>): boolean {
+  return order.paymentStatus === 'paid';
+}
+
+/** What Mark paid records (decision P5-28): cash on delivery for delivery orders, cash for the rest. */
+export function recordMethod(order: Pick<RuleOrder, 'fulfillment'>): CashMethod {
+  return order.fulfillment === 'delivery' ? 'cod' : 'cash';
+}
+
+/** Mark paid is offered while the order is open and nothing is paid or waiting to be checked. */
+export function canRecordPayment(order: Pick<RuleOrder, 'status' | 'paymentStatus'>): boolean {
+  return isOpen(order) && order.paymentStatus === 'unpaid';
+}
+
+type RulePayment = Pick<Payment, 'status' | 'createdAt' | 'rejectReason'>;
+
+function latest<T extends RulePayment>(payments: readonly T[]): T | null {
+  return payments.toSorted((a, b) => a.createdAt.localeCompare(b.createdAt)).at(-1) ?? null;
+}
+
+/** The proof the owner checks now: the latest payment, when it waits and the order can still be paid. */
+export function paymentToReview<T extends RulePayment>(order: Pick<RuleOrder, 'status' | 'paymentStatus'>, payments: readonly T[]): T | null {
+  const last = latest(payments);
+  return isOpen(order) && order.paymentStatus === 'pending' && last?.status === 'pending' ? last : null;
+}
+
+/** Why the last proof was not accepted, while the order waits for a new one. */
+export function rejectionReason(order: Pick<RuleOrder, 'paymentStatus'>, payments: readonly RulePayment[]): string | null {
+  const last = latest(payments);
+  return order.paymentStatus === 'unpaid' && last?.status === 'rejected' ? last.rejectReason : null;
+}
+
+/** A cancelled order that was paid: the refund is by hand. */
+export function needsRefund(order: Pick<RuleOrder, 'status' | 'paymentStatus'>): boolean {
+  return order.status === 'cancelled' && isPaid(order);
 }
 
 export const BOARD_COLUMNS = ['new', 'preparing', 'ready', 'out', 'done'] as const;

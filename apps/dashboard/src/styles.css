@@ -1,3 +1,45 @@
 @import '@smartapp/ui/globals.css';
 /* Tailwind does not scan node_modules; the shared components live in packages/ui. */
 @source '../../../packages/ui/src';
+
+/* Print slip (P4.5): when a page has an order slip, print only the slip, one page, about 72 mm wide (80 mm paper). */
+@media print {
+  @page {
+    margin: 4mm;
+  }
+
+  body:has(.print-slip) *:not(.print-slip, .print-slip *, :has(.print-slip)) {
+    display: none !important;
+  }
+
+  body:has(.print-slip) *:has(.print-slip) {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+
+  body:has(.print-slip) {
+    background: white !important;
+  }
+
+  .print-slip {
+    width: 72mm;
+    background: white;
+  }
+
+  /* Black ink in dark mode too. */
+  .print-slip,
+  .print-slip * {
+    color: black !important;
+    border-color: black !important;
+  }
+}

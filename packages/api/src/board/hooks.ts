@@ -101,20 +101,42 @@ export function useReviewPayment() {
   });
 }
 
+/** The board's lists with one order changed. */
+function withOrder(orders: BoardOrder[] | undefined, orderId: string, change: Partial<Order>): BoardOrder[] | undefined {
+  return orders?.map((card) => (card.order.id === orderId ? { ...card, order: { ...card.order, ...change } } : card));
+}
+
+/** The board's lists with one order moved to a new status. */
+export function withStatus(orders: BoardOrder[] | undefined, orderId: string, status: Order['status']): BoardOrder[] | undefined {
+  return withOrder(orders, orderId, { status });
+}
+
+/** Changes the order on every board list at once and returns how to put the lists back. */
+async function optimistic(queryClient: QueryClient, orderId: string, change: Partial<Order>) {
+  await queryClient.cancelQueries({ queryKey: qk.allOrders });
+  const before = queryClient.getQueriesData<BoardOrder[]>({ queryKey: qk.allOrders });
+  queryClient.setQueriesData<BoardOrder[]>({ queryKey: qk.allOrders }, (orders) => withOrder(orders, orderId, change));
+  return { before };
+}
+
+function rollback(queryClient: QueryClient, context: Awaited<ReturnType<typeof optimistic>> | undefined): void {
+  for (const [key, orders] of context?.before ?? []) queryClient.setQueryData(key, orders);
+}
+
+/** Marks the card paid at once; puts it back if the database refuses. */
 export function useRecordPayment() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: RecordPaymentInput): Promise<Payment> => recordPayment(client, input),
+    onMutate: (input) => optimistic(queryClient, input.orderId, { paymentStatus: 'paid', paymentMethod: input.method }),
+    onError: (_error, _input, context) => {
+      rollback(queryClient, context);
+    },
     onSuccess: (payment) => {
       refreshAfter(queryClient, payment.tenantId, payment.orderId);
     },
   });
-}
-
-/** The board's lists with one order moved to a new status. */
-export function withStatus(orders: BoardOrder[] | undefined, orderId: string, status: Order['status']): BoardOrder[] | undefined {
-  return orders?.map((card) => (card.order.id === orderId ? { ...card, order: { ...card.order, status } } : card));
 }
 
 /** Moves the card at once; puts it back if the database refuses the step. */
@@ -123,16 +145,9 @@ export function useAdvanceOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: AdvanceOrderInput): Promise<Order> => advanceOrder(client, input),
-    onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: qk.allOrders });
-      const before = queryClient.getQueriesData<BoardOrder[]>({ queryKey: qk.allOrders });
-      queryClient.setQueriesData<BoardOrder[]>({ queryKey: qk.allOrders }, (orders) =>
-        withStatus(orders, input.orderId, input.toStatus),
-      );
-      return { before };
-    },
+    onMutate: (input) => optimistic(queryClient, input.orderId, { status: input.toStatus }),
     onError: (_error, _input, context) => {
-      for (const [key, orders] of context?.before ?? []) queryClient.setQueryData(key, orders);
+      rollback(queryClient, context);
     },
     onSuccess: (order) => {
       refreshAfter(queryClient, order.tenantId, order.id);

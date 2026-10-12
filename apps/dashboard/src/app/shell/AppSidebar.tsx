@@ -8,10 +8,12 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@smartapp/ui/components/sidebar';
 import { IconBuildingStore } from '@smartapp/ui/icons';
+import { countText } from '@smartapp/ui/lib/nav';
 import type { ShellNavItem } from '@smartapp/ui/lib/nav';
 
 import { AccountMenu } from './AccountMenu';
@@ -47,6 +49,11 @@ export function AppSidebar({ items }: { items: readonly ShellNavItem[] }) {
                     {item.active && item.activeIcon !== undefined ? item.activeIcon : item.icon}
                     <span>{item.label}</span>
                   </SidebarMenuButton>
+                  {item.count !== undefined && item.count > 0 ? (
+                    <SidebarMenuBadge className="rounded-full bg-primary text-primary-foreground peer-hover/menu-button:text-primary-foreground peer-data-active/menu-button:text-primary-foreground">
+                      {countText(item.count)}
+                    </SidebarMenuBadge>
+                  ) : null}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

@@ -115,6 +115,22 @@ Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/
   privacy box is ticked again on every order. The receipt uses the customer's words for steps and payment ("Placed",
   "Checking payment") with the same colours as the dashboard, says "ORDER SLIP · NOT AN OFFICIAL RECEIPT" (paper 10),
   and offers the shop's account again on the proof card. Send proof waits for the photo upload to finish.
+- P4-27 (P4.5, 2026-10-12): The dashboard nav badge and the tab title ("(2) Orders · Juan's Cafe") count the New
+  column: orders the owner must act on first. The shell keeps one live connection to the shop's orders for every
+  page, so the count and the chime work on any screen. "Live updates lost" shows only after 10 seconds without the
+  channel, with Refresh; the list still polls meanwhile (P5-30).
+- P4-28 (P4.5): The new-order chime is a short tone made with Web Audio (no sound file, no package). Browsers block
+  sound until the page is touched, so a "Turn on order sound" chip shows until the owner taps it once.
+- P4-29 (P4.5): Start, Mark ready, Out for delivery, Complete and Mark paid move the card at once and roll back with
+  the error words if the database refuses; Approve, Reject and Cancel wait for the database. Board columns, buttons,
+  Mark paid's method and whether Cancel shows come only from `packages/core` (`boardColumn`, `nextActions`,
+  `recordMethod`, `canCancel`, `canRecordPayment`, `paymentToReview`); a test fails if the orders feature compares a
+  status itself.
+- P4-30 (P4.5): Message opens the phone's SMS app (`sms:`), since orders have no Messenger id. The Member badge on
+  board cards waits for P5.5/P4.6 (the order list has no member flag yet). Print slip prints only the slip, about
+  72 mm wide in black, using print CSS in `apps/dashboard/src/styles.css`. On tablet and wider the board's columns are at
+  least 14rem wide and wrap (2 columns next to the side panel at 1280 px, 3 at 1024 px, 5 on wide screens), so cards
+  never get too narrow to read.
 
 ## Backend plan (2026-10-11, approved by the founder)
 
