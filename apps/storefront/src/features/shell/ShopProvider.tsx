@@ -26,6 +26,8 @@ interface ShopContextValue {
   addLine: (line: CartLine, name: string) => void;
   setQty: (index: number, qty: number) => void;
   removeLine: (index: number) => void;
+  /** Empties the cart (after the order is placed). */
+  clearCart: () => void;
   /** Opens the item sheet. */
   openItem: (itemId: string) => void;
   /** The card's "+": adds at once when there is nothing to choose, else opens the sheet. */
@@ -97,6 +99,9 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
       },
       removeLine: (index) => {
         updateLines((current) => removeCartLine(current, index));
+      },
+      clearCart: () => {
+        updateLines(() => []);
       },
       openItem,
       quickAdd,

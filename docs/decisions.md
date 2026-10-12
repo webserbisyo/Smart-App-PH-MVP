@@ -103,6 +103,18 @@ Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/
 - P4-20 (P4.3): The cart rules live in `packages/core/src/cart.ts` (merge same lines, 1 to 99, totals in centavos, sold out, quick add, what is still to choose). Cart prices are an estimate from the menu; `quote_order` prices the order in P4.4. A line whose item, size or add-on is gone or sold out is flagged, left out of the subtotal, and Checkout stays off until it is removed.
 - P4-21 (P4.3): Closed or paused shops keep the "+" visible but dimmed; tapping it shows the reason, and the item sheet's Add button is disabled with the reason ("Closed now", "Orders paused"). Paused (orders off or busy) wins over closed. The database's `isOpen` decides; `openState` only words it.
 - P4-22 (P4.3): Image URLs for the shop pages are built on the server (`shopMedia`) so client code needs no Supabase client. `ShopTheme` gained `root` so sheets and dialogs (outside the page wrapper) use the shop colours. `next/image` is used for the cover only, limited to the `shop-media` bucket. Until P4.4, Checkout opens a placeholder page that says the cart is saved.
+- P4-23 (P4.4): The storefront now uses React Hook Form, `@hookform/resolvers` and TanStack Query, at the versions
+  the dashboard already pins (no new package in the repo). Order hooks run in the browser only, through one
+  `DataProvider` (QueryClient + the browser Supabase client) in the shop layout; shop data stays server-read.
+- P4-24 (P4.4): Pickup slots start 20 minutes out (the database needs 15 at the moment of placing, so a slow form
+  still keeps its time) and end 15 minutes before closing. A closed shop's checkout starts on the first open slot.
+  A slot that passes while the form is open falls back to "As soon as possible".
+- P4-25 (P4.4): The quote sends a stand-in address, so typing the address does not re-price on every key; it waits
+  for a delivery area when the shop needs one. The real address goes only to `place_order`.
+- P4-26 (P4.4): "Remember me on this phone" keeps name, mobile and email per shop (`smartapp.customer.<slug>`); the
+  privacy box is ticked again on every order. The receipt uses the customer's words for steps and payment ("Placed",
+  "Checking payment") with the same colours as the dashboard, says "ORDER SLIP · NOT AN OFFICIAL RECEIPT" (paper 10),
+  and offers the shop's account again on the proof card. Send proof waits for the photo upload to finish.
 
 ## Backend plan (2026-10-11, approved by the founder)
 

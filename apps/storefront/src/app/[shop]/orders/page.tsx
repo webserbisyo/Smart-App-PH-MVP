@@ -1,7 +1,8 @@
-import { WORDS } from '@smartapp/core';
-import { IconReceipt } from '@smartapp/ui/icons';
-import { EmptyPage } from '@smartapp/ui/patterns/EmptyPage';
+import { MyOrders } from '../../../features/orders/MyOrders';
+import { storefrontOrNotFound } from '../../../features/shell/shop';
 
-export default function OrdersPage() {
-  return <EmptyPage icon={<IconReceipt />} title={WORDS.storefront.nav.orders} text={WORDS.storefront.empty.orders} />;
+/** My orders: the orders placed on this phone (their links are kept in this browser). */
+export default async function OrdersPage({ params }: { params: Promise<{ shop: string }> }) {
+  await storefrontOrNotFound((await params).shop);
+  return <MyOrders />;
 }
