@@ -8,7 +8,8 @@
     "#blocks/*": "./src/blocks/*.tsx",
     "#lib/*": "./src/lib/*.ts",
     "#hooks/*": "./src/hooks/*.ts",
-    "#patterns/*": "./src/patterns/*.tsx"
+    "#patterns/*": "./src/patterns/*.tsx",
+    "#assets/fluent": "./src/assets/fluent/index.ts"
   },
   "exports": {
     "./globals.css": "./src/styles/globals.css",
@@ -18,6 +19,7 @@
     "./hooks/*": "./src/hooks/*.ts",
     "./patterns/*": "./src/patterns/*.tsx",
     "./icons": "./src/icons.ts",
+    "./assets/fluent": "./src/assets/fluent/index.ts",
     "./shop-theme": "./src/shop-theme.tsx"
   },
   "scripts": {
@@ -42,6 +44,7 @@
     "date-fns": "4.4.0",
     "input-otp": "1.5.0",
     "motion": "14.1.0",
+    "qrcode": "1.5.4",
     "react-day-picker": "10.0.2",
     "recharts": "3.8.0",
     "sonner": "2.0.8",
@@ -51,6 +54,7 @@
   },
   "devDependencies": {
     "@types/canvas-confetti": "1.9.0",
+    "@types/qrcode": "1.5.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "react": "19.3.0",

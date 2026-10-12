@@ -91,8 +91,29 @@ ReUI and DiceUI also bring `@tanstack/react-table` and `@dnd-kit/*`. Those are a
 | `BottomDock` (dashboard phone) | No library has an app-style bottom tab bar. Magic UI's "dock" is the macOS magnifying dock, not a phone tab bar. Copy-and-trim the old repo's V3 `BottomDock` (`webserbisyo/Smart-App-PH`, branch `redesign/v3-home`, `packages/ui/src/patterns/BottomDock.tsx`). |
 | `StoreTabBar` + `CartBar` (storefront phone) | Same reason; four tabs plus the floating cart bar above them. |
 | `AppShell`, `TopBar`, `PageBody` | Copy-and-trim from `reference/`. |
-| `StatusBadge` | icon + word + colour from `STATUS_TONE` in core. |
+| `StatusBadge` (`OrderStatusBadge`, `PaymentBadge`) | icon + word + colour from `STATUS_LOOK` in core. |
 | `Money` | `formatPeso`, no `.00` for whole pesos. |
+
+Shared patterns built in P4.0 (`packages/ui/src/patterns/`, all on `/kit` under "Patterns"):
+
+| Pattern | Used on |
+| --- | --- |
+| `QueryState` | every list and page: loading, empty, error, offline |
+| `OfflineBanner` (+ `useOnline`) | both app shells, under the top bar |
+| `StickyActionBar` (+ `useKeyboardInset`) | checkout Place order, settings Save, product editor Save |
+| `QuantityStepper` | item sheet, cart lines |
+| `PhoneField`, `PesoField` | checkout, sign-up, product editor, delivery zones |
+| `CopyButton` | share link, payment account numbers, order reference |
+| `CategoryIcon` | category chips, product card fallback, category editor |
+| `PhotoField` (+ `compressImage`) | product photo, logo, payment QR, payment proof |
+| `OrderLines` | cart, receipt, order detail |
+| `OrderTimeline` | receipt (horizontal), order detail (vertical) |
+| `OrderCard` | orders board, Home "In progress" (compact), customer's orders (compact) |
+| `StampCard` | storefront Account, receipt join prompt, customer detail |
+| `ShopHeader` | storefront Home |
+| `ProductCard` | storefront Home and Menu/Products |
+| `SettingsSection` | every Settings section |
+| `ShareShop` | dashboard Home share card, Settings |
 
 ### Added in P4.0 (founder decision P4-F2, 2026-10-11), 6 → kit total 57
 
