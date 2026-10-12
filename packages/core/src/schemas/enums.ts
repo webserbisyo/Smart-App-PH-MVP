@@ -70,7 +70,7 @@ export const ITEM_STATUSES = ['active', 'hidden', 'archived'] as const;
 export const ItemStatus = z.enum(ITEM_STATUSES);
 export type ItemStatus = z.infer<typeof ItemStatus>;
 
-export const LOYALTY_REASONS = ['earned', 'redeemed', 'reversed', 'manual'] as const;
+export const LOYALTY_REASONS = ['earned', 'redeemed', 'reversed', 'manual', 'welcome'] as const;
 export const LoyaltyReason = z.enum(LOYALTY_REASONS);
 export type LoyaltyReason = z.infer<typeof LoyaltyReason>;
 

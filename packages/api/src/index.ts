@@ -22,3 +22,5 @@ export * from './board/board';
 export * from './board/hooks';
 export { SHOP_POLL_MS, watchShopOrders } from './board/live';
 export type { ShopChannelSource, ShopOrdersHandlers } from './board/live';
+export * from './members/members';
+export * from './members/hooks';

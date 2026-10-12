@@ -809,6 +809,8 @@ export const WORDS = {
     not_paid: 'Mark this order paid first.',
     payment_not_pending: 'This payment was already checked, or a proof is still waiting to be checked.',
     already_paid: 'This order is already paid.',
+    phone_needs_order: 'Join from your receipt page, or use the phone you ordered with.',
+    phone_in_use: 'This mobile number belongs to another member. Use your own number.',
     not_found: 'We could not find it. Check the link and try again.',
     network: 'No connection. Check your internet and try again.',
     unknown: 'Something went wrong. Try again.',

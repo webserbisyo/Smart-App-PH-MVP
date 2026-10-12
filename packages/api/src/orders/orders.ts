@@ -4,7 +4,7 @@ import type { DbFunctionInput, DbFunctionOutput } from '@smartapp/core';
 import type { ApiClient } from '../client';
 import type { Json } from '../database.types';
 import { ApiError, throwIfError, toApiError } from '../errors';
-import { parsed } from '../rows';
+import { fromJson, parsed } from '../rows';
 
 // Slice 3: checkout and receipt (docs/api-surface.md). The database prices, numbers and checks everything; these
 // functions only send the customer's choices and check what comes back with the core schemas.
@@ -16,17 +16,6 @@ export type PlacedOrder = DbFunctionOutput<'place_order'>;
 /** What the checkout form gives usePlaceOrder: the payload without its clientKey (the hook keeps that). */
 export type OrderInput = Omit<OrderPayload, 'clientKey'>;
 export type PaymentProofInput = DbFunctionInput<'submit_payment_proof'>;
-
-interface Parser<T> {
-  safeParse(data: unknown): { success: true; data: T } | { success: false; error: { message: string } };
-}
-
-/** A result checked with its core schema; a mismatch is a bug, so it fails loudly. */
-function fromJson<T>(schema: Parser<T>, data: unknown): T {
-  const result = schema.safeParse(data);
-  if (!result.success) throw new ApiError('unknown', result.error.message);
-  return result.data;
-}
 
 type JsonObject = { [key: string]: Json | undefined };
 

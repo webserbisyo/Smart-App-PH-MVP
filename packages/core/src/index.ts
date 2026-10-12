@@ -37,3 +37,4 @@ export * from './status-look';
 export * from './order-rules';
 export * from './cart';
 export * from './checkout';
+export * from './stamps';

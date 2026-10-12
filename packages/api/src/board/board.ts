@@ -4,7 +4,7 @@ import type { BoardOrder, DbFunctionInput, OrderReceipt } from '@smartapp/core';
 import type { ApiClient } from '../client';
 import { ApiError, throwIfError } from '../errors';
 import { PAYMENT_PROOFS_BUCKET } from '../orders/orders';
-import { parsed } from '../rows';
+import { fromJson, parsed } from '../rows';
 
 import { boardOrderFromRow, orderDetailFromRow } from './mappers';
 
@@ -23,16 +23,6 @@ export type CancelOrderInput = DbFunctionInput<'cancel_order'>;
 export const PROOF_URL_SECONDS = 300;
 
 const OPEN_STATUSES = 'placed,preparing,ready,out_for_delivery';
-
-interface Parser<T> {
-  safeParse(data: unknown): { success: true; data: T } | { success: false; error: { message: string } };
-}
-
-function fromJson<T>(schema: Parser<T>, data: unknown): T {
-  const result = schema.safeParse(data);
-  if (!result.success) throw new ApiError('unknown', result.error.message);
-  return result.data;
-}
 
 /** The board's orders, oldest first, each with its lines. */
 export async function getOrders(client: ApiClient, tenantId: string, scope: OrderScope, now = new Date()): Promise<BoardOrder[]> {

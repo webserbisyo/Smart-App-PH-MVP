@@ -239,3 +239,14 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   `qk.orderList`, `qk.orderDetail`, `qk.proofUrl` and `qk.dashboardToday`. The live channel logic is
   `watchShopOrders` (no React, tested with fake timers); `useShopOrdersLive` wraps it. `useProofUrl` renews the
   5-minute link every 4 minutes.
+- P5-11 (P5.5, 2026-10-12): Guests earn stamps on completed paid orders; joining reveals them. Redeemed stamps come
+  back if the order is cancelled or expires.
+- P5-31: Members do not read the `customers` table itself, because it holds the owner's notes and tags; their account
+  comes from `get_my_account`, which leaves those out. The member policies on the ledger and addresses ask
+  `private.my_customer_ids()` (security definer) for the caller's own rows. `MemberAccount` gained `history` (the latest
+  20 stamp movements, newest first), so the card can show "Welcome stamp" (P5-16).
+- P5-32: Every shop's stamp card row comes from a trigger on `tenants` (one place for `create_my_shop` and the demo
+  tools) instead of a new `create_my_shop`; new cards start off: 10 stamps for "₱100 off your order", no minimum.
+  `get_storefront` keeps its P5.2 body as `private.storefront_base` and adds `stampRule` and `memberCount` on top.
+  Joining also records a privacy consent (source `join`). A member has at most 5 saved addresses (`invalid` past
+  that); a new default clears the old one and the first address is the default. Ledger rows can never be updated.

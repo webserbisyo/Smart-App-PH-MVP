@@ -7,6 +7,17 @@ export function parsed<T>(result: { success: true; data: T } | { success: false 
   return result.data;
 }
 
+interface Parser<T> {
+  safeParse(data: unknown): { success: true; data: T } | { success: false; error: { message: string } };
+}
+
+/** A database function's result checked with its core schema; a mismatch is a bug, so it fails loudly. */
+export function fromJson<T>(schema: Parser<T>, data: unknown): T {
+  const result = schema.safeParse(data);
+  if (!result.success) throw new ApiError('unknown', result.error.message);
+  return result.data;
+}
+
 /** Trimmed text, or null when empty. */
 export function blankToNull(value: string | null | undefined): string | null {
   const trimmed = value?.trim() ?? '';

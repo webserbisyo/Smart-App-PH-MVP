@@ -40,7 +40,7 @@ describe('enums', () => {
     expect(PAYMENT_METHODS).toEqual(['cash', 'cod', 'gcash', 'maya', 'bank']);
     expect(PAYMENT_REVIEW_STATUSES).toEqual(['pending', 'confirmed', 'rejected']);
     expect(ITEM_STATUSES).toEqual(['active', 'hidden', 'archived']);
-    expect(LOYALTY_REASONS).toEqual(['earned', 'redeemed', 'reversed', 'manual']);
+    expect(LOYALTY_REASONS).toEqual(['earned', 'redeemed', 'reversed', 'manual', 'welcome']);
     expect(MEMBER_ROLES).toEqual(['owner']);
     expect(ORDER_EVENT_KINDS).toEqual(['status', 'payment_submitted', 'payment_confirmed', 'payment_rejected']);
     expect(ORDER_ACTORS).toEqual(['customer', 'owner', 'system']);
