@@ -116,7 +116,14 @@ export const paymentAccount = {
 
 export const tenantMember = { tenantId: ids.tenant, userId: ids.user, role: 'owner' } satisfies TenantMember;
 
-export const category = { id: ids.category, tenantId: ids.tenant, name: 'Coffee', sort: 0, isHidden: false } satisfies Category;
+export const category = {
+  id: ids.category,
+  tenantId: ids.tenant,
+  name: 'Coffee',
+  sort: 0,
+  isHidden: false,
+  icon: { kind: 'fluent', key: 'coffee' },
+} satisfies Category;
 
 export const item = {
   id: ids.item,

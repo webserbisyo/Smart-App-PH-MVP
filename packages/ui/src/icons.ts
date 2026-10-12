@@ -2,10 +2,12 @@
 // the selected nav item shows the filled variant.
 export {
   IconBuildingStore,
+  IconCash,
   IconChartBar,
   IconChevronLeft,
   IconChevronRight,
   IconDots,
+  IconDownload,
   IconGripVertical,
   IconHome,
   IconHomeFilled,

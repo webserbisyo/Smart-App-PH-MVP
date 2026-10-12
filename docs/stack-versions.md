@@ -32,7 +32,7 @@ Exact versions, no `^`. "P1"/"P2" means installed in that phase; "later" rows ar
 | Icons | @tabler/icons-react | 3.49.0 | P2 installed | |
 | Forms | react-hook-form | 7.90.0 | P2 installed | dashboard |
 | Forms | @hookform/resolvers | 5.9.1 | P2 installed | Zod resolver |
-| QR codes | qrcode (via DiceUI `qr-code`) | 1.5.4 | P4.0 | receipt QR, shop QR; replaces qrcode.react (decision P4-F2) |
+| QR codes | qrcode (via DiceUI `qr-code`) + @types/qrcode 1.5.6 (dev) | 1.5.4 | P4.0 installed | receipt QR, shop QR; replaces qrcode.react (decision P4-F2); loaded only when a QR is shown |
 | Backend | @supabase/supabase-js | 2.117.3 | P3b | only in packages/api |
 | Backend | @supabase/ssr | 0.12.7 | P3b | storefront cookie sessions, only in packages/api |
 | Native (later) | @capacitor/core | 8.5.3 | after launch | Capacitor 8 |
@@ -43,6 +43,8 @@ UI kit packages added by the shadcn CLI with the components (`packages/ui`, P2 i
 date-fns 4.4.0, @tanstack/react-table 9.2.8, @dnd-kit/core 6.3.1, @dnd-kit/sortable 10.0.0, @dnd-kit/modifiers 9.0.0,
 @dnd-kit/utilities 3.2.2, motion 14.1.0 (number ticker), canvas-confetti 1.9.4. Types: @types/react 19.3.0,
 @types/react-dom 19.3.0, @types/node 24.19.2, @types/canvas-confetti 1.9.0. Env checks use zod 4.6.6 in both apps.
+P4.0 added six kit components with no new npm package besides qrcode: DiceUI responsive-dialog, qr-code, stat, status,
+scroller and shadcn progress (kit total 57).
 
 pnpm `onlyBuiltDependencies`: none needed. No installed package needs an install script (Supabase CLI, Tailwind
 oxide and lightningcss ship platform binaries as optional dependencies).

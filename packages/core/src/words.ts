@@ -73,6 +73,7 @@ export const WORDS = {
     kit: {
       title: 'UI kit',
       intro: 'Every installed component, in light and dark. Not in the nav.',
+      patterns: 'Patterns',
     },
     notFound: 'Page not found.',
     auth: {
@@ -143,6 +144,120 @@ export const WORDS = {
       title: 'Your shop is paused',
       text: 'Message us to reactivate.',
     },
+  },
+  /** Order words both apps share: statuses, steps, fulfillment, payment methods. */
+  order: {
+    status: {
+      placed: 'New',
+      preparing: 'Preparing',
+      ready: 'Ready',
+      out_for_delivery: 'Out for delivery',
+      completed: 'Completed',
+      cancelled: 'Cancelled',
+      expired: 'Expired',
+    },
+    payment: {
+      unpaid: 'Unpaid',
+      pending: 'To verify',
+      paid: 'Paid',
+      cod: 'Pay on delivery',
+    },
+    action: {
+      verify_payment: 'Verify payment',
+      mark_paid: 'Mark paid',
+      start: 'Start',
+      mark_ready: 'Mark ready',
+      out_for_delivery: 'Out for delivery',
+      complete: 'Complete',
+    },
+    fulfillment: {
+      walk_in: 'Walk-in',
+      pickup: 'Pickup',
+      delivery: 'Delivery',
+    },
+    method: {
+      cash: 'Cash',
+      cod: 'Cash on delivery',
+      gcash: 'GCash',
+      maya: 'Maya',
+      bank: 'Bank transfer',
+    },
+    late: 'Late',
+    more: 'More actions',
+    pickupAt: (time: string) => `Pickup ${time}`,
+    moreItems: (count: number) => `and ${String(count)} more`,
+    /** The name every item's first variant gets; left out of summaries. */
+    defaultVariant: 'Regular',
+    /** "2x Iced Latte, Large", or "1x Ensaymada" when the variant is the default one. */
+    lineSummary: (qty: number, item: string, variant: string | null) =>
+      variant === null ? `${String(qty)}x ${item}` : `${String(qty)}x ${item}, ${variant}`,
+    lineQty: (qty: number) => `${String(qty)}x`,
+    subtotal: 'Subtotal',
+    deliveryFee: 'Delivery fee',
+    discount: 'Discount',
+    total: 'Total',
+    note: (note: string) => `Note: ${note}`,
+  },
+  /** Words for the shared patterns in packages/ui. */
+  shared: {
+    age: {
+      justNow: 'Just now',
+      minutes: (minutes: number) => `${String(minutes)} min`,
+      hours: (hours: number, minutes: number) =>
+        minutes === 0 ? `${String(hours)} hr` : `${String(hours)} hr ${String(minutes)} min`,
+    },
+    tryAgain: 'Try again',
+    loadFailed: 'Could not load this.',
+    offline: "You're offline. Changes are paused until you're back online.",
+    offlineShort: "You're offline",
+    copy: 'Copy',
+    copied: 'Copied',
+    decrease: 'Less',
+    increase: 'More',
+    quantity: 'Quantity',
+    phonePlaceholder: '0917 123 4567',
+    phoneInvalid: 'Use a mobile number like 0917 123 4567.',
+    pesoPlaceholder: '0',
+    pesoInvalid: 'Use an amount like 120 or 120.50.',
+    photo: {
+      add: 'Add photo',
+      change: 'Change photo',
+      remove: 'Remove photo',
+      uploading: 'Uploading',
+      compressing: 'Making it smaller',
+      failed: 'Upload failed.',
+      retry: 'Retry',
+      notImage: 'Choose a photo (JPG, PNG or WebP).',
+    },
+    product: {
+      soldOut: 'Sold out',
+      from: (price: string) => `from ${price}`,
+      add: (name: string) => `Add ${name}`,
+    },
+    stamps: {
+      title: 'Stamp card',
+      count: (stamps: number, goal: number) => `${String(stamps)} of ${String(goal)} stamps`,
+      toGo: (left: number, reward: string) =>
+        left === 1 ? `1 more to ${reward}` : `${String(left)} more to ${reward}`,
+      ready: 'Reward ready',
+      readyText: (reward: string) => `You earned ${reward}. Use it on your next order.`,
+    },
+    shop: {
+      open: 'Open',
+      closed: 'Closed',
+      openUntil: (time: string) => `Open until ${time}`,
+      opensAt: (time: string) => `Opens ${time}`,
+      closedOpensAt: (time: string) => `Closed, opens ${time}`,
+    },
+    share: {
+      title: 'Share your shop',
+      text: 'Customers order from this link. Print the QR for your counter.',
+      copyLink: 'Copy link',
+      downloadQr: 'Download QR',
+      qrAlt: (name: string) => `QR code for ${name}`,
+    },
+    save: 'Save',
+    saving: 'Saving',
   },
   errors: {
     not_signed_in: 'Please log in first.',

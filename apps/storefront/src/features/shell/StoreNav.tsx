@@ -6,8 +6,12 @@ import { useState } from 'react';
 
 import { WORDS } from '@smartapp/core';
 import { Button } from '@smartapp/ui/components/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@smartapp/ui/components/drawer';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@smartapp/ui/components/sheet';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@smartapp/ui/components/responsive-dialog';
 import {
   IconBuildingStore,
   IconHome,
@@ -37,14 +41,12 @@ const CART_TEXT = words.cart.bar(0, '₱0');
 
 /**
  * Storefront nav, one per device: phones and tablets get the bottom tab bar with the cart bar above it;
- * desktops (from 1024 px) get the top navigation and a cart drawer on the right.
+ * desktops (from 1024 px) get the top navigation. The cart is one overlay: a bottom sheet on phones and a drawer
+ * on the right on wider screens.
  */
 export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
   const pathname = usePathname();
-  // One cart per device: the desktop sheet and the phone drawer each keep their own open state, so opening
-  // one never also mounts the other's overlay on top of it.
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const base = `/${slug}`;
   const entries = [
     { key: 'home', href: base, label: words.nav.home, icon: <IconHome />, activeIcon: <IconHomeFilled /> },
@@ -60,7 +62,7 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
 
   return (
     <>
-      {/* Desktop: top navigation and a cart drawer on the right. */}
+      {/* Desktop: top navigation. */}
       <header className="sticky top-0 z-30 hidden h-16 items-center gap-6 bg-shop-30 px-8 pt-safe text-shop-30-foreground shadow-sm lg:flex">
         <Link href={base} className="truncate text-lg font-bold">
           {shopName}
@@ -82,38 +84,30 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
         </nav>
         <Button
           onClick={() => {
-            setSheetOpen(true);
+            setCartOpen(true);
           }} aria-label={words.cart.open} className="bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80">
           <IconShoppingBag aria-hidden="true" />
           <span className="tabular">{CART_TEXT}</span>
         </Button>
       </header>
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right">
-          <SheetHeader>
-            <SheetTitle>{words.cart.title}</SheetTitle>
-          </SheetHeader>
-          <p className="px-4 text-muted-foreground">{words.cart.empty}</p>
-        </SheetContent>
-      </Sheet>
-
-      {/* Phones and tablets: bottom tab bar, cart bar floating above it, cart as a bottom sheet. */}
+      {/* Phones and tablets: bottom tab bar with the cart bar floating above it. */}
       <div className="lg:hidden">
         <CartBar
           text={CART_TEXT}
           onClick={() => {
-            setDrawerOpen(true);
+            setCartOpen(true);
           }} aria-label={`${words.cart.open}: ${CART_TEXT}`} />
         <StoreTabBar label={words.nav.label} items={items} />
-        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} showSwipeHandle>
-          <DrawerContent className="pb-safe">
-            <DrawerHeader>
-              <DrawerTitle>{words.cart.title}</DrawerTitle>
-            </DrawerHeader>
-            <p className="px-4 pb-6 text-muted-foreground">{words.cart.empty}</p>
-          </DrawerContent>
-        </Drawer>
       </div>
+
+      <ResponsiveDialog open={cartOpen} onOpenChange={setCartOpen} desktop="right">
+        <ResponsiveDialogContent>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{words.cart.title}</ResponsiveDialogTitle>
+          </ResponsiveDialogHeader>
+          <p className="px-4 pb-6 text-muted-foreground">{words.cart.empty}</p>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   );
 }
