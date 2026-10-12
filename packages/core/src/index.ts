@@ -35,3 +35,4 @@ export * from './time';
 export * from './phone';
 export * from './status-look';
 export * from './order-rules';
+export * from './cart';

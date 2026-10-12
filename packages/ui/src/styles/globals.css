@@ -240,6 +240,16 @@
   }
 }
 
+/* The cart bar's bump when an item is added (storefront). Off under reduced motion (below). */
+@utility bump {
+  animation: smartapp-bump var(--duration-slow) var(--ease-out-soft);
+}
+@keyframes smartapp-bump {
+  30% {
+    transform: scale(1.04);
+  }
+}
+
 /* Page changes: fade and rise 8 px; a plain fade with reduced motion. */
 ::view-transition-old(smartapp-page) {
   animation: smartapp-page-out var(--duration-fast-exit) var(--ease-out-soft) both;

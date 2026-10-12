@@ -19,6 +19,8 @@ export interface ProductCardProps {
   /** Variants have different prices: show "from ₱120". */
   priceVaries?: boolean;
   soldOut?: boolean;
+  /** The shop takes no orders now: the "+" looks off (the app says why when it is tapped). */
+  addDisabled?: boolean;
   words: { soldOut: string; from: (price: string) => string; add: (name: string) => string };
   /** Opens the item sheet. */
   onOpen: () => void;
@@ -28,7 +30,7 @@ export interface ProductCardProps {
 }
 
 /** A storefront card: photo (or the category icon), name, price, "+". Sold out stays visible, greyed. */
-export function ProductCard({ name, photoUrl, fallbackIcon, price, priceVaries = false, soldOut = false, words, onOpen, onAdd, className }: ProductCardProps) {
+export function ProductCard({ name, photoUrl, fallbackIcon, price, priceVaries = false, soldOut = false, addDisabled = false, words, onOpen, onAdd, className }: ProductCardProps) {
   return (
     <article
       data-sold-out={soldOut || undefined}
@@ -58,8 +60,9 @@ export function ProductCard({ name, photoUrl, fallbackIcon, price, priceVaries =
         type="button"
         onClick={onAdd}
         disabled={soldOut}
+        aria-disabled={addDisabled || undefined}
         aria-label={words.add(name)}
-        className="pressable absolute right-2 bottom-2 flex size-11 items-center justify-center rounded-full bg-shop-10 text-shop-10-foreground shadow-md outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:hidden"
+        className="pressable absolute right-2 bottom-2 flex size-11 items-center justify-center rounded-full bg-shop-10 text-shop-10-foreground shadow-md outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:hidden aria-disabled:opacity-40 aria-disabled:shadow-none"
       >
         <IconPlus aria-hidden="true" className="size-5" />
       </button>

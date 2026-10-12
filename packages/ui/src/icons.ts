@@ -4,6 +4,7 @@ export {
   IconAddressBook,
   IconAlertTriangle,
   IconArchive,
+  IconBrandMessenger,
   IconBuildingStore,
   IconCash,
   IconCategory,

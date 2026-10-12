@@ -1,11 +1,8 @@
-import { VOCAB, WORDS } from '@smartapp/core';
-import { IconBuildingStore } from '@smartapp/ui/icons';
-import { EmptyPage } from '@smartapp/ui/patterns/EmptyPage';
-
+import { CatalogBrowser } from '../../../features/catalog/CatalogBrowser';
 import { storefrontOrNotFound } from '../../../features/shell/shop';
 
+/** Menu or Products: search, category chips and sections. The data comes from the shop layout. */
 export default async function CatalogPage({ params }: { params: Promise<{ shop: string }> }) {
-  const { shop } = await storefrontOrNotFound((await params).shop);
-  const catalog = VOCAB[shop.businessType].catalog;
-  return <EmptyPage icon={<IconBuildingStore />} title={catalog} text={WORDS.storefront.empty.catalog(catalog)} />;
+  await storefrontOrNotFound((await params).shop);
+  return <CatalogBrowser />;
 }

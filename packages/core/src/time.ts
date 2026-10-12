@@ -192,3 +192,25 @@ export function openState(
   }
   return { isOpen: false, closesAt: null, nextOpensAt: null };
 }
+
+/** When a closed shop opens next, worded: `7:00 AM`, `7:00 AM tomorrow`, `Sat 7:00 AM`; null when it never does. */
+export function nextOpeningText(nextOpensAt: string | null, now: Date): string | null {
+  if (nextOpensAt === null) return null;
+  const words = WORDS.shared.shop;
+  const time = formatManilaTime(nextOpensAt);
+  const today = manilaDate(now);
+  const date = manilaDate(nextOpensAt);
+  if (date === today) return words.today(time);
+  if (date === addDays(today, 1)) return words.tomorrow(time);
+  const day = new Intl.DateTimeFormat('en-US', { timeZone: BUSINESS_TIME_ZONE, weekday: 'short' }).format(toDate(nextOpensAt));
+  return words.onDay(day, time);
+}
+
+/** The shop header's status: `Open until 9:00 PM`, `Closed, opens 7:00 AM tomorrow`, or `Closed`. */
+export function openStateText(state: OpenState, now: Date): string {
+  const words = WORDS.shared.shop;
+  if (state.isOpen && state.closesAt !== null) return words.openUntil(formatManilaTime(state.closesAt));
+  if (state.isOpen) return words.open;
+  const next = nextOpeningText(state.nextOpensAt, now);
+  return next === null ? words.closed : words.closedOpensAt(next);
+}

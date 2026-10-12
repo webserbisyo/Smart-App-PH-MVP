@@ -10,7 +10,9 @@ import {
   manilaDate,
   manilaInstant,
   manilaParts,
+  nextOpeningText,
   openState,
+  openStateText,
   minutesSince,
   minutesToTime,
   ticketNo,
@@ -85,5 +87,21 @@ describe('openState', () => {
   it('accepts database times with seconds', () => {
     const state = openState([{ weekday: 1, opensAt: '08:00:00', closesAt: '20:00:00' }], [], new Date('2026-10-12T09:00:00+08:00'));
     expect(state).toEqual({ isOpen: true, closesAt: '2026-10-12T20:00:00+08:00', nextOpensAt: null });
+  });
+});
+
+describe('open state text', () => {
+  const now = new Date('2026-10-12T10:00:00+08:00');
+  it('words open and closed states in Manila time', () => {
+    expect(openStateText({ isOpen: true, closesAt: '2026-10-12T21:00:00+08:00', nextOpensAt: null }, now)).toBe('Open until 9:00 PM');
+    expect(openStateText({ isOpen: false, closesAt: null, nextOpensAt: '2026-10-12T15:00:00+08:00' }, now)).toBe('Closed, opens 3:00 PM');
+    expect(openStateText({ isOpen: false, closesAt: null, nextOpensAt: '2026-10-13T07:00:00+08:00' }, now)).toBe('Closed, opens 7:00 AM tomorrow');
+    expect(openStateText({ isOpen: false, closesAt: null, nextOpensAt: '2026-10-17T10:00:00+08:00' }, now)).toBe('Closed, opens Sat 10:00 AM');
+    expect(openStateText({ isOpen: false, closesAt: null, nextOpensAt: null }, now)).toBe('Closed');
+  });
+
+  it('says when the next opening is', () => {
+    expect(nextOpeningText('2026-10-13T07:00:00+08:00', now)).toBe('7:00 AM tomorrow');
+    expect(nextOpeningText(null, now)).toBeNull();
   });
 });
