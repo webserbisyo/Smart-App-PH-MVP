@@ -197,9 +197,12 @@ function Sortable<T>(props: SortableProps<T>) {
 
   const onDragStart = React.useCallback(
     (event: DragStartEvent) => {
+      // The keyboard sensor already prevents its own activating keydown, so only a call made by the
+      // handler below counts as "skip the default".
+      const prevented = event.activatorEvent.defaultPrevented;
       onDragStartProp?.(event);
 
-      if (event.activatorEvent.defaultPrevented) return;
+      if (!prevented && event.activatorEvent.defaultPrevented) return;
 
       setActiveId(event.active.id);
     },
@@ -208,9 +211,12 @@ function Sortable<T>(props: SortableProps<T>) {
 
   const onDragEnd = React.useCallback(
     (event: DragEndEvent) => {
+      // The keyboard sensor already prevents its own activating keydown, so only a call made by the
+      // handler below counts as "skip the default".
+      const prevented = event.activatorEvent.defaultPrevented;
       onDragEndProp?.(event);
 
-      if (event.activatorEvent.defaultPrevented) return;
+      if (!prevented && event.activatorEvent.defaultPrevented) return;
 
       const { active, over } = event;
       if (over && active.id !== over.id) {
@@ -234,9 +240,12 @@ function Sortable<T>(props: SortableProps<T>) {
 
   const onDragCancel = React.useCallback(
     (event: DragEndEvent) => {
+      // The keyboard sensor already prevents its own activating keydown, so only a call made by the
+      // handler below counts as "skip the default".
+      const prevented = event.activatorEvent.defaultPrevented;
       onDragCancelProp?.(event);
 
-      if (event.activatorEvent.defaultPrevented) return;
+      if (!prevented && event.activatorEvent.defaultPrevented) return;
 
       setActiveId(null);
     },

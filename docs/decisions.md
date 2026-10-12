@@ -90,6 +90,12 @@ Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/
 - P4-7: Status tones: New and Out for delivery blue (info), Preparing amber (warning), Ready and Completed green, Cancelled and Late red, Expired grey; payment Unpaid grey, To verify amber, Paid green, unpaid cash on delivery says "Pay on delivery". Why: amber means "needs you", red only for something that went wrong.
 - P4-8: Logos and category photos are compressed to 512 px square (P4.0 prompt), not 256 px. Why: sharp on high-density phones at about 60 to 120 KB. P5.1 reuses `IMAGE_SIZES` from `compress-image.ts` instead of its own 256 px.
 - P4-9: `PhoneField` is a plain input with a +63 prefix that accepts 0917…, 917… or +63 917… and tidies it on blur, instead of the DiceUI mask input. Why: masks fight pasted numbers and spaces; the rule lives once in `normalizePhPhone`.
+- P4-10 (P4.1): A food shop's single thing for sale is a "Menu item", as the system paper says (VOCAB said "Item"). Nav labels and breadcrumbs can follow VOCAB, so the dashboard says Menu or Products.
+- P4-11 (P4.1): "Add menu item" or "Add product" sits in the page's action row on tablet and desktop and in a `StickyActionBar` above the dock on phones, not inside the shell's top bar. Why: no slot system for page actions in the shell, and the thumb reaches the bottom bar.
+- P4-12 (P4.1): The product editor has one low-stock number per item and saves it on every variant. Stock counts go through `set_stock` after `save_item`, matched by row order.
+- P4-13 (P4.1): Add-on groups belong to the shop. The editor edits an item's groups in place (changes show on every item using the group, and it says so), can add a group made before, and removing a group from an item only unlinks it.
+- P4-14 (P4.1): `item_has_orders` is in the core error list now so the editor already offers Archive; the database raises it from P5.3.
+- P4-15 (P4.1): Kit fixes found while testing: sortable lists now drop with the keyboard (Space or Enter), `StickyActionBar` takes `aboveDock` on dashboard phone screens, and `InputGroup` (PesoField) is 44 px tall like `Input`.
 
 ## Backend plan (2026-10-11, approved by the founder)
 

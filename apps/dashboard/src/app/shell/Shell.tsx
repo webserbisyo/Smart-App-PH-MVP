@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from '@tanstack/react-router';
 import { Fragment, useEffect, useState } from 'react';
 
-import { moduleTrail, WORDS } from '@smartapp/core';
+import { buildNav, moduleTrail, WORDS } from '@smartapp/core';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,10 +14,12 @@ import { SidebarTrigger } from '@smartapp/ui/components/sidebar';
 import { useFormFactor } from '@smartapp/ui/hooks/use-form-factor';
 import type { ShellNavItem } from '@smartapp/ui/lib/nav';
 import { AppShell } from '@smartapp/ui/patterns/AppShell';
+import { OfflineBanner } from '@smartapp/ui/patterns/OfflineBanner';
 import { BottomDock } from '@smartapp/ui/patterns/BottomDock';
 import { TopBar } from '@smartapp/ui/patterns/TopBar';
 
-import { nav, registry } from '../registry';
+import { registry } from '../registry';
+import { useVocab } from '../shop';
 
 import { AccountMenu } from './AccountMenu';
 import { AppSidebar } from './AppSidebar';
@@ -33,6 +35,8 @@ export function Shell() {
   // Tablet: the rail opens over the page and closes again on the next page (it is open only for the path it was opened on).
   const [tabletOpenOn, setTabletOpenOn] = useState<string | null>(null);
   const path = useLocation({ select: (location) => location.pathname.replace(/^\/+|\/+$/g, '') });
+  const vocab = useVocab();
+  const nav = buildNav(registry, vocab);
 
   const items: ShellNavItem[] = nav.map((entry) => ({
     key: entry.key,
@@ -44,7 +48,7 @@ export function Shell() {
   }));
   const tabletOpen = tabletOpenOn === path;
   const placements = new Map(nav.map((entry) => [entry.key, entry.placement]));
-  const trail = path === 'kit' ? [{ path: 'kit', label: words.kit.title }] : moduleTrail(registry, path);
+  const trail = path === 'kit' ? [{ path: 'kit', label: words.kit.title }] : moduleTrail(registry, path, vocab);
   const title = trail.at(-1)?.label ?? '';
 
   useEffect(() => {
@@ -103,6 +107,7 @@ export function Shell() {
         />
       }
     >
+      <OfflineBanner text={WORDS.shared.offline} className="mb-4 rounded-lg border" />
       <Outlet />
     </AppShell>
   );
