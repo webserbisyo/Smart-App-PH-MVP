@@ -99,8 +99,9 @@ database is what ordering obeys. The cart is client-side (localStorage per shop 
 re-priced with `quote_order` before Place order.
 
 Pickup time slots (`pickupSlots(hours, closures, now)` in core, built by P4.4) must follow the database rule:
-at least 15 minutes ahead, today or tomorrow in Manila time, inside business hours, not on a closed day. The
-Messenger text (`messengerOrderText(receipt, shopLink)`) is also core, built by P4.4.
+at least 15 minutes ahead, today or tomorrow in Manila time, inside business hours, not on a closed day (the first
+slot is 20 minutes out and the last is 15 minutes before closing). The Messenger text
+(`messengerOrderText(order, lines, trackUrl, now)`, with `messengerLink(username, text)`) is also core, built by P4.4.
 
 ## Slice 3: checkout and receipt (P5.3)
 

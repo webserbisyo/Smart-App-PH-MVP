@@ -12,13 +12,16 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@hookform/resolvers": "5.9.1",
     "@smartapp/api": "workspace:*",
     "@smartapp/core": "workspace:*",
     "@smartapp/ui": "workspace:*",
     "@tailwindcss/postcss": "4.3.3",
+    "@tanstack/react-query": "5.104.2",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-hook-form": "7.90.0",
     "tailwindcss": "4.3.3",
     "zod": "4.6.6"
   },

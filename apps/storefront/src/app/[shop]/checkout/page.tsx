@@ -1,11 +1,8 @@
-import { WORDS } from '@smartapp/core';
-import { IconShoppingBagCheck } from '@smartapp/ui/icons';
-import { EmptyPage } from '@smartapp/ui/patterns/EmptyPage';
-
+import { Checkout } from '../../../features/checkout/Checkout';
 import { storefrontOrNotFound } from '../../../features/shell/shop';
 
-/** Checkout is built in P4.4; until then the cart's Checkout button lands here. */
+/** Checkout: the cart is in this browser, so the form renders there; the shop data comes from the layout. */
 export default async function CheckoutPage({ params }: { params: Promise<{ shop: string }> }) {
   await storefrontOrNotFound((await params).shop);
-  return <EmptyPage icon={<IconShoppingBagCheck />} title={WORDS.storefront.cart.title} text={WORDS.storefront.empty.checkout} />;
+  return <Checkout />;
 }

@@ -36,8 +36,8 @@ export interface MediaUrls {
 }
 
 /**
- * Public URLs of every image the shop pages show (item photos, category photos, logo, cover), keyed by path.
- * Built on the server so client components need no Supabase client.
+ * Public URLs of every image the shop pages show (item photos, category photos, logo, cover, payment QR codes),
+ * keyed by path. Built on the server so client components need no Supabase client.
  */
 export function shopMedia(storefront: Storefront): Record<string, MediaUrls> {
   const { settings } = storefront.shop;
@@ -46,6 +46,7 @@ export function shopMedia(storefront: Storefront): Record<string, MediaUrls> {
     ...storefront.categories.flatMap((category) => (category.icon?.kind === 'image' ? [category.icon.path] : [])),
     ...(settings.logoPath ? [settings.logoPath] : []),
     ...(settings.coverPath ? [settings.coverPath] : []),
+    ...storefront.paymentAccounts.flatMap((account) => (account.qrPath && account.isActive ? [account.qrPath] : [])),
   ];
   return Object.fromEntries(paths.map((path) => [path, { thumb: mediaUrl(path, 'thumb'), full: mediaUrl(path, 'full') }]));
 }

@@ -87,7 +87,10 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
       </header>
       {/* Phones and tablets: bottom tab bar with the cart bar floating above it. */}
       <div className="lg:hidden">
-        <CartBar key={added} text={cartText} onClick={openCart} aria-label={`${words.cart.open}: ${cartText}`} className={cn(added > 0 && 'bump')} />
+        {/* Checkout has its own Place order bar. */}
+        {pathname !== `${base}/checkout` && (
+          <CartBar key={added} text={cartText} onClick={openCart} aria-label={`${words.cart.open}: ${cartText}`} className={cn(added > 0 && 'bump')} />
+        )}
         <StoreTabBar label={words.nav.label} items={items} />
       </div>
     </>
