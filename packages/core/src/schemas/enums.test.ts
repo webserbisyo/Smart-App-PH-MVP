@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AUDIT_ACTIONS,
+  AUDIT_TARGET_TYPES,
   BUSINESS_TYPES,
   CashMethod,
   CONSENT_CHANNELS,
@@ -44,6 +46,8 @@ describe('enums', () => {
     expect(ORDER_ACTORS).toEqual(['customer', 'owner', 'system']);
     expect(LINE_PROBLEMS).toEqual(['item_unavailable', 'out_of_stock', 'invalid_options']);
     expect(CONSENT_CHANNELS).toEqual(['privacy', 'sms', 'email', 'push']);
+    expect(AUDIT_ACTIONS).toEqual(['payment_approved', 'payment_rejected', 'payment_recorded', 'order_cancelled', 'stock_set']);
+    expect(AUDIT_TARGET_TYPES).toEqual(['order', 'payment', 'variant']);
   });
   it('reject values from later phases', () => {
     expect(OrderStatus.safeParse('voided').success).toBe(false);

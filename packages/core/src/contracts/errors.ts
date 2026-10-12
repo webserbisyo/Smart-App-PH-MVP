@@ -36,6 +36,11 @@ export const API_ERROR_CODES = [
   'duplicate_reference',
   'proof_missing',
   'too_many_proofs',
+  // owner order actions (P5.4)
+  'invalid_transition',
+  'not_paid',
+  'payment_not_pending',
+  'already_paid',
   // auth
   'invalid_code',
   'code_expired',

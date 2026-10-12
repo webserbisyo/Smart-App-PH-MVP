@@ -18,3 +18,7 @@ export * from './storefront/hooks';
 export * from './orders/orders';
 export * from './orders/hooks';
 export { MY_ORDERS_MAX, rememberMyOrder } from './orders/my-orders';
+export * from './board/board';
+export * from './board/hooks';
+export { SHOP_POLL_MS, watchShopOrders } from './board/live';
+export type { ShopChannelSource, ShopOrdersHandlers } from './board/live';

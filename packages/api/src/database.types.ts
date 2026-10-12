@@ -5,7 +5,27 @@ export type Database = {
   
   "public": {
           Tables: {
-            "business_hours": {
+            "audit_log": {
+                  Row: {
+                    "action": string,"actor_id": string | null,"created_at": string,"id": string,"meta": NonNullable<Json>,"target_id": string,"target_type": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"actor_id"?: string | null,"created_at"?: string,"id"?: string,"meta"?: NonNullable<Json>,"target_id": string,"target_type": string,"tenant_id": string
+                  }
+                  Update: {
+                    "action"?: string,"actor_id"?: string | null,"created_at"?: string,"id"?: string,"meta"?: NonNullable<Json>,"target_id"?: string,"target_type"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "audit_log_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"business_hours": {
                   Row: {
                     "closes_at": string,"opens_at": string,"tenant_id": string,"weekday": number
                   }
@@ -523,7 +543,13 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "create_my_shop":
+            "advance_order":
+{ Args: { "p_order_id": string,"p_to_status": string,"p_tracking_url"?: string }; Returns: Json
+                           },
+"cancel_order":
+{ Args: { "p_order_id": string,"p_reason": string }; Returns: Json
+                           },
+"create_my_shop":
 { Args: { "p_business_type": string,"p_name": string,"p_slug": string }; Returns: {
               "business_type": string,
 "created_at": string,
@@ -552,6 +578,12 @@ isOneToOne: false
                            },
 "quote_order":
 { Args: { "p_payload": Json,"p_slug": string }; Returns: Json
+                           },
+"record_payment":
+{ Args: { "p_method": string,"p_order_id": string }; Returns: Json
+                           },
+"review_payment":
+{ Args: { "p_approve": boolean,"p_payment_id": string,"p_reject_reason"?: string }; Returns: Json
                            },
 "save_item":
 { Args: { "p_item": Json }; Returns: Json
