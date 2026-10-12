@@ -11,4 +11,5 @@ export const qk = {
   categories: (tenantId: string) => ['categories', tenantId] as const,
   catalog: (tenantId: string) => ['catalog', tenantId] as const,
   optionGroups: (tenantId: string) => ['option-groups', tenantId] as const,
+  storefront: (slug: string) => ['storefront', slug] as const,
 };

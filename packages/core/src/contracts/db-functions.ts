@@ -16,7 +16,7 @@ import { OrderLine, OrderLineOption } from '../schemas/order-line';
 import { OrderPayload } from '../schemas/order-payload';
 import { Payment } from '../schemas/payment';
 import { PaymentAccount } from '../schemas/payment-account';
-import { Shop, Tenant } from '../schemas/shop';
+import { PublicShop, Tenant } from '../schemas/shop';
 import { StampRule } from '../schemas/stamp-rule';
 import { Variant } from '../schemas/variant';
 import { Centavos, IsoDateTime, ManilaDate, PhPhone, Slug, Uuid } from '../schemas/primitives';
@@ -33,7 +33,7 @@ export const StorefrontItem = Item.extend({
 export type StorefrontItem = z.infer<typeof StorefrontItem>;
 
 export const Storefront = z.object({
-  shop: Shop,
+  shop: PublicShop,
   isOpen: z.boolean(),
   hours: z.array(BusinessHours),
   closures: z.array(Closure),

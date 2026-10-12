@@ -353,6 +353,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"get_storefront":
+{ Args: { "p_slug": string }; Returns: Json
+                           },
 "save_item":
 { Args: { "p_item": Json }; Returns: Json
                            },

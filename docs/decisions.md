@@ -145,3 +145,14 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   open/closed cases as `openState` in core (`packages/core/src/test/open-cases.ts`). `set_stock` takes a count of 0
   or more; to stop counting, the item's `trackStock` is turned off.
 
+- P5-19 (P5.2, 2026-10-12): `get_storefront` leaves out items in a hidden category and items with no variant for
+  sale (all archived), as well as hidden and archived items. An unknown, pending or suspended slug raises the new
+  error code `shop_not_found`; `getStorefront` turns it into `null` and the page shows not found. The query plans on
+  the demo data already use existing indexes, so no index was added.
+- P5-20: `demo_ensure_shop` keeps an existing shop's owner and name and only refreshes the demo fields (is_demo,
+  active, plan `demo`, paid a year ahead, settings, hours). Juan's Cafe's "Outside town" zone is saved but inactive
+  (fee on Messenger), so it shows only in the dashboard. The demo tools have no execute grant: only the SQL editor
+  and `seed.sql` run them.
+- P5-21: The per-shop install file (`/<slug>/manifest.webmanifest`) uses the shop's logo when there is one, plus
+  platform icons (`apps/storefront/public/icons/icon-192.png` and `icon-512.png`, maskable). Per-shop generated
+  icons stay in P6.

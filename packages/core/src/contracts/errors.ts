@@ -17,6 +17,7 @@ export const API_ERROR_CODES = [
   'category_not_empty',
   'item_has_orders',
   'not_allowed',
+  'shop_not_found',
   // auth
   'invalid_code',
   'code_expired',
