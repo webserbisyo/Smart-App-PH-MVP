@@ -13,3 +13,7 @@ export const DeliveryZone = z.object({
   sort: z.int(),
 });
 export type DeliveryZone = z.infer<typeof DeliveryZone>;
+
+/** A delivery zone as Settings saves it; `id` is null for a new one (it goes to the end of the list). */
+export const DeliveryZoneDraft = DeliveryZone.omit({ tenantId: true, sort: true }).extend({ id: Uuid.nullable() });
+export type DeliveryZoneDraft = z.infer<typeof DeliveryZoneDraft>;

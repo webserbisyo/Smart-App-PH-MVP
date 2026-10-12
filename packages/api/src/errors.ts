@@ -27,6 +27,9 @@ const AUTH_CODES: Readonly<Record<string, ApiErrorCode>> = {
   over_sms_send_rate_limit: 'rate_limited',
 };
 
+/** 22P02 bad text for a type, 23502 missing value, 23503 foreign key, 23505 duplicate, 23514 check rule. */
+const POSTGRES_INVALID: ReadonlySet<string> = new Set(['22P02', '23502', '23503', '23505', '23514']);
+
 function field(value: unknown, key: string): unknown {
   if (typeof value !== 'object' || value === null) return undefined;
   const found: unknown = Reflect.get(value, key);
@@ -54,8 +57,13 @@ export function toApiError(error: unknown): ApiError {
   if (code !== null) {
     const fromAuth = AUTH_CODES[code];
     if (fromAuth !== undefined) return new ApiError(fromAuth);
-    // Postgres: 42501 is "permission denied"; the caller is not signed in or not allowed.
-    if (code === '42501') return new ApiError('not_signed_in');
+    // Postgres: 42501 is "permission denied" (not signed in) or a row-level security refusal (not this shop's row,
+    // or the shop is not active yet).
+    if (code === '42501') {
+      return new ApiError(message !== null && /row-level security/i.test(message) ? 'not_allowed' : 'not_signed_in');
+    }
+    // Postgres: a bad value, a broken rule, a duplicate, or a row pointing at another shop's row.
+    if (POSTGRES_INVALID.has(code)) return new ApiError('invalid', message);
   }
   // verifyOtp says "Token has expired or is invalid" without a stable code on older servers.
   if (message !== null && /token has expired or is invalid/i.test(message)) return new ApiError('invalid_code');

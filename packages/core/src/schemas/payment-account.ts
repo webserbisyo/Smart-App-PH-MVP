@@ -16,3 +16,7 @@ export const PaymentAccount = z.object({
   sort: z.int(),
 });
 export type PaymentAccount = z.infer<typeof PaymentAccount>;
+
+/** A payment account as Settings saves it; `id` is null for a new one (it goes to the end of the list). */
+export const PaymentAccountDraft = PaymentAccount.omit({ tenantId: true, sort: true }).extend({ id: Uuid.nullable() });
+export type PaymentAccountDraft = z.infer<typeof PaymentAccountDraft>;

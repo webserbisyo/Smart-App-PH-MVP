@@ -61,25 +61,29 @@ Error codes: `already_has_shop`, `slug_taken`, `slug_reserved`, `slug_invalid`, 
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
 | `useShopSettings(tenantId)` | query | | `ShopSettings` |
-| `useUpdateShopSettings()` | mutation | `Partial<ShopSettings>` (no `tenantId`) | `ShopSettings` |
+| `useUpdateShopSettings()` | mutation | `ShopSettingsPatch` (`Partial<ShopSettings>` without `tenantId`) | `ShopSettings` |
 | `useUpdateShopName()` | mutation | `{ name }` | `Tenant` |
-| `useBusinessHours(tenantId)`, `useSaveBusinessHours()` | query, mutation | `BusinessHours[]` (whole week replaced) | |
-| `useClosures`, `useAddClosure`, `useRemoveClosure` | | `{ closedOn, note }` | |
-| `usePaymentAccounts`, `useSavePaymentAccount`, `useRemovePaymentAccount` | | `PaymentAccount` without ids for new | |
-| `useDeliveryZones`, `useSaveDeliveryZone`, `useRemoveDeliveryZone` | | `DeliveryZone` | |
-| `useCategories`, `useSaveCategory`, `useRemoveCategory` | | `Category` (with `icon`) | remove refuses a category with items: `category_not_empty` |
+| `useBusinessHours(tenantId)`, `useSaveBusinessHours()` | query, mutation | `DayHours[]` (whole week replaced; days left out are closed) | `BusinessHours[]` |
+| `useClosures`, `useAddClosure`, `useRemoveClosure` | | `{ closedOn, note }`, `{ closedOn }` | |
+| `usePaymentAccounts`, `useSavePaymentAccount`, `useRemovePaymentAccount` | | `PaymentAccountDraft` (`id: null` for new), `{ accountId }` | removing deletes its QR image |
+| `useDeliveryZones`, `useSaveDeliveryZone`, `useRemoveDeliveryZone` | | `DeliveryZoneDraft`, `{ zoneId }` | |
+| `useCategories`, `useSaveCategory`, `useRemoveCategory` | | `CategoryDraft` (with `icon`), `{ categoryId }` | remove refuses a category with items: `category_not_empty` |
 | `useCatalog(tenantId)` | query | | `CatalogItem[]`: item + photos + variants + option group ids, all statuses |
 | `useSaveItem()` | mutation | `ItemDraft` (item, variants ≥ 1, photo paths in order, option group ids) | `CatalogItem`, one transaction (`save_item`) |
 | `useSetItemStatus()` | mutation | `{ itemId, status }` | active / hidden / archived |
 | `useDeleteItem()` | mutation | `{ itemId }` | from P5.3 on, an item with orders raises `item_has_orders` (archive it instead) |
 | `useSetVariantSoldOut()` | mutation | `{ variantId, isSoldOut }` | |
-| `useSetStock()` | mutation | `{ variantId, stockOnHand }` | `set_stock`, logged |
-| `useOptionGroups`, `useSaveOptionGroup`, `useRemoveOptionGroup` | | `OptionGroup` with options | |
+| `useSetStock()` | mutation | `{ variantId, stockOnHand }` (0 or more) | `set_stock` (logged from P5.4) |
+| `useOptionGroups`, `useSaveOptionGroup`, `useRemoveOptionGroup` | | `OptionGroupDraft` with options in order, `{ groupId }` | |
 | `useSaveSortOrder()` | mutation | `{ kind: 'categories' \| 'items' \| 'variants' \| 'photos' \| 'paymentAccounts' \| 'deliveryZones', ids }` | drag to sort |
-| `uploadShopMedia(client, tenantId, kind, blob)` | function | `kind`: `logo \| cover \| item \| category \| qr` | `{ path }`; uploads `full` and `thumb` |
-| `mediaUrl(path, size)` | function | | public URL |
+| `uploadShopMedia(client, tenantId, kind, { full, thumb })` | function | `kind`: `logo \| cover \| item \| category \| qr` (`MediaKind`) | `{ path }` (the full size; the thumb is `-thumb.webp` beside it) |
+| `mediaUrl(path, size)` | function | | public URL (works once the app has created its client) |
 
 `Category.icon` is `{ kind: 'fluent', key } | { kind: 'emoji', value } | { kind: 'image', path } | null` (docs/ui-kit.md 8).
+Queries take the shop id; the mutations act on the signed-in owner's shop (`useMyShop`). Drafts (`ItemDraft`,
+`CategoryDraft`, `PaymentAccountDraft`, `DeliveryZoneDraft`, `OptionGroupDraft`, `DayHours`, `ShopSettingsPatch`) are
+core Zod schemas. Removing a photo, logo, QR or photo icon also deletes the file. Error codes: `invalid`,
+`variant_required`, `category_not_empty`, `not_allowed`.
 
 ## Slice 2: storefront read (P5.2)
 

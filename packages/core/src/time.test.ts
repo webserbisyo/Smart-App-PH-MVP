@@ -10,12 +10,14 @@ import {
   manilaDate,
   manilaInstant,
   manilaParts,
+  openState,
   minutesSince,
   minutesToTime,
   ticketNo,
   timeToMinutes,
   weekdayOf,
 } from './time';
+import { OPEN_CASES } from './test/open-cases';
 
 describe('Manila business time', () => {
   it('uses Manila, not UTC, for the business date', () => {
@@ -72,5 +74,16 @@ describe('ages', () => {
   it('pads the order number', () => {
     expect(ticketNo(42)).toBe('#042');
     expect(ticketNo(1234)).toBe('#1234');
+  });
+});
+
+describe('openState', () => {
+  it.each(OPEN_CASES)('$name', ({ hours, closures, now, expected }) => {
+    expect(openState(hours, closures.map((closedOn) => ({ closedOn })), new Date(now))).toEqual(expected);
+  });
+
+  it('accepts database times with seconds', () => {
+    const state = openState([{ weekday: 1, opensAt: '08:00:00', closesAt: '20:00:00' }], [], new Date('2026-10-12T09:00:00+08:00'));
+    expect(state).toEqual({ isOpen: true, closesAt: '2026-10-12T20:00:00+08:00', nextOpensAt: null });
   });
 });

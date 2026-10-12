@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from './database.types';
+import { setMediaClient } from './media';
 
 /** Every client in the apps: typed with the generated database types. */
 export type ApiClient = SupabaseClient<Database>;
@@ -22,14 +23,16 @@ export interface CookieAdapter {
 
 /** Dashboard: a browser client with the session in localStorage. */
 export function createDashboardClient(env: ApiEnv): ApiClient {
-  return createClient<Database>(env.url, env.publishableKey, {
+  const client = createClient<Database>(env.url, env.publishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
   });
+  setMediaClient(client);
+  return client;
 }
 
 /** Storefront server code (server components, proxy): the session lives in cookies. */
 export function createStorefrontServerClient(env: ApiEnv, cookies: CookieAdapter): ApiClient {
-  return createServerClient<Database>(env.url, env.publishableKey, {
+  const client = createServerClient<Database>(env.url, env.publishableKey, {
     cookies: {
       getAll: () => cookies.getAll(),
       setAll: (toSet, headers) => {
@@ -37,16 +40,22 @@ export function createStorefrontServerClient(env: ApiEnv, cookies: CookieAdapter
       },
     },
   });
+  setMediaClient(client);
+  return client;
 }
 
 /** Storefront client components: the same cookie session as the server client. */
 export function createStorefrontBrowserClient(env: ApiEnv): ApiClient {
-  return createBrowserClient<Database>(env.url, env.publishableKey);
+  const client = createBrowserClient<Database>(env.url, env.publishableKey);
+  setMediaClient(client);
+  return client;
 }
 
 /** No session at all: for shop pages that must stay cacheable. */
 export function createPublicClient(env: ApiEnv): ApiClient {
-  return createClient<Database>(env.url, env.publishableKey, {
+  const client = createClient<Database>(env.url, env.publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
+  setMediaClient(client);
+  return client;
 }

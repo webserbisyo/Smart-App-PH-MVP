@@ -125,3 +125,70 @@ export function ageLabel(minutes: number): string {
 export function ticketNo(orderNo: number): string {
   return `#${String(orderNo).padStart(3, '0')}`;
 }
+
+/** Open or closed at `now`, and when that changes (ISO instants in Manila time, `+08:00`). */
+export interface OpenState {
+  isOpen: boolean;
+  /** While open: when this session ends. */
+  closesAt: string | null;
+  /** While closed: the next opening in the coming two weeks, or null when there is none. */
+  nextOpensAt: string | null;
+}
+
+/** `HH:MM[:SS]` hours of one weekday (0 = Sunday). */
+export interface WeekdayHours {
+  weekday: number;
+  opensAt: string;
+  closesAt: string;
+}
+
+/**
+ * Open or closed in Manila time, the same rule as `private.is_open_now` in the database: a closed day (closure)
+ * wins, overnight hours (closing before opening) belong to the day they start and do not run into a closed day, and
+ * a shop with no hours is closed. The database decides ordering; this only words it ("Open until 9:00 PM").
+ * Both are tested with `src/test/open-cases.ts`.
+ */
+export function openState(
+  hours: readonly WeekdayHours[],
+  closures: readonly { closedOn: string }[],
+  now: Date,
+): OpenState {
+  const closed = new Set(closures.map((closure) => closure.closedOn));
+  const dayHours = (date: string) => hours.find((day) => day.weekday === weekdayOf(date)) ?? null;
+  const { date: today, minutes } = manilaParts(now);
+  const yesterday = addDays(today, -1);
+  const tomorrow = addDays(today, 1);
+
+  if (!closed.has(today)) {
+    const todays = dayHours(today);
+    if (todays) {
+      const opens = timeToMinutes(todays.opensAt);
+      const closes = timeToMinutes(todays.closesAt);
+      const overnight = closes < opens;
+      if (minutes >= opens && (overnight || minutes < closes)) {
+        const closesAt = !overnight
+          ? manilaInstant(today, todays.closesAt)
+          : closed.has(tomorrow)
+            ? manilaInstant(tomorrow, '00:00')
+            : manilaInstant(tomorrow, todays.closesAt);
+        return { isOpen: true, closesAt, nextOpensAt: null };
+      }
+    }
+    const yesterdays = closed.has(yesterday) ? null : dayHours(yesterday);
+    if (yesterdays) {
+      const closes = timeToMinutes(yesterdays.closesAt);
+      if (closes < timeToMinutes(yesterdays.opensAt) && minutes < closes) {
+        return { isOpen: true, closesAt: manilaInstant(today, yesterdays.closesAt), nextOpensAt: null };
+      }
+    }
+  }
+
+  for (let offset = 0; offset < 14; offset += 1) {
+    const date = addDays(today, offset);
+    const day = closed.has(date) ? null : dayHours(date);
+    if (day && (offset > 0 || timeToMinutes(day.opensAt) > minutes)) {
+      return { isOpen: false, closesAt: null, nextOpensAt: manilaInstant(date, day.opensAt) };
+    }
+  }
+  return { isOpen: false, closesAt: null, nextOpensAt: null };
+}

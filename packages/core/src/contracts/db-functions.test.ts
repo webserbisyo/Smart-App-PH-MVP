@@ -7,10 +7,13 @@ import type { DbFunctionInput, DbFunctionName } from './db-functions';
 
 const { ids } = sample;
 
-/** System paper 7.4, in order, plus slug_available (decision P3-4). */
+/** System paper 7.4, in order, plus slug_available (decision P3-4) and the P5.1 catalog functions. */
 const PAPER_FUNCTIONS = [
   'create_my_shop',
   'slug_available',
+  'save_item',
+  'set_stock',
+  'save_sort_order',
   'get_storefront',
   'quote_order',
   'place_order',
@@ -46,6 +49,30 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
   slug_available: {
     input: { slug: 'juans-cafe' },
     output: true,
+  },
+  save_item: {
+    input: {
+      id: null,
+      tenantId: ids.tenant,
+      categoryId: ids.category,
+      name: 'Iced Latte',
+      description: null,
+      status: 'active',
+      isFeatured: false,
+      trackStock: true,
+      variants: [{ id: null, name: 'Regular', price: 12000, lowStockAt: 5, isSoldOut: false }],
+      photoPaths: [`${ids.tenant}/items/latte.webp`],
+      optionGroupIds: [ids.group],
+    },
+    output: { ...sample.item, photos: [sample.itemPhoto], variants: [sample.variant], optionGroupIds: [ids.group] },
+  },
+  set_stock: {
+    input: { variantId: ids.variant, stockOnHand: 12 },
+    output: { ...sample.variant, stockOnHand: 12 },
+  },
+  save_sort_order: {
+    input: { kind: 'categories', ids: [ids.category] },
+    output: null,
   },
   get_storefront: {
     input: { slug: 'juans-cafe' },
@@ -162,7 +189,7 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
 };
 
 describe('database function contracts', () => {
-  it('list exactly the functions of system paper 7.4 and the P3 additions', () => {
+  it('list exactly the functions of system paper 7.4 and the P3 and P5.1 additions', () => {
     expect(DB_FUNCTION_NAMES).toEqual(PAPER_FUNCTIONS);
   });
 

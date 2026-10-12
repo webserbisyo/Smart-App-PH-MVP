@@ -5,7 +5,263 @@ export type Database = {
   
   "public": {
           Tables: {
-            "profiles": {
+            "business_hours": {
+                  Row: {
+                    "closes_at": string,"opens_at": string,"tenant_id": string,"weekday": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "closes_at": string,"opens_at": string,"tenant_id": string,"weekday": number
+                  }
+                  Update: {
+                    "closes_at"?: string,"opens_at"?: string,"tenant_id"?: string,"weekday"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "business_hours_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"categories": {
+                  Row: {
+                    "created_at": string,"icon_kind": string | null,"icon_value": string | null,"id": string,"is_hidden": boolean,"name": string,"sort": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"icon_kind"?: string | null,"icon_value"?: string | null,"id"?: string,"is_hidden"?: boolean,"name": string,"sort"?: number,"tenant_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"icon_kind"?: string | null,"icon_value"?: string | null,"id"?: string,"is_hidden"?: boolean,"name"?: string,"sort"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "categories_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"closures": {
+                  Row: {
+                    "closed_on": string,"note": string | null,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "closed_on": string,"note"?: string | null,"tenant_id": string
+                  }
+                  Update: {
+                    "closed_on"?: string,"note"?: string | null,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "closures_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"delivery_zones": {
+                  Row: {
+                    "created_at": string,"eta_text": string | null,"fee": number,"id": string,"is_active": boolean,"name": string,"sort": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"eta_text"?: string | null,"fee": number,"id"?: string,"is_active"?: boolean,"name": string,"sort"?: number,"tenant_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"eta_text"?: string | null,"fee"?: number,"id"?: string,"is_active"?: boolean,"name"?: string,"sort"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "delivery_zones_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"item_option_groups": {
+                  Row: {
+                    "group_id": string,"item_id": string,"sort": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "group_id": string,"item_id": string,"sort"?: number,"tenant_id": string
+                  }
+                  Update: {
+                    "group_id"?: string,"item_id"?: string,"sort"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_option_groups_group_id_tenant_id_fkey"
+      columns: ["group_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "option_groups"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "item_option_groups_item_id_tenant_id_fkey"
+      columns: ["item_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "item_option_groups_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"item_photos": {
+                  Row: {
+                    "id": string,"item_id": string,"path": string,"sort": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"item_id": string,"path": string,"sort"?: number,"tenant_id": string
+                  }
+                  Update: {
+                    "id"?: string,"item_id"?: string,"path"?: string,"sort"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_photos_item_id_tenant_id_fkey"
+      columns: ["item_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "item_photos_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"item_variants": {
+                  Row: {
+                    "archived_at": string | null,"id": string,"is_sold_out": boolean,"item_id": string,"low_stock_at": number | null,"name": string,"price": number,"sort": number,"stock_on_hand": number | null,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "archived_at"?: string | null,"id"?: string,"is_sold_out"?: boolean,"item_id": string,"low_stock_at"?: number | null,"name": string,"price": number,"sort"?: number,"stock_on_hand"?: number | null,"tenant_id": string
+                  }
+                  Update: {
+                    "archived_at"?: string | null,"id"?: string,"is_sold_out"?: boolean,"item_id"?: string,"low_stock_at"?: number | null,"name"?: string,"price"?: number,"sort"?: number,"stock_on_hand"?: number | null,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_variants_item_id_tenant_id_fkey"
+      columns: ["item_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "item_variants_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"items": {
+                  Row: {
+                    "category_id": string | null,"created_at": string,"description": string | null,"id": string,"is_featured": boolean,"name": string,"sort": number,"status": string,"tenant_id": string,"track_stock": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"is_featured"?: boolean,"name": string,"sort"?: number,"status"?: string,"tenant_id": string,"track_stock"?: boolean
+                  }
+                  Update: {
+                    "category_id"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"is_featured"?: boolean,"name"?: string,"sort"?: number,"status"?: string,"tenant_id"?: string,"track_stock"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "items_category_id_tenant_id_fkey"
+      columns: ["category_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "items_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"option_groups": {
+                  Row: {
+                    "created_at": string,"id": string,"max_select": number,"min_select": number,"name": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"max_select"?: number,"min_select"?: number,"name": string,"tenant_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"max_select"?: number,"min_select"?: number,"name"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "option_groups_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"options": {
+                  Row: {
+                    "group_id": string,"id": string,"is_sold_out": boolean,"name": string,"price_delta": number,"sort": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "group_id": string,"id"?: string,"is_sold_out"?: boolean,"name": string,"price_delta"?: number,"sort"?: number,"tenant_id": string
+                  }
+                  Update: {
+                    "group_id"?: string,"id"?: string,"is_sold_out"?: boolean,"name"?: string,"price_delta"?: number,"sort"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "options_group_id_tenant_id_fkey"
+      columns: ["group_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "option_groups"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "options_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"payment_accounts": {
+                  Row: {
+                    "account_name": string,"account_number": string,"bank_name": string | null,"created_at": string,"id": string,"is_active": boolean,"method": string,"qr_path": string | null,"sort": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_name": string,"account_number": string,"bank_name"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"method": string,"qr_path"?: string | null,"sort"?: number,"tenant_id": string
+                  }
+                  Update: {
+                    "account_name"?: string,"account_number"?: string,"bank_name"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"method"?: string,"qr_path"?: string | null,"sort"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payment_accounts_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string | null,"id": string,"phone": string | null
                   }
@@ -94,6 +350,31 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "tenants"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"save_item":
+{ Args: { "p_item": Json }; Returns: Json
+                           },
+"save_sort_order":
+{ Args: { "p_ids": (string)[],"p_kind": string }; Returns: undefined
+                           },
+"set_stock":
+{ Args: { "p_stock_on_hand": number,"p_variant_id": string }; Returns: {
+              "archived_at": string | null,
+"id": string,
+"is_sold_out": boolean,
+"item_id": string,
+"low_stock_at": number | null,
+"name": string,
+"price": number,
+"sort": number,
+"stock_on_hand": number | null,
+"tenant_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "item_variants"
         isOneToOne: true
         isSetofReturn: false
       } },

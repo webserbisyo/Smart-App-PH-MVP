@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Slug } from '@smartapp/core';
 import type { BusinessType, Tenant } from '@smartapp/core';
 
+import { ApiError } from '../errors';
 import { qk } from '../keys';
 import { useApiClient } from '../provider';
 
@@ -36,4 +37,16 @@ export function useCreateMyShop() {
       queryClient.setQueryData(qk.myShop, tenant);
     },
   });
+}
+
+/**
+ * For mutations on the signed-in owner's shop: a function that returns its id, or throws `not_signed_in` when there
+ * is no shop yet (the dashboard guard loads it before any screen shows).
+ */
+export function useShopId(): () => string {
+  const { data: shop } = useMyShop();
+  return () => {
+    if (!shop) throw new ApiError('not_signed_in');
+    return shop.id;
+  };
 }

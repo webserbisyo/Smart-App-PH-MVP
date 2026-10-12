@@ -236,12 +236,13 @@ select throws_ok($$ select * from public.tests_late_table $$, '42501', null, 'a 
 select throws_ok($$ select public.tests_late_function() $$, '42501', null, 'a later function is not executable by anon');
 reset role;
 
--- Nothing in private is executable by clients except the two membership helpers and the slug check.
+-- Nothing in private is executable by clients except the membership helpers, the slug check and, from P5.1, the
+-- path helper (storage policies) and the CatalogItem builder (save_item runs as the caller).
 select is(
   (select array_agg(p.proname::text order by p.proname)
    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'private' and has_function_privilege('authenticated', p.oid, 'execute')),
-  array['is_active_shop_owner', 'is_reserved_slug', 'is_shop_member'],
+  array['catalog_item_json', 'is_active_shop_owner', 'is_reserved_slug', 'is_shop_member', 'try_uuid'],
   'authenticated executes only the listed private helpers'
 );
 select is(

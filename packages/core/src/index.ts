@@ -11,6 +11,8 @@ export * from './schemas/category';
 export * from './schemas/item';
 export * from './schemas/variant';
 export * from './schemas/option-group';
+export * from './schemas/catalog-item';
+export * from './schemas/item-draft';
 export * from './schemas/cart-line';
 export * from './schemas/order-payload';
 export * from './schemas/order';

@@ -35,3 +35,22 @@ export const ItemOptionGroup = z.object({
   groupId: Uuid,
 });
 export type ItemOptionGroup = z.infer<typeof ItemOptionGroup>;
+
+/** An add-on choice as the editor saves it; `id` is null for a new one. */
+export const OptionDraft = Option.omit({ tenantId: true, groupId: true }).extend({ id: Uuid.nullable() });
+export type OptionDraft = z.infer<typeof OptionDraft>;
+
+/** An option group with its choices in order, as the editor saves it; `id` is null for a new one. */
+export const OptionGroupDraft = z
+  .object({
+    id: Uuid.nullable(),
+    name: z.string().min(1).max(60),
+    minSelect: z.int().nonnegative(),
+    maxSelect: z.int().positive(),
+    options: z.array(OptionDraft),
+  })
+  .refine((group) => group.maxSelect >= group.minSelect, {
+    message: 'maxSelect must be at least minSelect.',
+    path: ['maxSelect'],
+  });
+export type OptionGroupDraft = z.infer<typeof OptionGroupDraft>;

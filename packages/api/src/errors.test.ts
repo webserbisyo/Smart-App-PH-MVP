@@ -20,6 +20,16 @@ describe('toApiError', () => {
     expect(toApiError({ message: 'permission denied for function create_my_shop', code: '42501' }).code).toBe('not_signed_in');
   });
 
+  it('maps a row-level security refusal to not_allowed', () => {
+    const error = { message: 'new row violates row-level security policy for table "categories"', code: '42501' };
+    expect(toApiError(error).code).toBe('not_allowed');
+  });
+
+  it('maps broken database rules to invalid', () => {
+    expect(toApiError({ message: 'violates check constraint', code: '23514' }).code).toBe('invalid');
+    expect(toApiError({ message: 'violates foreign key constraint', code: '23503' }).code).toBe('invalid');
+  });
+
   it('reads an expired code without a code field', () => {
     expect(toApiError({ message: 'Token has expired or is invalid' }).code).toBe('invalid_code');
   });
