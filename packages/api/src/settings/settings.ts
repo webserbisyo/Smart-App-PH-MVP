@@ -49,8 +49,17 @@ export async function saveBusinessHours(client: ApiClient, tenantId: string, wee
   const days = week.map((day) => parsed(DayHours.safeParse(day)));
   if (new Set(days.map((day) => day.weekday)).size !== days.length) throw new ApiError('invalid');
 
-  if (days.length > 0) {
-    const { error } = await client.from('business_hours').upsert(days.map((day) => businessHoursToRow(tenantId, day)));
+  // Owners may only change the times of a saved day (column grants), so saved days are updated and new days added.
+  const existing = await client.from('business_hours').select('weekday').eq('tenant_id', tenantId);
+  throwIfError(existing.error);
+  const saved = new Set((existing.data ?? []).map((row) => row.weekday));
+  const updates = days
+    .filter((day) => saved.has(day.weekday))
+    .map((day) => client.from('business_hours').update({ opens_at: day.opensAt, closes_at: day.closesAt }).eq('tenant_id', tenantId).eq('weekday', day.weekday));
+  for (const { error } of await Promise.all(updates)) throwIfError(error);
+  const added = days.filter((day) => !saved.has(day.weekday));
+  if (added.length > 0) {
+    const { error } = await client.from('business_hours').insert(added.map((day) => businessHoursToRow(tenantId, day)));
     throwIfError(error);
   }
   const open = days.map((day) => day.weekday);
@@ -70,8 +79,11 @@ export async function getClosures(client: ApiClient, tenantId: string): Promise<
 /** Adds a closed day (or changes its note). */
 export async function addClosure(client: ApiClient, tenantId: string, input: { closedOn: string; note: string | null }): Promise<Closure> {
   const closedOn = parsed(ManilaDate.safeParse(input.closedOn));
-  const row = { tenant_id: tenantId, closed_on: closedOn, note: blankToNull(input.note) };
-  return closureFromRow(must(await client.from('closures').upsert(row).select('*').single()));
+  const note = blankToNull(input.note);
+  // Add the day if it is new (owners may not rewrite the key columns), then set its note.
+  const { error } = await client.from('closures').upsert({ tenant_id: tenantId, closed_on: closedOn, note }, { ignoreDuplicates: true });
+  throwIfError(error);
+  return closureFromRow(must(await client.from('closures').update({ note }).eq('tenant_id', tenantId).eq('closed_on', closedOn).select('*').single()));
 }
 
 export async function removeClosure(client: ApiClient, tenantId: string, closedOn: string): Promise<void> {

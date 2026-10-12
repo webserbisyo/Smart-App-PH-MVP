@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { slugFromName } from './slug';
+import { shopUrl, slugFromName } from './slug';
 
 describe('slugFromName', () => {
   it.each([
@@ -17,5 +17,11 @@ describe('slugFromName', () => {
     const slug = slugFromName(`${'a'.repeat(39)} b`);
     expect(slug.length).toBeLessThanOrEqual(40);
     expect(slug.endsWith('-')).toBe(false);
+  });
+});
+
+describe('shopUrl', () => {
+  it('is the storefront origin plus the slug', () => {
+    expect(shopUrl('juans-cafe')).toBe('https://shop.webserbisyo.com/juans-cafe');
   });
 });

@@ -96,6 +96,10 @@ Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/
 - P4-13 (P4.1): Add-on groups belong to the shop. The editor edits an item's groups in place (changes show on every item using the group, and it says so), can add a group made before, and removing a group from an item only unlinks it.
 - P4-14 (P4.1): `item_has_orders` is in the core error list now so the editor already offers Archive; the database raises it from P5.3.
 - P4-15 (P4.1): Kit fixes found while testing: sortable lists now drop with the keyboard (Space or Enter), `StickyActionBar` takes `aboveDock` on dashboard phone screens, and `InputGroup` (PesoField) is 44 px tall like `Input`.
+- P4-16 (P4.2): "Pause orders now" is the `accepting_orders` switch only, with no reason field: the table has no column for a reason, and a UI checkpoint adds no migration. Walk-in always allows cash at the counter, so it is a hint, not a switch.
+- P4-17 (P4.2): Each settings page saves on its own with one Save (`SettingsSection` gained `disabled`, `note` and `aboveDock`; it no longer clips its sticky Save bar). Pages warn before leaving with unsaved changes. `LeaveGuard`, `useMediaUpload` and the form `row()` path helper moved to `apps/dashboard/src/app/` so products and settings share them.
+- P4-18 (P4.2): Four ready-made colour sets (Uling, Kape, Ube, Dagat) live in `packages/core/src/color.ts`. The Look page warns (does not block) when text or buttons fall under 4.5:1 contrast. The shop link is `shopUrl(slug)` on `https://shop.webserbisyo.com`.
+- P4-19 (P4.2): Saving business hours, closed days and add-on choices no longer uses upsert: owners may only update the non-key columns (P5.1 column grants), so saved rows are updated and new rows inserted (closed days insert with "ignore duplicates"). No grant was widened.
 
 ## Backend plan (2026-10-11, approved by the founder)
 
