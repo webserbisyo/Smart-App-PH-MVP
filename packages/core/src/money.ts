@@ -34,6 +34,13 @@ export function pesoInputText(amount: number): string {
   return rest === 0 ? String(pesos) : `${String(pesos)}.${String(rest).padStart(2, '0')}`;
 }
 
+/** Centavos → pesos with two decimals and nothing else, for spreadsheets (`123450` → `1234.50`, `-500` → `-5.00`). */
+export function pesoDecimal(amount: number): string {
+  const absolute = Math.abs(Math.trunc(amount));
+  const sign = amount < 0 && absolute > 0 ? '-' : '';
+  return `${sign}${String(Math.trunc(absolute / 100))}.${String(absolute % 100).padStart(2, '0')}`;
+}
+
 /** Sum of centavo amounts. */
 export function sumCentavos(amounts: readonly number[]): number {
   return amounts.reduce((total, amount) => total + amount, 0);

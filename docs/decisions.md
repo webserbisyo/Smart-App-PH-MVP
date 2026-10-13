@@ -266,3 +266,25 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   `get_storefront` keeps its P5.2 body as `private.storefront_base` and adds `stampRule` and `memberCount` on top.
   Joining also records a privacy consent (source `join`). A member has at most 5 saved addresses (`invalid` past
   that); a new default clears the old one and the first address is the default. Ledger rows can never be updated.
+- P5-12 (P5.6, 2026-10-13): Sales count paid orders that were not cancelled or expired, by Manila business date.
+  Orders count every order except expired ones; open orders, waiting and to-verify count every open order whatever
+  its date (a pickup for tomorrow is still open); the average is sales over the paid orders counted in sales; best
+  sellers rank `order_items` of sales orders by quantity (top 5, ties by sales); top suki are the three members with
+  the highest sales this Manila month. The definitions sit above `get_dashboard_today` in the migration.
+- P5-33 (P5.6): No second `orders (tenant_id, business_date)` index: the unique key `orders_tenant_day_no`
+  `(tenant_id, business_date, order_no)` already serves it (checked with `explain`). New: a partial index on open
+  orders and one on members (`customers (tenant_id, member_since)`).
+- P5-34 (P5.6): `demo_reset` builds orders straight from the shop's catalog (not through `place_order`, which checks
+  opening hours and the clock) and turns the demo shop's stamp card on, since a demo shows it. Historical demo
+  orders do not take stock; instead every tracked variant is set above its low mark except two. While it runs,
+  `broadcast_order` sends nothing (`smartapp.demo_reset` setting), so an open dashboard does not chime hundreds of
+  times. Demo tokens are `demo-` plus 16 random characters; real tokens are 22. Order numbers continue after any
+  real order of the same day, and the counters are rebuilt from the orders that remain. `demo_setup` now refreshes
+  the catalog only when the shop has no real orders left (otherwise `item_has_orders` would stop it), then runs
+  `demo_reset`, so running it again is safe.
+- P5-35 (P5.6): Slice 6 in `packages/api`: `useCustomers` is an infinite query whose `data` is the rows loaded so
+  far (`hasNextPage`, `fetchNextPage` for "Load more"); its search matches a name, or a mobile typed as `09…`, `+63…`
+  or `9…`, with `%`, `_` and quotes taken as plain text. `useUpdateCustomerNotes` trims notes and drops blank and
+  repeated tags. `exportOrdersCsv` reads the orders 1000 at a time and adds a byte order mark so Excel shows ñ and ₱.
+  The CSV text comes from core `ordersCsv` (`toCsv` puts `'` before cells starting with `=`, `+`, `-`, `@`, tab or
+  carriage return). Keys `qk.memberInsights`, `qk.salesReport`, `qk.customers`, `qk.customerList`.

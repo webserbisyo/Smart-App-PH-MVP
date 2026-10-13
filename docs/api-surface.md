@@ -2,7 +2,7 @@
 
 What the screens (P4.0 to P4.7) can rely on, slice by slice. The backend checkpoints (P3b, P5.1 to P5.6) build exactly
 these names; the screen checkpoints call only these. If a name must change, change it here first and tell the
-other thread. Types are the Zod types in `@smartapp/core` (camelCase). Last updated 2026-10-11.
+other thread. Types are the Zod types in `@smartapp/core` (camelCase). Last updated 2026-10-13.
 
 ## Run order (vertical slices)
 
@@ -157,9 +157,11 @@ Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unava
 | `useDashboardToday(tenantId)` | query | | `DashboardToday` |
 | `useMemberInsights(tenantId)` | query | | `MemberInsights` |
 | `useSalesReport(tenantId, { from, to })` | query | Manila dates | `SalesReport` |
-| `useCustomers(tenantId, { search, membersOnly })` | query | | `CustomerRow[]` (customer + stamp balance) |
-| `useUpdateCustomerNotes()` | mutation | `{ customerId, notes, tags }` | |
-| `exportOrdersCsv(client, tenantId, { from, to })` | function | | CSV `Blob` (Manila times, pesos) |
+| `useCustomers(tenantId, { search, membersOnly })` | infinite query | | `data`: `CustomerRow[]` (customer + stamp balance) loaded so far, newest order first, 50 per page; `hasNextPage` / `fetchNextPage` for "Load more". Search matches a name or a mobile (`09…`, `+63…`, `9…`) |
+| `useUpdateCustomerNotes()` | mutation | `{ customerId, notes, tags }` | `Customer`; refreshes the shop's customer lists |
+| `exportOrdersCsv(client, tenantId, { from, to })` | function | | CSV `Blob` (Manila times, pesos), one row per order; file name from `WORDS.dashboard.reports.csv.fileName(from, to)` |
+
+Error codes: `not_allowed`, `invalid` (a range over 92 days, or `from` after `to`).
 
 ## Realtime channels
 

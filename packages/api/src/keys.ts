@@ -26,6 +26,11 @@ export const qk = {
   orderDetail: (orderId: string) => ['order-detail', orderId] as const,
   proofUrl: (path: string) => ['proof-url', path] as const,
   dashboardToday: (tenantId: string) => ['dashboard-today', tenantId] as const,
+  memberInsights: (tenantId: string) => ['member-insights', tenantId] as const,
+  salesReport: (tenantId: string, from: string, to: string) => ['sales-report', tenantId, from, to] as const,
+  /** Every customer list of a shop; invalidate this to refresh them all. */
+  customers: (tenantId: string) => ['customers', tenantId] as const,
+  customerList: (tenantId: string, search: string, membersOnly: boolean) => ['customers', tenantId, search, membersOnly] as const,
   myAccount: (slug: string) => ['my-account', slug] as const,
   stampRule: (tenantId: string) => ['stamp-rule', tenantId] as const,
 };
