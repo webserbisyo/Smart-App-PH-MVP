@@ -19,6 +19,9 @@ import {
   paymentDraft,
   PaymentForm,
   paymentFromAccount,
+  stampRuleFromForm,
+  StampsForm,
+  stampsFromData,
   weekFromForm,
   zoneChanges,
 } from './forms';
@@ -147,5 +150,31 @@ describe('payment accounts', () => {
     const form = { method: 'gcash' as const, bankName: 'BPI', accountName: ' Juan ', accountNumber: ' 0917 ', qrPath: null, isActive: true };
     expect(paymentDraft(null, form)).toEqual({ id: null, method: 'gcash', bankName: null, accountName: 'Juan', accountNumber: '0917', qrPath: null, isActive: true });
     expect(paymentDraft(ZONE_A, { ...form, method: 'bank' }).bankName).toBe('BPI');
+  });
+});
+
+describe('stamp card', () => {
+  const rule = { tenantId: TENANT, isActive: false, minOrderTotal: 0, stampsNeeded: 10, rewardLabel: '₱100 off your order', rewardAmount: 10000 };
+
+  it('round-trips the card and names the reward from its amount', () => {
+    const form = stampsFromData(rule, settings);
+    expect(form).toEqual({ isActive: false, stampsNeeded: '10', minOrderTotal: 0, rewardAmount: 10000, showMemberCount: true });
+    expect(stampRuleFromForm(TENANT, { ...form, isActive: true, stampsNeeded: '8', rewardAmount: 5000, minOrderTotal: null })).toEqual({
+      ...rule,
+      isActive: true,
+      stampsNeeded: 8,
+      rewardAmount: 5000,
+      rewardLabel: '₱50 off your order',
+    });
+  });
+
+  it('needs 1 to 50 stamps and a reward of at least ₱1', () => {
+    const form = stampsFromData(rule, settings);
+    expect(paths(StampsForm.safeParse(form))).toEqual([]);
+    expect(paths(StampsForm.safeParse({ ...form, stampsNeeded: '0' }))).toEqual(['stampsNeeded']);
+    expect(paths(StampsForm.safeParse({ ...form, stampsNeeded: '51' }))).toEqual(['stampsNeeded']);
+    expect(paths(StampsForm.safeParse({ ...form, stampsNeeded: '' }))).toEqual(['stampsNeeded']);
+    expect(paths(StampsForm.safeParse({ ...form, rewardAmount: null }))).toEqual(['rewardAmount']);
+    expect(paths(StampsForm.safeParse({ ...form, rewardAmount: 50 }))).toEqual(['rewardAmount']);
   });
 });

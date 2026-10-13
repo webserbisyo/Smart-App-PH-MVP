@@ -59,10 +59,11 @@ export type CheckoutValues = z.infer<ReturnType<typeof checkoutSchema>>;
 export type QuoteChoices = Pick<CheckoutValues, 'fulfillment' | 'pickupAt' | 'deliveryZoneId' | 'paymentMethod'>;
 
 /**
- * What quote_order prices: the type, lines, method, pickup time and area. Null until a method (and, when the shop
- * needs one, a delivery area) is picked, so the quote never asks for something the customer has not chosen yet.
+ * What quote_order prices: the type, lines, method, pickup time, area and the member's reward switch. Null until a
+ * method (and, when the shop needs one, a delivery area) is picked, so the quote never asks for something the
+ * customer has not chosen yet.
  */
-export function toQuotePayload(values: QuoteChoices, lines: readonly CartLine[], rules: CheckoutRules): QuotePayload | null {
+export function toQuotePayload(values: QuoteChoices, lines: readonly CartLine[], rules: CheckoutRules, useReward = false): QuotePayload | null {
   if (values.paymentMethod === null || lines.length === 0) return null;
   if (values.fulfillment === 'delivery' && rules.zoneRequired && values.deliveryZoneId === '') return null;
   return {
@@ -74,13 +75,13 @@ export function toQuotePayload(values: QuoteChoices, lines: readonly CartLine[],
       values.fulfillment === 'delivery'
         ? { addressLine: QUOTE_ADDRESS, landmark: null, deliveryZoneId: values.deliveryZoneId === '' ? null : values.deliveryZoneId }
         : null,
-    useReward: false,
+    useReward,
   };
 }
 
 /** What place_order gets (the hook adds the clientKey). Null when the form is not complete. */
-export function toOrderInput(values: CheckoutValues, lines: readonly CartLine[], rules: CheckoutRules): OrderInput | null {
-  const quote = toQuotePayload(values, lines, rules);
+export function toOrderInput(values: CheckoutValues, lines: readonly CartLine[], rules: CheckoutRules, useReward = false): OrderInput | null {
+  const quote = toQuotePayload(values, lines, rules, useReward);
   if (quote === null || values.phone === null || !values.privacy) return null;
   const landmark = values.landmark.trim();
   const email = values.email.trim();

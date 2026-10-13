@@ -68,6 +68,12 @@ describe('checkout form', () => {
     expect(toOrderInput({ ...values, privacy: false }, [line], rules)).toBeNull();
   });
 
+  it('asks for the reward only when the member switched it on', () => {
+    expect(toQuotePayload(values, [line], rules)?.useReward).toBe(false);
+    expect(toQuotePayload(values, [line], rules, true)?.useReward).toBe(true);
+    expect(toOrderInput(values, [line], rules, true)?.useReward).toBe(true);
+  });
+
   it('reads remembered details only when they are whole', () => {
     expect(parseRemembered(JSON.stringify({ name: 'Maria', phone: '+639171234567', email: '' }))).toEqual({ name: 'Maria', phone: '+639171234567', email: '' });
     expect(parseRemembered(JSON.stringify({ name: 'Maria', phone: '0917' }))).toBeNull();

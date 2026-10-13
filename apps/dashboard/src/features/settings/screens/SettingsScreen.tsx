@@ -1,16 +1,16 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
-import { useBusinessHours, useClosures, usePaymentAccounts, useShopSettings } from '@smartapp/api';
+import { useBusinessHours, useClosures, usePaymentAccounts, useShopSettings, useStampRule } from '@smartapp/api';
 import { shopUrl, WORDS } from '@smartapp/core';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@smartapp/ui/components/item';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconAddressBook, IconChevronRight, IconClock, IconCreditCard, IconPalette, IconTruckDelivery } from '@smartapp/ui/icons';
+import { IconAddressBook, IconChevronRight, IconClock, IconCreditCard, IconGift, IconPalette, IconTruckDelivery } from '@smartapp/ui/icons';
 import { CopyButton } from '@smartapp/ui/patterns/CopyButton';
 
 import { useShop } from '../../../app/shop';
 import { SettingsLoader } from '../components/SettingsPage';
-import { hoursSummary, infoSummary, lookSummary, orderTypesSummary, paymentsSummary } from '../summary';
+import { hoursSummary, infoSummary, lookSummary, orderTypesSummary, paymentsSummary, stampsSummary } from '../summary';
 
 const words = WORDS.dashboard.settings;
 
@@ -36,6 +36,7 @@ export default function SettingsScreen() {
   const hours = useBusinessHours(shop.id);
   const closures = useClosures(shop.id);
   const accounts = usePaymentAccounts(shop.id);
+  const stampRule = useStampRule(shop.id);
   const link = shopUrl(shop.slug);
   const data = settings.data;
 
@@ -62,6 +63,7 @@ export default function SettingsScreen() {
             />
             <SectionLink path="settings/order-types" icon={<IconTruckDelivery />} title={words.sections.orderTypes} summary={data ? orderTypesSummary(data) : null} />
             <SectionLink path="settings/payments" icon={<IconCreditCard />} title={words.sections.payments} summary={accounts.data ? paymentsSummary(accounts.data) : null} />
+            <SectionLink path="settings/stamps" icon={<IconGift />} title={words.sections.stamps} summary={stampRule.data ? stampsSummary(stampRule.data) : null} />
           </ItemGroup>
         </>
       )}

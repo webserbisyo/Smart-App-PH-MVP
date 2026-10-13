@@ -1,5 +1,5 @@
 import { formatPhPhone, formatTimeOfDay, manilaParts, THEME_PRESET_KEYS, THEME_PRESETS, WORDS } from '@smartapp/core';
-import type { BusinessHours, PaymentAccount, ShopSettings, ThemePresetKey } from '@smartapp/core';
+import type { BusinessHours, PaymentAccount, ShopSettings, StampRule, ThemePresetKey } from '@smartapp/core';
 
 // The one-line summaries on the Settings list.
 
@@ -45,4 +45,8 @@ export function orderTypesSummary(settings: ShopSettings): string {
 export function paymentsSummary(accounts: readonly PaymentAccount[]): string {
   const methods = [...new Set(accounts.filter((account) => account.isActive).map((account) => WORDS.order.method[account.method]))];
   return methods.length > 0 ? methods.join(', ') : words.summary.paymentsEmpty;
+}
+
+export function stampsSummary(rule: StampRule): string {
+  return rule.isActive ? words.summary.stamps(rule.stampsNeeded, rule.rewardLabel) : words.summary.stampsOff;
 }

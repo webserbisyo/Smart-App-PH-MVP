@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Centavos, HexColor, TimeOfDay, TransferMethod, Uuid, WORDS } from '@smartapp/core';
+import { Centavos, HexColor, rewardLabel, TimeOfDay, TransferMethod, Uuid, WORDS } from '@smartapp/core';
 import type {
   BusinessHours,
   DayHours,
@@ -10,6 +10,7 @@ import type {
   PaymentAccountDraft,
   ShopSettings,
   ShopSettingsPatch,
+  StampRule,
   Tenant,
 } from '@smartapp/core';
 
@@ -278,5 +279,45 @@ export function paymentDraft(id: string | null, form: PaymentForm): PaymentAccou
     accountNumber: form.accountNumber.trim(),
     qrPath: form.qrPath,
     isActive: form.isActive,
+  };
+}
+
+// --- stamp card ------------------------------------------------------------------------------------
+
+export const StampsForm = z.object({
+  isActive: z.boolean(),
+  /** Typed text, so a half-typed number can be shown; checked as 1 to 50. */
+  stampsNeeded: z.string().refine((text) => /^\d{1,2}$/.test(text.trim()) && Number(text) >= 1 && Number(text) <= 50, words.stamps.stampsInvalid),
+  /** Centavos; empty is no minimum. */
+  minOrderTotal: Centavos.nullable(),
+  /** Centavos, at least ₱1. */
+  rewardAmount: Centavos.min(100, words.stamps.rewardNeeded).nullable(),
+  showMemberCount: z.boolean(),
+})
+  .superRefine((form, ctx) => {
+    if (form.rewardAmount === null) ctx.addIssue({ code: 'custom', path: ['rewardAmount'], message: words.stamps.rewardNeeded });
+  });
+export type StampsForm = z.infer<typeof StampsForm>;
+
+export function stampsFromData(rule: StampRule, settings: ShopSettings): StampsForm {
+  return {
+    isActive: rule.isActive,
+    stampsNeeded: String(rule.stampsNeeded),
+    minOrderTotal: rule.minOrderTotal,
+    rewardAmount: rule.rewardAmount,
+    showMemberCount: settings.showMemberCount,
+  };
+}
+
+/** The stamp card row to save; the reward's words come from its amount ("₱100 off your order"). */
+export function stampRuleFromForm(tenantId: string, form: StampsForm): StampRule {
+  const rewardAmount = form.rewardAmount ?? 0;
+  return {
+    tenantId,
+    isActive: form.isActive,
+    stampsNeeded: Number(form.stampsNeeded.trim()),
+    minOrderTotal: form.minOrderTotal ?? 0,
+    rewardAmount,
+    rewardLabel: rewardLabel(rewardAmount),
   };
 }

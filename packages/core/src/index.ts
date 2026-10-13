@@ -38,3 +38,4 @@ export * from './order-rules';
 export * from './cart';
 export * from './checkout';
 export * from './stamps';
+export * from './install';

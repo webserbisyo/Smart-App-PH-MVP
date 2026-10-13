@@ -10,6 +10,9 @@ import { toast, Toaster } from '@smartapp/ui/components/sonner';
 import { CartSheet } from '../cart/CartSheet';
 import { useCartLines } from '../cart/cart-store';
 import { ItemSheet } from '../catalog/ItemSheet';
+import '../install/install-prompt';
+import { JoinSheet } from '../members/JoinSheet';
+import type { JoinFrom } from '../members/JoinSheet';
 import type { MediaUrls } from './shop';
 
 interface ShopContextValue {
@@ -33,6 +36,15 @@ interface ShopContextValue {
   /** The card's "+": adds at once when there is nothing to choose, else opens the sheet. */
   quickAdd: (item: StorefrontItem) => void;
   openCart: () => void;
+  /** Opens the join sheet; a receipt passes its order so it links and counts. */
+  openJoin: (from: JoinFrom | null) => void;
+  /**
+   * The member's "Use ₱100 off" switch, shared by the cart and checkout. `rejected` is set when the database said
+   * the reward is not ready (`reward_unavailable`), so both can say why the switch went off.
+   */
+  reward: { on: boolean; rejected: boolean };
+  setRewardOn: (on: boolean) => void;
+  rejectReward: () => void;
 }
 
 const ShopContext = createContext<ShopContextValue | null>(null);
@@ -58,6 +70,9 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
   const [itemOpen, setItemOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [added, setAdded] = useState(0);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [joinFrom, setJoinFrom] = useState<JoinFrom | null>(null);
+  const [reward, setReward] = useState({ on: false, rejected: false });
   const cart = useMemo(() => priceCart(storefront.items, lines), [storefront.items, lines]);
 
   const addLine = useCallback(
@@ -102,14 +117,27 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
       },
       clearCart: () => {
         updateLines(() => []);
+        setReward({ on: false, rejected: false });
       },
       openItem,
       quickAdd,
       openCart: () => {
         setCartOpen(true);
       },
+      openJoin: (from) => {
+        setJoinFrom(from);
+        setCartOpen(false);
+        setJoinOpen(true);
+      },
+      reward,
+      setRewardOn: (on) => {
+        setReward({ on, rejected: false });
+      },
+      rejectReward: () => {
+        setReward({ on: false, rejected: true });
+      },
     }),
-    [storefront, media, block, catalogLabel, cart, added, addLine, updateLines, openItem, quickAdd],
+    [storefront, media, block, catalogLabel, cart, added, addLine, updateLines, openItem, quickAdd, reward],
   );
 
   const item = storefront.items.find((candidate) => candidate.id === itemId) ?? null;
@@ -118,6 +146,7 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
       {children}
       <ItemSheet item={item} open={itemOpen} onOpenChange={setItemOpen} />
       <CartSheet open={cartOpen} onOpenChange={setCartOpen} />
+      <JoinSheet open={joinOpen} onOpenChange={setJoinOpen} from={joinFrom} />
       <Toaster position="top-center" />
     </ShopContext>
   );

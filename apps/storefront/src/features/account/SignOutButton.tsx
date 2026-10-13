@@ -1,32 +1,38 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
-import { signOut } from '@smartapp/api';
+import { qk, signOut, useApiClient } from '@smartapp/api';
 import { WORDS } from '@smartapp/core';
 import { Button } from '@smartapp/ui/components/button';
 
-import { browserClient } from './browser-client';
+import { useShop } from '../shell/ShopProvider';
 
+/**
+ * Signs out, marks the session gone (so no account read goes out without a login), forgets the member's account
+ * and re-reads the page on the server.
+ */
 export function SignOutButton() {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const { storefront } = useShop();
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  const leave = useMutation({
+    mutationFn: () => signOut(client),
+    onSuccess: () => {
+      queryClient.setQueryData(qk.session, null);
+      queryClient.removeQueries({ queryKey: qk.myAccount(storefront.shop.slug) });
+      router.refresh();
+    },
+  });
   return (
     <Button
       variant="outline"
       size="lg"
-      disabled={busy}
+      disabled={leave.isPending}
       onClick={() => {
-        setBusy(true);
-        signOut(browserClient()).then(
-          () => {
-            router.refresh();
-          },
-          () => {
-            setBusy(false);
-          },
-        );
+        leave.mutate();
       }}
     >
       {WORDS.storefront.account.signOut}
