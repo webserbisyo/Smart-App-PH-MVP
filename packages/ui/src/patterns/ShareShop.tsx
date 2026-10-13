@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { IconDownload } from '@tabler/icons-react';
 
 import { Button } from '#components/button';
@@ -23,11 +25,13 @@ export interface ShareShopProps {
   /** File name for the QR download (the shop's link name). */
   filename: string;
   words: ShareShopWords;
+  /** More buttons after Copy and Download (Home: "Share on Messenger" on phones). */
+  actions?: ReactNode;
   className?: string;
 }
 
 /** The shop link with Copy, and its QR with Download (for the counter), on Home and in Settings. */
-export function ShareShop({ url, shopName, filename, words, className }: ShareShopProps) {
+export function ShareShop({ url, shopName, filename, words, actions, className }: ShareShopProps) {
   const display = url.replace(/^https?:\/\//, '');
   return (
     <section className={cn('flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center', className)}>
@@ -49,6 +53,7 @@ export function ShareShop({ url, shopName, filename, words, className }: ShareSh
               {words.downloadQr}
             </QRCodeDownload>
           </QRCode>
+          {actions}
         </div>
       </div>
     </section>

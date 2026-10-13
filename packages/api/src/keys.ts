@@ -27,6 +27,8 @@ export const qk = {
   proofUrl: (path: string) => ['proof-url', path] as const,
   dashboardToday: (tenantId: string) => ['dashboard-today', tenantId] as const,
   memberInsights: (tenantId: string) => ['member-insights', tenantId] as const,
+  /** Every sales report of a shop; invalidate this to refresh them all. */
+  salesReports: (tenantId: string) => ['sales-report', tenantId] as const,
   salesReport: (tenantId: string, from: string, to: string) => ['sales-report', tenantId, from, to] as const,
   /** Every customer list of a shop; invalidate this to refresh them all. */
   customers: (tenantId: string) => ['customers', tenantId] as const,

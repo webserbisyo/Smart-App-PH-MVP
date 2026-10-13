@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ACTION_TO_STATUS,
+  attentionFilter,
+  matchesAttention,
   boardColumn,
   canCancel,
   canRecordPayment,
@@ -236,5 +238,26 @@ describe('payment rules for the order detail', () => {
   it('flags a paid cancelled order for a refund by hand', () => {
     expect(needsRefund(order({ status: 'cancelled', paymentStatus: 'paid' }))).toBe(true);
     expect(needsRefund(order({ status: 'cancelled' }))).toBe(false);
+  });
+});
+
+describe('matchesAttention and attentionFilter', () => {
+  it('to verify: open orders with a proof waiting', () => {
+    expect(matchesAttention({ status: 'placed', paymentStatus: 'pending' }, 'to_verify')).toBe(true);
+    expect(matchesAttention({ status: 'preparing', paymentStatus: 'pending' }, 'to_verify')).toBe(true);
+    expect(matchesAttention({ status: 'placed', paymentStatus: 'unpaid' }, 'to_verify')).toBe(false);
+    expect(matchesAttention({ status: 'cancelled', paymentStatus: 'pending' }, 'to_verify')).toBe(false);
+  });
+
+  it('waiting: placed and not started', () => {
+    expect(matchesAttention({ status: 'placed', paymentStatus: 'unpaid' }, 'waiting')).toBe(true);
+    expect(matchesAttention({ status: 'preparing', paymentStatus: 'paid' }, 'waiting')).toBe(false);
+  });
+
+  it('reads the Orders page filter from the link', () => {
+    expect(attentionFilter('to_verify')).toBe('to_verify');
+    expect(attentionFilter('waiting')).toBe('waiting');
+    expect(attentionFilter('other')).toBeNull();
+    expect(attentionFilter(null)).toBeNull();
   });
 });

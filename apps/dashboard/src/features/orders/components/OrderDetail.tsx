@@ -29,14 +29,14 @@ import { OrderStatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
 import { useShop } from '../../../app/shop';
-import { useNow } from '../hooks/useNow';
-import { useOrderSteps } from '../hooks/useOrderSteps';
-import { useRuleSettings } from '../hooks/useRuleSettings';
+import { useNow } from '../../../app/orders/useNow';
+import { useOrderSteps } from '../../../app/orders/useOrderSteps';
+import { useRuleSettings } from '../../../app/orders/useRuleSettings';
 
-import { CancelDialog } from './CancelDialog';
+import { CancelDialog } from '../../../app/orders/CancelDialog';
 import { PaymentCard } from './PaymentCard';
 import { PrintSlip } from './PrintSlip';
-import { TrackingDialog } from './TrackingDialog';
+import { TrackingDialog } from '../../../app/orders/TrackingDialog';
 
 const words = WORDS.dashboard.orders;
 const detail = words.detail;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { BoardOrder, Order } from '@smartapp/core';
 
-import { findByNumber, groupBoard, newCount, parseTicket, searchOrders, stepCall } from './board';
+import { findByNumber, groupBoard, newCount, parseTicket, searchOrders } from './board';
 
 const TENANT = '00000000-0000-4000-8000-000000000001';
 
@@ -87,25 +87,13 @@ describe('parseTicket, searchOrders and findByNumber', () => {
   });
 });
 
-describe('stepCall', () => {
-  it('turns each next step into its database call', () => {
-    expect(stepCall('verify_payment', { fulfillment: 'pickup' })).toEqual({ kind: 'review' });
-    expect(stepCall('mark_paid', { fulfillment: 'walk_in' })).toEqual({ kind: 'record', method: 'cash' });
-    expect(stepCall('mark_paid', { fulfillment: 'delivery' })).toEqual({ kind: 'record', method: 'cod' });
-    expect(stepCall('start', { fulfillment: 'walk_in' })).toEqual({ kind: 'advance', toStatus: 'preparing', askTracking: false });
-    expect(stepCall('mark_ready', { fulfillment: 'pickup' })).toEqual({ kind: 'advance', toStatus: 'ready', askTracking: false });
-    expect(stepCall('out_for_delivery', { fulfillment: 'delivery' })).toEqual({ kind: 'advance', toStatus: 'out_for_delivery', askTracking: true });
-    expect(stepCall('complete', { fulfillment: 'walk_in' })).toEqual({ kind: 'advance', toStatus: 'completed', askTracking: false });
-  });
-});
-
 // The board's columns and buttons come only from packages/core (boardColumn, nextActions): no file of the orders
 // feature compares an order status itself.
 const SOURCES = import.meta.glob<string>(['./**/*.ts', './**/*.tsx', '!./**/*.test.ts'], { query: '?raw', import: 'default', eager: true });
 
 describe('no status logic in the feature', () => {
   it('reads every source file', () => {
-    expect(Object.keys(SOURCES)).toEqual(expect.arrayContaining(['./board.ts', './screens/OrdersScreen.tsx', './components/BoardCard.tsx']));
+    expect(Object.keys(SOURCES)).toEqual(expect.arrayContaining(['./board.ts', './screens/OrdersScreen.tsx', './components/OrderDetail.tsx']));
   });
 
   it.each(Object.entries(SOURCES))('%s compares no status', (_path, source) => {

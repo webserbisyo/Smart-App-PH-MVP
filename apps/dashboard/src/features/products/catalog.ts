@@ -22,6 +22,15 @@ export function stockSummary(item: CatalogItem): { left: number; low: boolean } 
   return { left, low };
 }
 
+/**
+ * Home's "low stock" list: an item that counts stock, is not archived and has a variant at or below its low-stock
+ * number (the same rule as `get_dashboard_today`, which counts the variants).
+ */
+export function isLowStock(item: CatalogItem): boolean {
+  if (!item.trackStock || item.status === 'archived') return false;
+  return item.variants.some((variant) => variant.lowStockAt !== null && (variant.stockOnHand ?? 0) <= variant.lowStockAt);
+}
+
 /** Sold out when every variant is. */
 export function isSoldOut(item: CatalogItem): boolean {
   return item.variants.length > 0 && item.variants.every((variant) => variant.isSoldOut);

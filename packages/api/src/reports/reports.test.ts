@@ -13,7 +13,7 @@ describe('report results', () => {
         { date: '2026-10-12', orders: 3, sales: 16000 },
         { date: '2026-10-13', orders: 0, sales: 0 },
       ],
-      totals: { orders: 3, sales: 16000 },
+      totals: { orders: 3, paidOrders: 2, sales: 16000 },
       bestSellers: [{ itemName: 'Latte', qty: 5, sales: 25000 }],
     };
     expect(dbFunctions.get_sales_report.output.parse(data).days).toHaveLength(2);

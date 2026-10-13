@@ -124,7 +124,7 @@ Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavaila
 
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
-| `useOrders(tenantId, scope)` | query | `scope`: `{ kind: 'open' } \| { kind: 'day', date }` | `BoardOrder[]` (order + lines) |
+| `useOrders(tenantId, scope)` | query | `scope`: `{ kind: 'open' } \| { kind: 'day', date } \| { kind: 'customer', customerId }` | `BoardOrder[]` (order + lines); `customer`: the last 20, newest first (P4.7) |
 | `useOrderDetail(orderId)` | query | | `OrderReceipt \| null` (with the normalised reference; `null` when not the owner's) |
 | `useShopOrdersLive(tenantId, { onNewOrder, onToVerify })` | effect hook | | private channel `shop:<tenantId>`; invalidates `qk.orders` and `qk.dashboardToday`; the callbacks drive the chime; polls every 15 s while not joined |
 | `useProofUrl(path)` | query | | signed URL, 5 minutes (renewed every 4) |
@@ -156,10 +156,11 @@ Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unava
 | --- | --- | --- | --- |
 | `useDashboardToday(tenantId)` | query | | `DashboardToday` |
 | `useMemberInsights(tenantId)` | query | | `MemberInsights` |
-| `useSalesReport(tenantId, { from, to })` | query | Manila dates | `SalesReport` |
+| `useSalesReport(tenantId, { from, to })` | query | Manila dates | `SalesReport`: days, totals `{ orders, paidOrders, sales }` (`paidOrders` added in P4.7 for the average), best sellers |
 | `useCustomers(tenantId, { search, membersOnly })` | infinite query | | `data`: `CustomerRow[]` (customer + stamp balance) loaded so far, newest order first, 50 per page; `hasNextPage` / `fetchNextPage` for "Load more". Search matches a name or a mobile (`09…`, `+63…`, `9…`) |
 | `useUpdateCustomerNotes()` | mutation | `{ customerId, notes, tags }` | `Customer`; refreshes the shop's customer lists |
 | `exportOrdersCsv(client, tenantId, { from, to })` | function | | CSV `Blob` (Manila times, pesos), one row per order; file name from `WORDS.dashboard.reports.csv.fileName(from, to)` |
+| `exportCustomersCsv(client, tenantId, { search, membersOnly })` | function | | CSV `Blob` of every customer the filter finds (P4.7); file name from `WORDS.dashboard.customers.csv.fileName(date)` |
 
 Error codes: `not_allowed`, `invalid` (a range over 92 days, or `from` after `to`).
 

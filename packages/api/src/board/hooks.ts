@@ -66,8 +66,7 @@ export function useShopOrdersLive(tenantId: string | null, callbacks: ShopOrders
     if (tenantId === null) return undefined;
     const stop = watchShopOrders(supabaseShopChannel(client), tenantId, {
       refresh: (orderId) => {
-        void queryClient.invalidateQueries({ queryKey: qk.orders(tenantId) });
-        void queryClient.invalidateQueries({ queryKey: qk.dashboardToday(tenantId) });
+        refreshNumbers(queryClient, tenantId);
         if (orderId !== null) void queryClient.invalidateQueries({ queryKey: qk.orderDetail(orderId) });
       },
       onNewOrder: (change) => latest.current.onNewOrder?.(change),
@@ -83,10 +82,15 @@ export function useShopOrdersLive(tenantId: string | null, callbacks: ShopOrders
   return { live };
 }
 
-/** After any owner action: refetch the shop's board, Home and the order. */
+/** After any order change: refetch the shop's order lists and every number that counts orders (Home, Reports, Customers). */
+function refreshNumbers(queryClient: QueryClient, tenantId: string): void {
+  const keys = [qk.orders(tenantId), qk.dashboardToday(tenantId), qk.memberInsights(tenantId), qk.salesReports(tenantId), qk.customers(tenantId)];
+  for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });
+}
+
+/** After any owner action: refetch the shop's board, Home, Reports, Customers and the order. */
 function refreshAfter(queryClient: QueryClient, tenantId: string, orderId: string): void {
-  void queryClient.invalidateQueries({ queryKey: qk.orders(tenantId) });
-  void queryClient.invalidateQueries({ queryKey: qk.dashboardToday(tenantId) });
+  refreshNumbers(queryClient, tenantId);
   void queryClient.invalidateQueries({ queryKey: qk.orderDetail(orderId) });
 }
 

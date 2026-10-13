@@ -11,6 +11,7 @@ import { Spinner } from '@smartapp/ui/components/spinner';
 import { decideRoute } from './guard';
 import type { AppModuleRoute } from './module';
 import { registry, routeFor } from './registry';
+import { moduleSearch } from './search';
 import { Shell } from './shell/Shell';
 
 /** Each module screen, lazy-loaded once; the element is made once too, so no component is created during render. */
@@ -93,7 +94,7 @@ const kitRoute = createRoute({
 });
 
 /** Module pages: the registry decides which screen a path shows. */
-const moduleRoute = createRoute({ getParentRoute: () => shellRoute, path: '$', component: ModulePage });
+const moduleRoute = createRoute({ getParentRoute: () => shellRoute, path: '$', component: ModulePage, validateSearch: moduleSearch });
 
 const routeTree = rootRoute.addChildren([
   outsideRoute.addChildren(outsideRoutes),

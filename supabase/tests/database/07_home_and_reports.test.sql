@@ -289,8 +289,8 @@ select is(
 );
 select is(
   tests.report_of(tests.id('a'), 'shop_a', tests.today() - 1, tests.today()) -> 'totals',
-  '{"orders": 7, "sales": 51000}'::jsonb,
-  'totals of the range'
+  '{"orders": 7, "paidOrders": 4, "sales": 51000}'::jsonb,
+  'totals of the range (paid orders: the ones counted in sales)'
 );
 select is(
   tests.report_of(tests.id('a'), 'shop_a', tests.today() - 1, tests.today()) -> 'bestSellers',

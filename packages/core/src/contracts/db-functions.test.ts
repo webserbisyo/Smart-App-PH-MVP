@@ -181,7 +181,7 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
       from: '2026-10-05',
       to: '2026-10-11',
       days: [{ date: '2026-10-11', orders: 18, sales: 332200 }],
-      totals: { orders: 18, sales: 332200 },
+      totals: { orders: 18, paidOrders: 15, sales: 332200 },
       bestSellers: [{ itemName: 'Iced Latte', qty: 40, sales: 600000 }],
     },
   },

@@ -324,8 +324,104 @@ export const WORDS = {
       patterns: 'Patterns',
     },
     notFound: 'Page not found.',
-    /** Reports: the orders export (P5.6); the Reports screen comes in P4.7. */
+    /** Home (P4.7, ux-plan 5.14). */
+    home: {
+      greeting: { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' },
+      today: (date: string) => `Today, ${date}`,
+      shareShop: 'Share shop',
+      messenger: 'Share on Messenger',
+      setup: {
+        title: 'Set up your shop',
+        progress: (done: number, total: number) => `${String(done)} of ${String(total)} done`,
+        steps: {
+          logo: 'Add your logo',
+          hours: 'Set your hours',
+          payment: 'Add a GCash, Maya or bank account',
+          product: (item: string) => `Add your first ${item.toLowerCase()}`,
+          orderTypes: 'Choose how customers get their order',
+        },
+        done: 'Done',
+      },
+      attention: {
+        label: 'Needs you now',
+        toVerify: (count: number) => `${String(count)} to verify`,
+        waiting: (count: number) => `${String(count)} waiting`,
+        lowStock: (count: number) => `${String(count)} low stock`,
+      },
+      stats: {
+        sales: 'Sales today',
+        orders: 'Orders today',
+        open: (count: number) => `${String(count)} open`,
+        average: 'Average order',
+        newMembers: 'New members this week',
+      },
+      members: {
+        title: 'Members',
+        count: (count: number) => `${String(count)} ${count === 1 ? 'member' : 'members'}`,
+        topSuki: 'Top suki this month',
+        noSuki: 'No member orders yet this month.',
+        none: 'No members yet. Customers join from your shop to collect stamps.',
+      },
+      inProgress: {
+        title: 'In progress',
+        viewAll: 'View all on Orders',
+        empty: 'No orders in progress.',
+      },
+      bestSellers: {
+        title: 'Best sellers today',
+        sold: (qty: number) => `${String(qty)} sold`,
+      },
+      noOrdersToday: 'No orders yet today',
+      noOrdersTodayText: 'Share your shop link to get your first order.',
+    },
+    /** Customers (P4.7, ux-plan 5.15). */
+    customers: {
+      search: 'Search by name or mobile',
+      membersOnly: 'Members only',
+      csvButton: 'Download CSV',
+      csvFailed: 'Could not make the CSV. Try again.',
+      loadMore: 'Load more',
+      noMatch: 'No customers match your search.',
+      emptyText: 'Customers show up here after their first order.',
+      member: 'Member',
+      never: 'No orders yet',
+      columns: { name: 'Name', mobile: 'Mobile', member: 'Member', orders: 'Orders', spent: 'Total spent', lastOrder: 'Last order' },
+      summary: (orders: number, spent: string) => `${String(orders)} ${orders === 1 ? 'order' : 'orders'} · ${spent}`,
+      lastOrder: (date: string) => `Last order ${date}`,
+      memberSince: (date: string) => `Member since ${date}`,
+      sheet: {
+        orders: 'Orders',
+        noOrders: 'No orders yet.',
+      },
+      /** The stamp card as the owner reads it. */
+      stamps: {
+        title: 'Stamp card',
+        count: (stamps: number, goal: number) => `${String(stamps)} of ${String(goal)} stamps`,
+        toGo: (left: number, reward: string) => (left === 1 ? `1 more to ${reward}` : `${String(left)} more to ${reward}`),
+        ready: 'Reward ready',
+        readyText: (reward: string) => `They can use ${reward} on their next order.`,
+      },
+      csv: {
+        fileName: (date: string) => `customers-${date}.csv`,
+        member: 'Member',
+        guest: 'Guest',
+        headers: ['Name', 'Mobile', 'Type', 'Member since', 'Orders', 'Total spent', 'Last order', 'Stamps'],
+      },
+    },
+    /** Reports (P4.7, ux-plan 5.16) and the orders export (P5.6). */
     reports: {
+      range: { label: 'Period', today: 'Today', week: '7 days', month: '30 days' },
+      sales: 'Sales',
+      orders: 'Orders',
+      average: 'Average order',
+      chartTitle: { today: 'Sales per hour', days: 'Sales per day' },
+      chartLabel: (from: string, to: string) => `Sales from ${from} to ${to}`,
+      noSales: 'No orders in this period.',
+      bestSellers: 'Best sellers',
+      columns: { item: 'Item', qty: 'Sold', sales: 'Sales' },
+      noBestSellers: 'Nothing sold in this period yet.',
+      download: 'Download CSV',
+      downloadFailed: 'Could not make the CSV. Try again.',
       csv: {
         fileName: (from: string, to: string) => (from === to ? `orders-${from}.csv` : `orders-${from}-to-${to}.csv`),
         headers: [
@@ -370,6 +466,12 @@ export const WORDS = {
       newOrder: 'New order',
       toVerify: 'A payment proof is waiting to be checked.',
       selectOrder: 'Choose an order to see it here.',
+      /** The list Home's attention chips open (P4.7). */
+      filter: {
+        to_verify: 'Showing orders with a payment to verify',
+        waiting: 'Showing new orders not started yet',
+        clear: 'Show all orders',
+      },
       call: 'Call',
       message: 'Message',
       cancel: 'Cancel order',
@@ -608,6 +710,8 @@ export const WORDS = {
       count: (count: number, item: string) => `${String(count)} ${item.toLowerCase()}${count === 1 ? '' : 's'}`,
       changeFailed: 'Could not save that change. Try again.',
       toggleGroup: (name: string) => `Show or hide ${name}`,
+      lowStockOnly: 'Showing what is low on stock',
+      showAll: 'Show all',
       category: {
         add: 'Add category',
         edit: 'Edit category',

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { CatalogItem, Category, Variant } from '@smartapp/core';
 
-import { countByCategory, groupByCategory, isSoldOut, priceRange, stockSummary } from './catalog';
+import { countByCategory, groupByCategory, isLowStock, isSoldOut, priceRange, stockSummary } from './catalog';
 
 const TENANT = '00000000-0000-4000-8000-000000000001';
 const COFFEE = '00000000-0000-4000-8000-0000000000c1';
@@ -35,6 +35,16 @@ describe('stockSummary', () => {
     expect(stockSummary(item('Tee', null, [variant(1, 3, 3), variant(1, 10, 3)], { trackStock: true }))).toEqual({ left: 13, low: true });
     expect(stockSummary(item('Tee', null, [variant(1, 4, 3)], { trackStock: true }))).toEqual({ left: 4, low: false });
     expect(stockSummary(item('Tee', null, [variant(1, 0)], { trackStock: true }))).toEqual({ left: 0, low: true });
+  });
+});
+
+describe('isLowStock', () => {
+  it('needs stock counting, an active item and a variant at or below its low-stock number', () => {
+    expect(isLowStock(item('Tee', null, [variant(1, 3, 3), variant(1, 10, 3)], { trackStock: true }))).toBe(true);
+    expect(isLowStock(item('Tee', null, [variant(1, 4, 3)], { trackStock: true }))).toBe(false);
+    expect(isLowStock(item('Tee', null, [variant(1, 0, null)], { trackStock: true }))).toBe(false);
+    expect(isLowStock(item('Tee', null, [variant(1, 1, 3)]))).toBe(false);
+    expect(isLowStock(item('Tee', null, [variant(1, 1, 3)], { trackStock: true, status: 'archived' }))).toBe(false);
   });
 });
 

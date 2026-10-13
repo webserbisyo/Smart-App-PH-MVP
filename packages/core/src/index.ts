@@ -42,3 +42,4 @@ export * from './stamps';
 export * from './install';
 export * from './csv';
 export * from './reports';
+export * from './setup';

@@ -16,10 +16,12 @@ export interface BoardCardProps {
   onOpen: () => void;
   onCancel: () => void;
   selected?: boolean;
+  /** Home's In progress: no item lines, same buttons. */
+  variant?: 'normal' | 'compact';
 }
 
 /** One order on the board: the steps come from `nextActions` (main step first), then Call and Cancel under "More". */
-export function BoardCard({ card, settings, now, pending, onStep, onOpen, onCancel, selected = false }: BoardCardProps) {
+export function BoardCard({ card, settings, now, pending, onStep, onOpen, onCancel, selected = false, variant = 'normal' }: BoardCardProps) {
   const { order } = card;
   const steps: OrderCardAction[] = nextActions(order, settings).map((action, index) => ({
     key: action,
@@ -48,6 +50,7 @@ export function BoardCard({ card, settings, now, pending, onStep, onOpen, onCanc
       late={isLate(order, now)}
       words={{ fulfillment: words.fulfillment, more: words.more, moreItems: words.moreItems }}
       onOpen={onOpen}
+      variant={variant}
       {...(selected ? { className: 'ring-2 ring-primary' } : {})}
     />
   );

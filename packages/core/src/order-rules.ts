@@ -228,3 +228,18 @@ export function itemsSummary(
     more: Math.max(0, lines.length - max),
   };
 }
+
+/** Home's attention chips and the Orders list they open: proofs to check, and new orders not started yet. */
+export const ATTENTION_FILTERS = ['to_verify', 'waiting'] as const;
+export type AttentionFilter = (typeof ATTENTION_FILTERS)[number];
+
+/** The same counts as `get_dashboard_today` (toVerify, waiting), for open orders. */
+export function matchesAttention(order: Pick<RuleOrder, 'status' | 'paymentStatus'>, filter: AttentionFilter): boolean {
+  if (!isOpen(order)) return false;
+  return filter === 'to_verify' ? order.paymentStatus === 'pending' : order.status === 'placed';
+}
+
+/** `?show=` of the Orders page → its filter, or `null`. */
+export function attentionFilter(value: string | null): AttentionFilter | null {
+  return ATTENTION_FILTERS.find((filter) => filter === value) ?? null;
+}
