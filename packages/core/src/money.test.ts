@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatPeso, parsePesoInput, pesoInputText, sumCentavos } from './money';
+import { formatPeso, parsePesoInput, pesoDecimal, pesoInputText, sumCentavos } from './money';
 
 describe('formatPeso', () => {
   it('drops .00 for whole pesos', () => {
@@ -52,5 +52,15 @@ describe('pesoInputText and sumCentavos', () => {
   it('sums', () => {
     expect(sumCentavos([12000, 3450, 0])).toBe(15450);
     expect(sumCentavos([])).toBe(0);
+  });
+});
+
+describe('pesoDecimal', () => {
+  it('always shows two decimals, no sign or separators', () => {
+    expect(pesoDecimal(123450)).toBe('1234.50');
+    expect(pesoDecimal(12000)).toBe('120.00');
+    expect(pesoDecimal(5)).toBe('0.05');
+    expect(pesoDecimal(0)).toBe('0.00');
+    expect(pesoDecimal(-500)).toBe('-5.00');
   });
 });

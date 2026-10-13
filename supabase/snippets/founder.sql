@@ -35,8 +35,12 @@ select t.slug,
   (select count(*) from customers c where c.tenant_id = t.id and c.member_since is not null) as members
 from tenants t order by orders_30d desc;
 
--- Demo shops: set up or refresh catalog (juans-cafe and tala-apparel; keeps their owners)
+-- Demo shops: set up both, with their catalog and 30 days of orders (juans-cafe and tala-apparel; keeps their owners)
 select private.demo_setup();
+
+-- Demo: refresh both shops for today (run each morning; deletes and remakes only demo orders and customers)
+select private.demo_reset('juans-cafe');
+select private.demo_reset('tala-apparel');
 
 -- Make me the owner of a demo shop (skipped if the shop already has an owner); put your email and the slug
 insert into tenant_members (tenant_id, user_id, role)

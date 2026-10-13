@@ -665,11 +665,20 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"get_dashboard_today":
+{ Args: { "p_tenant_id": string }; Returns: Json
+                           },
+"get_member_insights":
+{ Args: { "p_tenant_id": string }; Returns: Json
+                           },
 "get_my_account":
 { Args: { "p_slug": string }; Returns: Json
                            },
 "get_order":
 { Args: { "p_token": string }; Returns: Json
+                           },
+"get_sales_report":
+{ Args: { "p_from": string,"p_tenant_id": string,"p_to": string }; Returns: Json
                            },
 "get_storefront":
 { Args: { "p_slug": string }; Returns: Json

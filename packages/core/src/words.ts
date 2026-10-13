@@ -324,6 +324,27 @@ export const WORDS = {
       patterns: 'Patterns',
     },
     notFound: 'Page not found.',
+    /** Reports: the orders export (P5.6); the Reports screen comes in P4.7. */
+    reports: {
+      csv: {
+        fileName: (from: string, to: string) => (from === to ? `orders-${from}.csv` : `orders-${from}-to-${to}.csv`),
+        headers: [
+          'Order',
+          'Date',
+          'Time',
+          'Type',
+          'Customer',
+          'Items',
+          'Subtotal',
+          'Discount',
+          'Delivery fee',
+          'Total',
+          'Payment method',
+          'Payment',
+          'Status',
+        ],
+      },
+    },
     /** Orders board and order detail (P4.5). */
     orders: {
       /** The browser tab: "(2) Orders · Juan's Café". */
