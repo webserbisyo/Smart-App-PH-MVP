@@ -38,6 +38,7 @@ export {
   IconPlayerPause,
   IconPlus,
   IconPrinter,
+  IconQrcode,
   IconReceipt,
   IconReceiptFilled,
   IconReceiptOff,

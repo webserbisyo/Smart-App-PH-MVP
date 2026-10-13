@@ -147,6 +147,26 @@ Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/
 - P4-35 (P4.6): Members see their orders from any device on the Orders tab and the account page; orders placed on this
   phone without signing in follow them. The receipt says "+1 stamp when completed" only for orders that will earn one
   (open, from the minimum).
+- P4-36 (P4.7): Home's In progress and the orders board share one set of order steps: `BoardCard`, `CancelDialog`,
+  `TrackingDialog`, `useOrderSteps`, `useRuleSettings`, `useNow` and `stepCall` moved to `apps/dashboard/src/app/orders/`
+  (as P4-17). The compact `OrderCard` now shows its step buttons when given any, so an order can be finished from
+  Home; a customer's orders pass none.
+- P4-37 (P4.7): Setup checklist rules (`packages/core/src/setup.ts`): logo set; at least one day of hours (a new shop's
+  default hours count, so it starts at 1 of 5); an active GCash, Maya or bank account; an item that is not archived;
+  order types ready = at least one on, each one on has a way to pay (the checkout rule), and delivery has an active
+  zone or the fee on Messenger. With the defaults (walk-in and pickup, no pay at pickup) the last step ticks once the
+  owner adds an account or turns on pay at pickup.
+- P4-38 (P4.7): Home's attention chips open filtered lists: Orders `?show=to_verify` or `?show=waiting` (core
+  `matchesAttention`, the same counts as `get_dashboard_today`) and Products `?stock=low`, each with "Show all".
+- P4-39 (P4.7): Reports "Today" bars are per Manila hour, summed in the app from that day's orders with the P5-12
+  rules (`hourlySales`); 7 and 30 days use `get_sales_report` days. The Reports average needs the paid-order count, so
+  `get_sales_report` totals gained `paidOrders` (migration `20261013020000`); Home and Reports Today now show the same
+  average. The chart (recharts) loads only on Reports and does not animate. The customer sheet shows a customer's last
+  20 orders (`useOrders` scope `customer`). Customers "Download CSV" exports every customer the search and Members only
+  filter find (`exportCustomersCsv`).
+- P4-40 (P4.7): Share shop sits next to the greeting as a button that opens `ShareShop` (link, QR download). "Share on
+  Messenger" shows on phones only and opens the Messenger app's share sheet (`fb-messenger://share`); Messenger has no
+  share link for computers. Order changes now also refresh Home's members card, Reports and Customers.
 
 ## Backend plan (2026-10-11, approved by the founder)
 

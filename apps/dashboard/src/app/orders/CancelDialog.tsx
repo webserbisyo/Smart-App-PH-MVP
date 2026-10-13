@@ -19,7 +19,7 @@ import { Textarea } from '@smartapp/ui/components/textarea';
 import { toast } from '@smartapp/ui/components/sonner';
 import { useOnline } from '@smartapp/ui/hooks/use-online';
 
-import { useVocab } from '../../../app/shop';
+import { useVocab } from '../shop';
 
 const words = WORDS.dashboard.orders.cancelDialog;
 

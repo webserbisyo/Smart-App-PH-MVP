@@ -1,10 +1,11 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { mediaUrl, useCatalog, useCategories } from '@smartapp/api';
 import { WORDS } from '@smartapp/core';
 import { FLUENT_ICONS } from '@smartapp/ui/assets/fluent';
 import { Badge } from '@smartapp/ui/components/badge';
+import { Alert, AlertDescription } from '@smartapp/ui/components/alert';
 import { buttonVariants } from '@smartapp/ui/components/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@smartapp/ui/components/collapsible';
 import { Input } from '@smartapp/ui/components/input';
@@ -19,7 +20,7 @@ import { QueryState } from '@smartapp/ui/patterns/QueryState';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
 import { useShop, useVocab } from '../../../app/shop';
-import { groupByCategory } from '../catalog';
+import { groupByCategory, isLowStock } from '../catalog';
 import { ProductRow } from '../components/ProductRow';
 
 const words = WORDS.dashboard.products;
@@ -51,11 +52,12 @@ export default function ProductsScreen() {
   const catalog = useCatalog(shop.id);
   const categories = useCategories(shop.id);
   const [query, setQuery] = useState('');
+  const lowOnly = useSearch({ strict: false }).stock === 'low';
 
   const loading = catalog.isPending || categories.isPending;
   const failed = catalog.isError || categories.isError;
   const items = catalog.data ?? [];
-  const groups = groupByCategory(items, categories.data ?? [], query);
+  const groups = groupByCategory(lowOnly ? items.filter(isLowStock) : items, categories.data ?? [], query);
   const state = loading ? 'loading' : failed ? 'error' : items.length === 0 ? 'empty' : 'ready';
 
   return (
@@ -82,6 +84,15 @@ export default function ProductsScreen() {
           </Link>
         )}
       </div>
+
+      {lowOnly ? (
+        <Alert className="flex flex-wrap items-center justify-between gap-2">
+          <AlertDescription>{words.lowStockOnly}</AlertDescription>
+          <Link to="/$" params={{ _splat: 'products' }} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            {words.showAll}
+          </Link>
+        </Alert>
+      ) : null}
 
       <QueryState
         state={state}

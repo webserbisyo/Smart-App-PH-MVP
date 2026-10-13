@@ -1,11 +1,11 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import { useOrders } from '@smartapp/api';
-import { ticketNo, WORDS } from '@smartapp/core';
+import { attentionFilter, matchesAttention, ticketNo, WORDS } from '@smartapp/core';
 import type { BoardColumn, BoardOrder, Order } from '@smartapp/core';
 import { Alert, AlertDescription } from '@smartapp/ui/components/alert';
-import { Button } from '@smartapp/ui/components/button';
+import { Button, buttonVariants } from '@smartapp/ui/components/button';
 import { Input } from '@smartapp/ui/components/input';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
 import { toast } from '@smartapp/ui/components/sonner';
@@ -18,13 +18,13 @@ import { QueryState } from '@smartapp/ui/patterns/QueryState';
 import { useOrdersLive } from '../../../app/shell/orders-live';
 import { useShop, useVocab } from '../../../app/shop';
 import { BOARD_COLUMNS, findByNumber, groupBoard, parseTicket, searchOrders } from '../board';
-import { BoardCard } from '../components/BoardCard';
-import { CancelDialog } from '../components/CancelDialog';
+import { BoardCard } from '../../../app/orders/BoardCard';
+import { CancelDialog } from '../../../app/orders/CancelDialog';
 import { OrderDetail } from '../components/OrderDetail';
-import { TrackingDialog } from '../components/TrackingDialog';
-import { useNow } from '../hooks/useNow';
-import { useOrderSteps } from '../hooks/useOrderSteps';
-import { useRuleSettings } from '../hooks/useRuleSettings';
+import { TrackingDialog } from '../../../app/orders/TrackingDialog';
+import { useNow } from '../../../app/orders/useNow';
+import { useOrderSteps } from '../../../app/orders/useOrderSteps';
+import { useRuleSettings } from '../../../app/orders/useRuleSettings';
 import { useWide } from '../hooks/useWide';
 
 const words = WORDS.dashboard.orders;
@@ -74,6 +74,7 @@ export default function OrdersScreen() {
   const { live } = useOrdersLive();
   const liveLost = useLiveLost(live);
   const orders = useOrders(shop.id, { kind: 'open' });
+  const show = attentionFilter(useSearch({ strict: false }).show ?? null);
   const [query, setQuery] = useState('');
   const [number, setNumber] = useState('');
   const [tab, setTab] = useState<BoardColumn>('new');
@@ -90,7 +91,8 @@ export default function OrdersScreen() {
   const steps = useOrderSteps(openOrder);
 
   const all = orders.data ?? [];
-  const columns = groupBoard(searchOrders(all, query));
+  const listed = show === null ? all : all.filter((card) => matchesAttention(card.order, show));
+  const columns = groupBoard(searchOrders(listed, query));
   const titles: Record<BoardColumn, string> = {
     new: words.columns.new,
     preparing: words.columns.preparing(vocab.prep),
@@ -206,6 +208,15 @@ export default function OrdersScreen() {
           </Button>
         </form>
       </div>
+
+      {show === null ? null : (
+        <Alert className="flex flex-wrap items-center justify-between gap-2">
+          <AlertDescription>{words.filter[show]}</AlertDescription>
+          <Link to="/$" params={{ _splat: 'orders' }} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            {words.filter.clear}
+          </Link>
+        </Alert>
+      )}
 
       {liveLost ? (
         <Alert className="flex flex-wrap items-center justify-between gap-2">

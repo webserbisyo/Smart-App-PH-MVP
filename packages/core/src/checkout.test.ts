@@ -5,6 +5,7 @@ import {
   availableFulfillments,
   fulfillmentText,
   messengerLink,
+  messengerShareLink,
   messengerOrderText,
   pickupSlots,
 } from './checkout';
@@ -141,5 +142,11 @@ describe('messengerOrderText', () => {
     expect(messengerLink('juanscafe', 'Hi! Order #042\nTotal: ₱45')).toBe(
       'https://m.me/juanscafe?text=Hi!%20Order%20%23042%0ATotal%3A%20%E2%82%B145',
     );
+  });
+});
+
+describe('messengerShareLink', () => {
+  it('opens the Messenger app with the shop link', () => {
+    expect(messengerShareLink('https://shop.webserbisyo.com/juans-cafe')).toBe('fb-messenger://share/?link=https%3A%2F%2Fshop.webserbisyo.com%2Fjuans-cafe');
   });
 });

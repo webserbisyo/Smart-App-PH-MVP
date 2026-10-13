@@ -11,8 +11,14 @@ import { boardOrderFromRow, orderDetailFromRow } from './mappers';
 // Slice 4: the orders board (docs/api-surface.md). Owners read orders through RLS; every change goes through the
 // P5.4 database functions, which check the step, lock the order and write the timeline and the audit log.
 
-/** `open`: every order still in progress, plus the ones completed today. `day`: every order of one Manila date. */
-export type OrderScope = { kind: 'open' } | { kind: 'day'; date: string };
+/**
+ * `open`: every order still in progress, plus the ones completed today. `day`: every order of one Manila date.
+ * `customer`: one customer's latest orders, newest first (the customer sheet, P4.7).
+ */
+export type OrderScope = { kind: 'open' } | { kind: 'day'; date: string } | { kind: 'customer'; customerId: string };
+
+/** How many of a customer's orders the customer sheet shows. */
+export const CUSTOMER_ORDERS_MAX = 20;
 
 export type ReviewPaymentInput = DbFunctionInput<'review_payment'>;
 export type RecordPaymentInput = DbFunctionInput<'record_payment'>;
@@ -24,9 +30,18 @@ export const PROOF_URL_SECONDS = 300;
 
 const OPEN_STATUSES = 'placed,preparing,ready,out_for_delivery';
 
-/** The board's orders, oldest first, each with its lines. */
+/** The board's orders, oldest first (a customer's: newest first), each with its lines. */
 export async function getOrders(client: ApiClient, tenantId: string, scope: OrderScope, now = new Date()): Promise<BoardOrder[]> {
   const query = client.from('orders').select('*, order_items (*)').eq('tenant_id', tenantId);
+  if (scope.kind === 'customer') {
+    const latest = await query
+      .eq('customer_id', scope.customerId)
+      .order('placed_at', { ascending: false })
+      .order('order_no', { ascending: false })
+      .limit(CUSTOMER_ORDERS_MAX);
+    throwIfError(latest.error);
+    return (latest.data ?? []).map(boardOrderFromRow);
+  }
   const filtered =
     scope.kind === 'open'
       ? query.or(`status.in.(${OPEN_STATUSES}),completed_at.gte.${new Date(manilaInstant(manilaDate(now), '00:00')).toISOString()}`)

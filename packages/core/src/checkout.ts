@@ -31,7 +31,7 @@ export function availableFulfillments(settings: Pick<ShopSettings, 'walkInEnable
 export function allowedPaymentMethods(
   fulfillment: Fulfillment,
   settings: Pick<ShopSettings, 'codEnabled' | 'payLaterPickup'>,
-  accounts: Storefront['paymentAccounts'],
+  accounts: readonly Pick<Storefront['paymentAccounts'][number], 'method' | 'isActive'>[],
 ): PaymentMethod[] {
   const transfers = (['gcash', 'maya', 'bank'] as const).filter((method) =>
     accounts.some((account) => account.method === method && account.isActive),
@@ -140,4 +140,9 @@ export function messengerOrderText(order: MessageOrder, lines: readonly MessageL
 /** Opens a chat with the shop's page, the order text filled in. */
 export function messengerLink(username: string, text: string): string {
   return `https://m.me/${encodeURIComponent(username)}?text=${encodeURIComponent(text)}`;
+}
+
+/** Opens Messenger's share sheet with the shop link (Home's "Share on Messenger", phones only, decision P4-40). */
+export function messengerShareLink(url: string): string {
+  return `fb-messenger://share/?link=${encodeURIComponent(url)}`;
 }

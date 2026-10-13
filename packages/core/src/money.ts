@@ -5,14 +5,17 @@ export interface FormatPesoOptions {
   cents?: 'auto' | 'always';
 }
 
+/** The peso sign, for a number that animates on its own (Home's sales ticker). */
+export const PESO_SIGN = '₱';
+
 /** `12000` → `₱120`; `123450` → `₱1,234.50`; `{ cents: 'always' }` → `₱120.00`. */
 export function formatPeso(amount: number, options: FormatPesoOptions = {}): string {
   const sign = amount < 0 ? '-' : '';
   const absolute = Math.abs(Math.trunc(amount));
   const pesos = String(Math.trunc(absolute / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   const rest = absolute % 100;
-  if (rest === 0 && options.cents !== 'always') return `${sign}₱${pesos}`;
-  return `${sign}₱${pesos}.${String(rest).padStart(2, '0')}`;
+  if (rest === 0 && options.cents !== 'always') return `${sign}${PESO_SIGN}${pesos}`;
+  return `${sign}${PESO_SIGN}${pesos}.${String(rest).padStart(2, '0')}`;
 }
 
 /**

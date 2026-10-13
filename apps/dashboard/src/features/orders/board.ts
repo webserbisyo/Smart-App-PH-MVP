@@ -1,5 +1,5 @@
-import { ACTION_TO_STATUS, BOARD_COLUMNS, boardColumn, recordMethod, ticketNo } from '@smartapp/core';
-import type { AdvanceStatus, BoardColumn, BoardOrder, CashMethod, Order, OrderAction } from '@smartapp/core';
+import { BOARD_COLUMNS, boardColumn, ticketNo } from '@smartapp/core';
+import type { BoardColumn, BoardOrder } from '@smartapp/core';
 
 // The board's arranging and searching. Which column and which buttons always come from packages/core
 // (boardColumn, nextActions); nothing here looks at a status itself.
@@ -47,24 +47,6 @@ export function findByNumber(orders: readonly BoardOrder[], text: string): Board
   const number = parseTicket(text);
   if (number === null) return null;
   return orders.find((card) => card.order.orderNo === number) ?? null;
-}
-
-/** What a next step does in the database. */
-export type StepCall =
-  | { kind: 'review' }
-  | { kind: 'record'; method: CashMethod }
-  | { kind: 'advance'; toStatus: AdvanceStatus; askTracking: boolean };
-
-/**
- * A next step as a database call: Verify payment opens the proof; Mark paid records `recordMethod` (decision P5-28);
- * every other step moves the status (ACTION_TO_STATUS).
- */
-export function stepCall(action: OrderAction, order: Pick<Order, 'fulfillment'>): StepCall {
-  if (action === 'verify_payment') return { kind: 'review' };
-  if (action === 'mark_paid') return { kind: 'record', method: recordMethod(order) };
-  const target = ACTION_TO_STATUS[action];
-  if (target === undefined) throw new Error(`No database call for ${action}`);
-  return { kind: 'advance', toStatus: target, askTracking: action === 'out_for_delivery' };
 }
 
 export { BOARD_COLUMNS };

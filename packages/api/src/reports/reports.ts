@@ -60,8 +60,12 @@ export async function getOrdersForExport(client: ApiClient, tenantId: string, ra
   }
 }
 
+/** CSV text as a file Excel and Google Sheets open with ñ and ₱ intact. */
+export function csvFile(text: string): Blob {
+  return new Blob([BOM + text], { type: 'text/csv;charset=utf-8' });
+}
+
 /** The orders of a date range as a CSV file: one row per order, Manila date and time, pesos with two decimals. */
 export async function exportOrdersCsv(client: ApiClient, tenantId: string, range: SalesReportRange): Promise<Blob> {
-  const orders = await getOrdersForExport(client, tenantId, range);
-  return new Blob([BOM + ordersCsv(orders)], { type: 'text/csv;charset=utf-8' });
+  return csvFile(ordersCsv(await getOrdersForExport(client, tenantId, range)));
 }

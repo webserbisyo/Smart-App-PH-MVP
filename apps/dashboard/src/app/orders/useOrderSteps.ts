@@ -5,8 +5,8 @@ import { errorWords } from '@smartapp/core';
 import type { Order, OrderAction } from '@smartapp/core';
 import { toast } from '@smartapp/ui/components/sonner';
 
-import { useVocab } from '../../../app/shop';
-import { stepCall } from '../board';
+import { useVocab } from '../shop';
+import { stepCall } from './steps';
 
 /** A short buzz on Android when a step is taken (ux-plan 3.5). */
 function buzz(): void {

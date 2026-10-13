@@ -38,7 +38,7 @@ export interface OrderCardProps {
   timeText: string;
   late?: boolean;
   words: { fulfillment: Readonly<Record<Fulfillment, string>>; more: string; moreItems: (count: number) => string };
-  /** Compact: Home's "In progress" list and a customer's orders (no item lines, no button). */
+  /** Compact: Home's "In progress" list and a customer's orders (no item lines; the steps show when given). */
   variant?: 'normal' | 'compact';
   /** Tapping the card (not a button) opens the order. */
   onOpen?: () => void;
@@ -87,7 +87,7 @@ export function OrderCard({ order, actions, timeText, late = false, words, varia
         </div>
       </button>
 
-      {variant === 'normal' && main && (
+      {main && (
         <div className="flex items-center gap-2">
           <Button className="h-11 flex-1" disabled={busy} onClick={main.onSelect}>
             {main.pending && <Spinner />}

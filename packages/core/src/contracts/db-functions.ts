@@ -148,7 +148,8 @@ export const SalesReport = z.object({
   from: ManilaDate,
   to: ManilaDate,
   days: z.array(z.object({ date: ManilaDate, orders: z.int().nonnegative(), sales: Centavos })),
-  totals: z.object({ orders: z.int().nonnegative(), sales: Centavos }),
+  /** `paidOrders`: the orders counted in sales (the average order divides by it, decision P5-12). */
+  totals: z.object({ orders: z.int().nonnegative(), paidOrders: z.int().nonnegative(), sales: Centavos }),
   bestSellers: z.array(z.object({ itemName: z.string().min(1), qty: z.int().positive(), sales: Centavos })),
 });
 export type SalesReport = z.infer<typeof SalesReport>;

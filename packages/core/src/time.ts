@@ -214,3 +214,11 @@ export function openStateText(state: OpenState, now: Date): string {
   const next = nextOpeningText(state.nextOpensAt, now);
   return next === null ? words.closed : words.closedOpensAt(next);
 }
+
+export type DayPart = 'morning' | 'afternoon' | 'evening';
+
+/** Home's greeting by Manila time: morning until noon, afternoon until 6 PM, then evening. */
+export function dayPart(now: Date): DayPart {
+  const hour = Math.floor(manilaParts(now).minutes / 60);
+  return hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+}

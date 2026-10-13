@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   addDays,
   ageLabel,
+  dayPart,
   formatManilaDateTime,
   formatManilaTime,
   formatShortDate,
@@ -103,5 +104,15 @@ describe('open state text', () => {
   it('says when the next opening is', () => {
     expect(nextOpeningText('2026-10-13T07:00:00+08:00', now)).toBe('7:00 AM tomorrow');
     expect(nextOpeningText(null, now)).toBeNull();
+  });
+});
+
+describe('dayPart', () => {
+  it('greets by Manila time, not the device clock', () => {
+    expect(dayPart(new Date('2026-10-12T23:59:00+08:00'))).toBe('evening');
+    expect(dayPart(new Date('2026-10-12T16:30:00Z'))).toBe('morning');
+    expect(dayPart(new Date('2026-10-13T11:59:00+08:00'))).toBe('morning');
+    expect(dayPart(new Date('2026-10-13T12:00:00+08:00'))).toBe('afternoon');
+    expect(dayPart(new Date('2026-10-13T18:00:00+08:00'))).toBe('evening');
   });
 });

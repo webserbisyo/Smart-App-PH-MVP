@@ -1,8 +1,9 @@
-import { Customer, CustomerRow, Uuid } from '@smartapp/core';
+import { Customer, CustomerRow, customersCsv, Uuid } from '@smartapp/core';
 
 import type { ApiClient } from '../client';
 import type { Database } from '../database.types';
 import { throwIfError } from '../errors';
+import { csvFile, EXPORT_PAGE } from '../reports/reports';
 import { blankToNull, must, parsed } from '../rows';
 
 // Slice 6: the owner's customer list (docs/api-surface.md). Owners read customers and their stamp balances through
@@ -82,7 +83,13 @@ export function customerSearchFilter(search: string): string | null {
 }
 
 /** One page of the shop's customers with their stamps, newest order first (customers without orders last). */
-export async function getCustomers(client: ApiClient, tenantId: string, filter: CustomerFilter, offset = 0): Promise<CustomerPage> {
+export async function getCustomers(
+  client: ApiClient,
+  tenantId: string,
+  filter: CustomerFilter,
+  offset = 0,
+  size = CUSTOMERS_PAGE,
+): Promise<CustomerPage> {
   const shop = parsed(Uuid.safeParse(tenantId));
   let query = client.from('customers').select('*, customer_stamp_balances (stamps)').eq('tenant_id', shop);
   const search = customerSearchFilter(filter.search);
@@ -93,13 +100,24 @@ export async function getCustomers(client: ApiClient, tenantId: string, filter: 
     .order('last_order_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
     .order('id')
-    .range(offset, offset + CUSTOMERS_PAGE);
+    .range(offset, offset + size);
   throwIfError(error);
   const rows = data ?? [];
   return {
-    rows: rows.slice(0, CUSTOMERS_PAGE).map(customerRowFromRow),
-    nextOffset: rows.length > CUSTOMERS_PAGE ? offset + CUSTOMERS_PAGE : null,
+    rows: rows.slice(0, size).map(customerRowFromRow),
+    nextOffset: rows.length > size ? offset + size : null,
   };
+}
+
+/** Every customer the filter finds (the list's order), read 1000 at a time, as a CSV file (P4.7). */
+export async function exportCustomersCsv(client: ApiClient, tenantId: string, filter: CustomerFilter): Promise<Blob> {
+  const rows: CustomerRow[] = [];
+  for (let offset: number | null = 0; offset !== null; ) {
+    const page: CustomerPage = await getCustomers(client, tenantId, filter, offset, EXPORT_PAGE);
+    rows.push(...page.rows);
+    offset = page.nextOffset;
+  }
+  return csvFile(customersCsv(rows));
 }
 
 /** The owner's notes and tags on a customer (trimmed; blank notes become none, blank and repeated tags are dropped). */
