@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { useMyOrderTokens, useOrder } from '@smartapp/api';
 import { formatShortDate, ticketNo, WORDS } from '@smartapp/core';
+import type { Order } from '@smartapp/core';
 import { FLUENT_ICONS } from '@smartapp/ui/assets/fluent';
 import { buttonVariants } from '@smartapp/ui/components/button';
 import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@smartapp/ui/components/empty';
@@ -13,21 +14,18 @@ import { cn } from '@smartapp/ui/lib/utils';
 import { Money } from '@smartapp/ui/patterns/Money';
 import { StatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 
+import { useMember } from '../members/use-member';
 import { useShop } from '../shell/ShopProvider';
 import { useHydrated } from '../shell/use-hydrated';
 import { customerOrderLook } from './order-look';
 
 const words = WORDS.storefront.orders;
 
-/** One order on this phone: number, date, total and status. A link that is no longer an order is left out. */
-function OrderRow({ slug, token }: { slug: string; token: string }) {
-  const { data, isPending } = useOrder(token);
-  if (isPending) return <Skeleton className="h-16 w-full" />;
-  if (!data) return null;
-  const { order } = data;
+/** One order: number, date, total and status, linking to its receipt. */
+export function OrderSummaryRow({ slug, order }: { slug: string; order: Order }) {
   const ticket = ticketNo(order.orderNo);
   return (
-    <Item variant="outline" render={<Link href={`/${slug}/o/${token}`} aria-label={words.open(ticket)} />}>
+    <Item variant="outline" render={<Link href={`/${slug}/o/${order.token}`} aria-label={words.open(ticket)} />}>
       <ItemContent>
         <ItemTitle className="tabular text-base font-bold">{ticket}</ItemTitle>
         <ItemDescription>
@@ -42,19 +40,34 @@ function OrderRow({ slug, token }: { slug: string; token: string }) {
   );
 }
 
-/** My orders (P4.4, guest): the orders placed on this phone, newest first. */
+/** One order on this phone. A link that is no longer an order is left out. */
+function OrderRow({ slug, token }: { slug: string; token: string }) {
+  const { data, isPending } = useOrder(token);
+  if (isPending) return <Skeleton className="h-16 w-full" />;
+  if (!data) return null;
+  return <OrderSummaryRow slug={slug} order={data.order} />;
+}
+
+/**
+ * My orders: members see their account's orders (any device, P4.6), then any other orders placed on this phone;
+ * guests see the orders placed on this phone (P4.4). Newest first.
+ */
 export function MyOrders() {
   const hydrated = useHydrated();
   const { storefront, catalogLabel } = useShop();
   const slug = storefront.shop.slug;
-  const tokens = useMyOrderTokens(slug);
+  const deviceTokens = useMyOrderTokens(slug);
+  const { account } = useMember();
+  const accountOrders = account?.orders ?? [];
+  const tokens = deviceTokens.filter((token) => !accountOrders.some((order) => order.token === token));
+  const none = accountOrders.length === 0 && tokens.length === 0;
 
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col gap-4">
       <h1 className="text-2xl font-semibold">{words.title}</h1>
       {!hydrated ? (
         <Skeleton className="h-16 w-full" />
-      ) : tokens.length === 0 ? (
+      ) : none ? (
         <Empty>
           <EmptyHeader>
             <EmptyMedia>
@@ -70,6 +83,9 @@ export function MyOrders() {
         </Empty>
       ) : (
         <ItemGroup className="gap-2">
+          {accountOrders.map((order) => (
+            <OrderSummaryRow key={order.id} slug={slug} order={order} />
+          ))}
           {tokens.map((token) => (
             <OrderRow key={token} slug={slug} token={token} />
           ))}

@@ -38,6 +38,9 @@ import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
 import { PhoneField } from '@smartapp/ui/patterns/PhoneField';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
+import { RewardSwitch } from '../members/RewardSwitch';
+import { useMember } from '../members/use-member';
+import { useReward } from '../members/use-reward';
 import { useShop } from '../shell/ShopProvider';
 import { useHydrated } from '../shell/use-hydrated';
 import { checkoutSchema, toOrderInput, toQuotePayload } from './checkout-form';
@@ -72,7 +75,9 @@ function methodHint(method: PaymentMethod, fulfillment: FulfillmentValue): strin
 }
 
 function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
-  const { storefront, cart, block, removeLine, clearCart } = useShop();
+  const { storefront, cart, block, removeLine, clearCart, rejectReward } = useShop();
+  const { account } = useMember();
+  const reward = useReward();
   const router = useRouter();
   const online = useOnline();
   const { shop, paymentAccounts } = storefront;
@@ -128,8 +133,8 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
 
   const lines = useMemo(() => cart.lines.map((priced) => priced.line), [cart.lines]);
   const quotePayload = useMemo(
-    () => toQuotePayload({ fulfillment, pickupAt, deliveryZoneId, paymentMethod }, lines, rules),
-    [fulfillment, pickupAt, deliveryZoneId, paymentMethod, lines, rules],
+    () => toQuotePayload({ fulfillment, pickupAt, deliveryZoneId, paymentMethod }, lines, rules, reward.on),
+    [fulfillment, pickupAt, deliveryZoneId, paymentMethod, lines, rules, reward.on],
   );
   const quote = useQuote(shop.slug, quotePayload);
   const place = usePlaceOrder();
@@ -141,6 +146,28 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
   const shopError = place.error ? toApiError(place.error).code : quotePayload !== null && quote.error ? toApiError(quote.error).code : null;
   const transfer = paymentMethod === null ? null : TransferMethod.safeParse(paymentMethod);
 
+  // The database says the reward is not ready (used on another phone, or a stamp was taken back): switch it off.
+  const quoteRefusedReward = quotePayload?.useReward === true && quote.error !== null && toApiError(quote.error).code === 'reward_unavailable';
+  useEffect(() => {
+    if (quoteRefusedReward) rejectReward();
+  }, [quoteRefusedReward, rejectReward]);
+
+  // Members: details and the default address from the account, unless the customer already typed something.
+  useEffect(() => {
+    if (!account) return;
+    const address = account.addresses.find((saved) => saved.isDefault) ?? account.addresses[0];
+    const fill: ['name' | 'email' | 'addressLine' | 'landmark', string][] = [
+      ['name', account.customer.name],
+      ['email', account.customer.email ?? ''],
+      ['addressLine', address?.addressLine ?? ''],
+      ['landmark', address?.landmark ?? ''],
+    ];
+    for (const [field, value] of fill) {
+      if (value !== '' && !form.getFieldState(field).isDirty) form.setValue(field, value);
+    }
+    if (!form.getFieldState('phone').isDirty) form.setValue('phone', account.customer.phone);
+  }, [account, form]);
+
   const changeFulfillment = (next: FulfillmentValue) => {
     form.setValue('fulfillment', next);
     const allowed = allowedPaymentMethods(next, settings, paymentAccounts);
@@ -150,7 +177,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
   };
 
   const submit = form.handleSubmit((values) => {
-    const input = toOrderInput(values, lines, rules);
+    const input = toOrderInput(values, lines, rules, reward.on);
     if (input === null) return;
     place.mutate(
       { slug: shop.slug, payload: input },
@@ -164,8 +191,9 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
           router.push(`/${shop.slug}/o/${placed.token}?placed=1`);
           clearCart();
         },
-        onError: () => {
-          void quote.refetch();
+        onError: (failure) => {
+          if (toApiError(failure).code === 'reward_unavailable') rejectReward();
+          else void quote.refetch();
         },
       },
     );
@@ -348,6 +376,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         <h2 id="checkout-summary" className="text-lg font-semibold">
           {words.summary}
         </h2>
+        <RewardSwitch />
         <OrderLines
           lines={cart.lines.map((priced) => ({
             itemName: priced.itemName,

@@ -25,6 +25,8 @@ import { OrderTimeline } from '@smartapp/ui/patterns/OrderTimeline';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
 import { StatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 
+import { InstallCard } from '../install/InstallCard';
+import { ReceiptStamps } from '../members/ReceiptStamps';
 import { useShop } from '../shell/ShopProvider';
 import { customerOrderLook, customerPaymentLook } from './order-look';
 import { ProofUpload } from './ProofUpload';
@@ -167,6 +169,8 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         words={WORDS.order}
       />
 
+      <ReceiptStamps order={order} />
+
       <div className="flex flex-col gap-2 print:hidden">
         {messenger !== null && (
           <a href={messengerLink(messenger, text)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ size: 'lg' }), SHOP_BUTTON)}>
@@ -182,6 +186,8 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
           </Button>
         </div>
       </div>
+
+      <InstallCard />
 
       <p className="text-center text-xs text-muted-foreground">{words.slip}</p>
     </article>

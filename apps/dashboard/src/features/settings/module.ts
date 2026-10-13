@@ -14,5 +14,6 @@ export const settingsModule = defineAppModule({
     { path: 'settings/hours', crumb: sections.hours, screen: () => import('./screens/HoursScreen') },
     { path: 'settings/order-types', crumb: sections.orderTypes, screen: () => import('./screens/OrderTypesScreen') },
     { path: 'settings/payments', crumb: sections.payments, screen: () => import('./screens/PaymentsScreen') },
+    { path: 'settings/stamps', crumb: sections.stamps, screen: () => import('./screens/StampsScreen') },
   ],
 });

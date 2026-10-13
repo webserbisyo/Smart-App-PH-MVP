@@ -131,6 +131,22 @@ Full reasoning, research and sources: `docs/ux-plan.md`. Prompts: `docs/prompts/
   72 mm wide in black, using print CSS in `apps/dashboard/src/styles.css`. On tablet and wider the board's columns are at
   least 14rem wide and wrap (2 columns next to the side panel at 1280 px, 3 at 1024 px, 5 on wide screens), so cards
   never get too narrow to read.
+- P4-31 (P4.6, 2026-10-13): The stamp card settings page has a "Stamp card on" switch (cards start off, P5-32). The
+  owner types the reward as a peso amount; its words are always "₱100 off your order" (`rewardLabel` in core), so
+  there is no free-text reward. The members count switch lives on the same page.
+- P4-32 (P4.6): The "Use ₱100 off" switch starts off and is shared by the cart and checkout. The cart shows an
+  estimate (`rewardDiscount`, never more than the items); checkout shows the database's quote. When the database
+  answers `reward_unavailable`, the switch turns off and says why. Checkout fills in the member's name, mobile,
+  email and default address unless the customer already typed them.
+- P4-33 (P4.6): The confetti fires once per reward on each device (`smartapp.reward.<slug>`). A reward given back by a
+  cancelled order is the same reward, so it does not celebrate again.
+- P4-34 (P4.6): The install card shows on the receipt and the account page. It is hidden in the Facebook, Messenger and
+  Instagram browsers (they cannot add to the home screen), when already installed, and for 14 days after "Not now"
+  (per shop). The browser's install event is caught as soon as a shop page loads, because it can fire before React
+  is ready.
+- P4-35 (P4.6): Members see their orders from any device on the Orders tab and the account page; orders placed on this
+  phone without signing in follow them. The receipt says "+1 stamp when completed" only for orders that will earn one
+  (open, from the minimum).
 
 ## Backend plan (2026-10-11, approved by the founder)
 

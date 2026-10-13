@@ -20,6 +20,8 @@ import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
 import { QuantityStepper } from '@smartapp/ui/patterns/QuantityStepper';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
+import { RewardSwitch } from '../members/RewardSwitch';
+import { useReward } from '../members/use-reward';
 import { useShop } from '../shell/ShopProvider';
 
 const words = WORDS.storefront.cart;
@@ -28,6 +30,9 @@ const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 acti
 /** The cart: lines with quantity and remove, the subtotal, and "Checkout · ₱345". */
 export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { storefront, cart, catalogLabel, setQty, removeLine } = useShop();
+  const reward = useReward();
+  const discount = reward.discount(cart.subtotal);
+  const total = cart.subtotal - discount;
   const base = `/${storefront.shop.slug}`;
   const close = () => {
     onOpenChange(false);
@@ -102,6 +107,13 @@ export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
               <span>{WORDS.order.subtotal}</span>
               <Money amount={cart.subtotal} />
             </div>
+            {discount > 0 && (
+              <div className="-mt-2 flex items-center justify-between gap-3 text-sm text-member-text">
+                <span>{WORDS.storefront.stamps.discount}</span>
+                <Money amount={-discount} />
+              </div>
+            )}
+            <RewardSwitch showJoin />
             {cart.hasUnavailable && (
               <Alert variant="destructive">
                 <AlertDescription>{words.removeUnavailable}</AlertDescription>
@@ -110,11 +122,11 @@ export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
             <StickyActionBar className="-mx-4">
               {cart.hasUnavailable ? (
                 <Button size="lg" className={cn('flex-1', SHOP_BUTTON)} disabled>
-                  {words.checkout(formatPeso(cart.subtotal))}
+                  {words.checkout(formatPeso(total))}
                 </Button>
               ) : (
                 <Link href={`${base}/checkout`} onClick={close} className={cn(buttonVariants({ size: 'lg' }), 'flex-1', SHOP_BUTTON)}>
-                  <span className="tabular">{words.checkout(formatPeso(cart.subtotal))}</span>
+                  <span className="tabular">{words.checkout(formatPeso(total))}</span>
                 </Link>
               )}
             </StickyActionBar>

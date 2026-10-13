@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { THEME_PRESETS } from '@smartapp/core';
 import type { PaymentAccount, ShopSettings } from '@smartapp/core';
 
-import { hoursSummary, infoSummary, lookSummary, matchingPreset, orderTypesSummary, paymentsSummary } from './summary';
+import { hoursSummary, infoSummary, lookSummary, matchingPreset, orderTypesSummary, paymentsSummary, stampsSummary } from './summary';
 
 const TENANT = '00000000-0000-4000-8000-000000000001';
 const settings: ShopSettings = {
@@ -46,5 +46,13 @@ describe('settings summaries', () => {
     expect(orderTypesSummary({ ...settings, deliveryEnabled: true })).toBe('Walk-in, Pickup, Delivery');
     expect(paymentsSummary([account('gcash'), account('gcash'), account('maya'), account('bank', false)])).toBe('GCash, Maya');
     expect(paymentsSummary([])).toBe('No accounts yet');
+  });
+});
+
+describe('stamp card summary', () => {
+  const rule = { tenantId: '00000000-0000-4000-8000-000000000001', isActive: true, minOrderTotal: 0, stampsNeeded: 10, rewardLabel: '₱100 off your order', rewardAmount: 10000 };
+  it('says Off, or the stamps and the reward', () => {
+    expect(stampsSummary(rule)).toBe('10 stamps for ₱100 off your order');
+    expect(stampsSummary({ ...rule, isActive: false })).toBe('Off');
   });
 });
