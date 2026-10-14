@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
@@ -44,6 +45,7 @@ function useDebounced(value: string, ms: number): string {
 
 /** Business type, shop name, link name with live availability, then a pending shop (the guard opens Waiting). */
 export default function SetupScreen() {
+  const router = useRouter();
   const create = useCreateMyShop();
   const [slugEdited, setSlugEdited] = useState(false);
   const form = useForm<SetupForm>({
@@ -63,7 +65,12 @@ export default function SetupScreen() {
         noValidate
         onSubmit={(event) => {
           void form.handleSubmit((values) => {
-            create.mutate(values);
+            // The new shop is already in the cache; running the guard again opens Waiting.
+            create.mutate(values, {
+              onSuccess: () => {
+                void router.invalidate();
+              },
+            });
           })(event);
         }}
       >
