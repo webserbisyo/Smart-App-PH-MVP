@@ -308,3 +308,20 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   repeated tags. `exportOrdersCsv` reads the orders 1000 at a time and adds a byte order mark so Excel shows ñ and ₱.
   The CSV text comes from core `ordersCsv` (`toCsv` puts `'` before cells starting with `=`, `+`, `-`, `@`, tab or
   carriage return). Keys `qk.memberInsights`, `qk.salesReport`, `qk.customers`, `qk.customerList`.
+
+## Way of working (2026-10-14, decided by the founder)
+
+- A-7: Two tracks. Track A finishes and launches the MVP on the current stack (`docs/blueprints/A-MVP-Launch-Blueprint.md`,
+  integration branch `dev`). Track B builds the full product with a NestJS API in `apps/api` on Railway, Supabase
+  staying the database, Auth, Storage and Realtime (`docs/blueprints/B-Full-Product-NestJS-Blueprint.md`, long-lived
+  branch `next`). Track B never touches the live MVP until a module is promoted switched off.
+- A-2: Claude writes one prompt at a time; Antigravity (or a Claude Code thread) codes it on `ag/<id>-<name>`
+  (`claude/...` for Claude Code), takes screenshots at 390 and 1280 px, updates `docs/PROGRESS.md` and
+  `docs/CHANGELOG.md`, and opens a PR into `dev` (Track B: `next`). Agents never push to `main`, `dev` or `next`
+  and never merge; the founder merges. Why: a push to `dev` deploys migrations to the hosted database.
+- A-8: `AGENTS.md` is the one rulebook for every agent; `CLAUDE.md` only imports it, so the two never drift.
+  Antigravity loads a root `AGENTS.md` as an always-on workspace rule, so no separate `.agents/rules` file is kept.
+  MCP connectors for agents are read-only by rule (`AGENTS.md`, "Using tools and connectors").
+
+Still waiting for the founder's yes (Blueprint A section 9): A-1 staging database, A-3 test packages, A-4 storefront
+caching, A-5 Turnstile timing, A-6 icons and offline page without new packages.

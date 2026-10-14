@@ -11,3 +11,6 @@ dist/
 # Next.js
 .next/
 next-env.d.ts
+
+# Vercel CLI link folders (vercel link)
+.vercel/

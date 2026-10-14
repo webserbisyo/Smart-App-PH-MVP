@@ -2,6 +2,9 @@
 
 Keys go into `.env.local`, GitHub settings and Vercel settings. Never into chat, code or a commit.
 
+Regions: Supabase project "Smart App PH MVP" in Singapore (`ap-southeast-1`, Postgres 17); Vercel functions `sin1`
+(Singapore); Resend Tokyo (`ap-northeast-1`). A staging project and Railway (Track B) use Singapore too.
+
 ## 1. GitHub secrets (migrations)
 
 Migrations (and Auth settings, section 4) reach the hosted Supabase project only through the `db-deploy` workflow
