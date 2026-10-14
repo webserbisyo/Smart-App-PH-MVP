@@ -5,6 +5,7 @@ under the new version and tags it on `main`.
 
 ## Unreleased
 
+- docs(a0.1): AGENTS.md cut to 73 lines of general rules; area details moved to `docs/agent-reference.md`.
 - docs(a0.1): AGENTS.md rulebook for every agent, CLAUDE.md points to it, PROGRESS, CHANGELOG, PR template,
   blueprints A and B in `docs/blueprints/`, new prompt template (agents open PRs, never push `dev`).
 
