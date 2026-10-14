@@ -286,25 +286,36 @@ One at a time, each as new folders, new files and new migrations:
 
 ## Daily working routine
 
-1. Morning: run `select demo_reset('juans-cafe'); select demo_reset('tala-apparel');` in the Supabase SQL editor.
-2. Pick the next checkpoint. Ask Claude (chat) for its prompt file.
-3. Paste the one-line instruction into Claude Code or Antigravity.
-4. Test the "Done when" list on your phone with both shops.
-5. Commit and push. Write any new idea into the after-launch list.
+Replaced on 2026-10-14 by the workflow in `docs/blueprints/A-MVP-Launch-Blueprint.md` section 7 and `AGENTS.md`.
+
+1. Morning, if the demo shops look messy: run `select private.demo_reset('juans-cafe'); select private.demo_reset('tala-apparel');` in the Supabase SQL editor.
+2. Ask Claude (project chat) for the next prompt file. It lands in `docs/prompts/`.
+3. In Antigravity: `Read @AGENTS.md and @docs/prompts/<file>.md and do exactly that prompt.` Approve its plan.
+4. Antigravity branches `ag/<id>-<name>`, codes, checks, screenshots, pushes the branch and opens a PR into `dev`.
+5. Paste the PR link to Claude for review, test the "Done when" list on your phone with both shops, then click Merge.
+   Agents never push to `main`, `dev` or `next` (decision A-2). Write any new idea into the after-launch list.
 
 ## Prompt template for every checkpoint
 
 ```
-# Checkpoint P{phase}.{n}: {name}
-Read CLAUDE.md and docs/system-paper.md section {x} first.
-Goal: {one sentence}
-Build only: {list}
-Do not build: {anything nearby that is out of scope}
-Where the code goes: {apps/..., packages/ui|core|api, supabase/...}
-Reuse: {reference files or installed components}
-Rules: pnpm check green; no new packages without asking; RLS in the same migration.
-Done when (I will test on a phone with Juan's Cafe and Tala Apparel):
-- {test 1}
-- {test 2}
-Finish: commit "{message}", push to dev, reply in 5 lines with what changed and how to test.
+# {ID} {name}
+Read @AGENTS.md, @docs/blueprints/A-MVP-Launch-Blueprint.md sections 4 and 5 ({ID}),
+and @docs/ux-plan.md section {x} first.
+
+Goal: one sentence.
+Branch: ag/{id}-{short-name} from the latest dev (Track B: from next).
+Build only: numbered steps, each one commit.
+  1. ...
+  2. ...
+Do not build: anything nearby that is out of scope.
+Files: exact paths to change or add.
+Reuse: patterns and components by name.
+Exact values: sizes, tokens, durations (no adjectives).
+Wireframe: ASCII for phone and desktop when the layout changes.
+States to show: from AGENTS.md "UX rules", plus page-specific ones.
+Done when (the agent checks in its browser, then the founder on a phone with Juan's Cafe and Tala Apparel):
+  - ...
+Finish: pnpm check and pnpm build green; screenshots 390 and 1280 in the PR; PROGRESS.md and CHANGELOG.md
+updated; push the branch; open a PR into dev (Track B: next) with the PR template; never push dev, next or main;
+reply with the 5 lines and the PR link.
 ```

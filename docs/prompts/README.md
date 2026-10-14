@@ -1,7 +1,10 @@
 # Checkpoint prompts: run order
 
-One prompt per checkpoint. Paste its one line into a fresh Claude Code session, test the "Done when" list, merge
-the pull request into `dev`, then start the next one. Run each checkpoint in one place only.
+One prompt per checkpoint. Paste its one line into Antigravity (or a fresh Claude Code session):
+`Read @AGENTS.md and @docs/prompts/<file>.md and do exactly that prompt.` The agent opens a pull request into `dev`;
+you test the "Done when" list and merge it, then start the next one. Agents never push `dev` themselves (decision
+A-2). Run each checkpoint in one place only. From 2026-10-14 new prompts follow the blueprints in `docs/blueprints/`
+and the template in `docs/build-plan.md`; the table below is the finished P1 to P5.6 history.
 
 | # | Prompt | What you get | Screens? |
 | --- | --- | --- | --- |

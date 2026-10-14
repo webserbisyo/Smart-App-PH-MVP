@@ -2,7 +2,7 @@
 
 An installable ordering app and owner dashboard for small Philippine businesses
 
-Webserbisyo · Prepared for: Alex (founder and developer) · Version 1.1 · October 12, 2026
+Webserbisyo · Prepared for: Juan Miguel Morales (founder) · Version 1.1 · October 12, 2026
 
 This paper is the foundation for building Smart App PH a second time. The first build tried to ship every feature at once and stopped. This edition defines a small launch scope that works end to end. The design stays ready for the full product, which is listed in section 11. It is written like a capstone system paper: the problem, the objectives, the method, the system design, the data design, the screens and the plan to test and launch.
 
