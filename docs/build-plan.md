@@ -1,5 +1,8 @@
 # Smart App PH Build Plan (MVP)
 
+> History: phases P1 to P5.6 are done and this plan is replaced by `docs/blueprints/`. Agents skip this file except
+> the prompt template at the end. Phase 4 "mock data" no longer applies (no mock data, see `AGENTS.md`).
+
 Webserbisyo · Version 1.1 · October 12, 2026 · Companion to Smart App PH System Paper (MVP Edition) v1.1
 
 This plan turns the system paper into work, in six phases. Each phase is a set of small checkpoints: one prompt, one result, one test, one commit. A checkpoint is done only when its "Done when" list passes on a real phone. Section numbers in brackets point to the system paper.
