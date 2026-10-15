@@ -27,11 +27,13 @@ are in `docs/blueprints/B-Full-Product-NestJS-Blueprint.md` section 9 and the fu
 - Trusted logic (prices, totals, stock, stamps, payment state, order transitions) lives in `security definer` SQL
   functions with `set search_path = ''`; helpers go in the `private` schema. Clients never write those tables.
 - Every shop-owned table carries `tenant_id`; every policy checks shop membership. A cross-shop pgTAP test proves it.
-- After a migration: `pnpm db:start`, `pnpm db:test`, `pnpm db:types`, and commit
-  `packages/api/src/database.types.ts` (CI fails if it differs).
-- **Never** run `supabase link`, `supabase db push`, `supabase db reset --linked`, `supabase config push` or any
-  command against a hosted project. **Never** change the database through the Supabase MCP, the dashboard or the
-  SQL editor. Only the `db-deploy` GitHub Action deploys, after the founder merges.
+- Work against the local stack (`docs/local-dev.md`): full access there. After a migration: `pnpm local reset`,
+  `pnpm db:test`, `pnpm db:types`, and commit `packages/api/src/database.types.ts` (CI fails if it differs).
+- The CLI may be linked to the hosted project (reads only). **Never** run `supabase db push`, `db reset --linked`,
+  `migration repair`, `config push` or any command that writes to it. **Never** change the hosted database through
+  the Supabase MCP, the dashboard or the SQL editor. Only the `db-deploy` GitHub Action deploys, after the founder merges.
+- A PR that adds or changes a `public.` SQL function, a hook or a plain function in `packages/api` updates
+  `docs/api-surface.md` in the same PR.
 - The Supabase MCP is read-only and scoped to one project: use it to list tables, read logs and advisors, and
   search docs. If it ever offers a write, do not use it.
 
@@ -85,9 +87,9 @@ are in `docs/blueprints/B-Full-Product-NestJS-Blueprint.md` section 9 and the fu
 | Tool | Allowed | Never |
 | --- | --- | --- |
 | Supabase MCP (read-only, one project) | list tables and migrations, read logs and advisors, search docs, generate types to compare | any write, `apply_migration`, `execute_sql` that changes data, Edge Function deploys |
-| Supabase CLI | `supabase start`, `db reset` (local), `test db`, `gen types --local`, `migration new` | `link`, `db push`, `config push`, anything with `--linked` or `--project-ref` |
+| Supabase CLI | everything local (`pnpm local ...`, `test db`, `gen types --local`, `migration new`); read-only commands on the linked project (`migration list`) | `db push`, `db reset --linked`, `migration repair`, `config push`, any other write to the linked project |
 | Vercel MCP / CLI | read deployments, build logs, runtime logs, docs | deploy, promote, roll back, change env vars, domains or DNS, `vercel --prod` |
-| Resend MCP / CLI | read domains, logs and email status, search docs | send email, change domains, DNS, API keys or contacts |
+| Resend MCP (no CLI) | read domains, logs and email status, search docs | send email, change domains, DNS, API keys or contacts |
 | GitHub (`gh`) | push your own branch, open and edit your PR, read CI logs | push or merge `main`/`dev`/`next`, change settings or secrets |
 
 Anything in the "never" column needs the founder to do it, or their explicit yes in the chat for that one action.

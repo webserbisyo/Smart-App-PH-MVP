@@ -23,15 +23,18 @@ names before changing code. Details per area: `docs/agent-reference.md`. Decisio
 
 `pnpm install` · `pnpm check` (typecheck, lint, test) · `pnpm build` · `pnpm dev` (storefront
 http://localhost:3000, dashboard http://localhost:5173; use `localhost`, not `127.0.0.1`) · `pnpm db:start`,
-`pnpm db:test`, `pnpm db:types` (local Supabase in Docker, database prompts only).
+`pnpm local start|stop|reset|demo|env local|env live` (local Supabase in Docker, see `docs/local-dev.md`) ·
+`pnpm db:test`, `pnpm db:types`.
 
 ## Hard rules
 
 - **Never push to `main`, `dev` or `next`, never merge, never force-push or `reset --hard`.** Branch
   `ag/<prompt-id>-<name>` from the latest `dev` (Track B: `next`) and open a PR into it. The founder merges.
 - Database changes only as a **new** file in `supabase/migrations/`, with RLS, grants and policies in the same file.
-  Never edit an applied migration. Never run `supabase link` / `db push`, and never change the hosted database
-  through MCP, the dashboard or the SQL editor. After a migration run `pnpm db:types` and commit the types.
+  Never edit an applied migration. Full access to the local database; the hosted one changes only through a merged
+  migration. The CLI may be linked, but never run `db push`, `db reset --linked`, `migration repair` or any write to
+  the hosted project, and never change it through MCP, the dashboard or the SQL editor. After a migration run
+  `pnpm db:types` and commit the types. A backend change (SQL function or `packages/api`) updates `docs/api-surface.md`.
 - No `any`, no `as` casts to silence errors, no `@ts-ignore`. Types come from Zod schemas in `packages/core`.
 - Only `packages/api` imports `@supabase/*`. Apps never import each other; dashboard features never import each
   other. Never weaken `eslint.config.js` to pass; move the code.

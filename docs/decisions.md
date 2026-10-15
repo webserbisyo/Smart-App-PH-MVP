@@ -323,5 +323,20 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
   Antigravity loads a root `AGENTS.md` as an always-on workspace rule, so no separate `.agents/rules` file is kept.
   MCP connectors for agents are read-only by rule (`AGENTS.md`, "Using tools and connectors").
 
+## Tools and local development (2026-10-15, decided by the founder)
+
+- A-9: The Supabase CLI may be linked to the hosted project (`ssrveclilekzezcivclx`) for read-only commands. Nobody
+  runs `supabase db push`, `db reset --linked`, `migration repair` or any other command that writes to it. Hosted
+  schema changes go only through a migration file in a PR, applied by the `db-deploy` Action after the merge.
+- A-10: Connectors. The Supabase MCP stays read-only (`read_only=true`, one project). The Supabase and Resend MCPs use
+  access tokens instead of a browser login. The GitHub MCP is off (agents use the `gh` CLI); the Figma MCP is removed;
+  the Resend CLI is not used. Vercel MCP runs through `mcp-remote`.
+- A-11: Agents develop against a local Supabase stack in Docker (`docs/local-dev.md`, `pnpm local ...`) with full access
+  there; demo shops locally come from the same SQL as live (`seed.sql`, `private.demo_reset`), not mock data.
+- A-12: `docs/api-surface.md` lists every name the apps may call; a PR that changes a `public.` SQL function, a hook
+  or a plain function in `packages/api` updates it in the same PR.
+- A-13: Repo docs describe the current state only (what is installed, where it lives, the rules); history and
+  debate stay in this file and in git.
+
 Still waiting for the founder's yes (Blueprint A section 9): A-1 staging database, A-3 test packages, A-4 storefront
 caching, A-5 Turnstile timing, A-6 icons and offline page without new packages.
