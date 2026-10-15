@@ -15,7 +15,8 @@
     "test": "turbo run test",
     "db:start": "supabase db start",
     "db:test": "supabase test db",
-    "db:types": "supabase gen types typescript --local --schema public > packages/api/src/database.types.ts"
+    "db:types": "supabase gen types typescript --local --schema public > packages/api/src/database.types.ts",
+    "local": "bash scripts/local.sh"
   },
   "devDependencies": {
     "eslint": "10.12.0",
