@@ -89,7 +89,7 @@ function AccountForm({ account, onDone }: { account: PaymentAccount | null; onDo
       <ResponsiveDialogHeader>
         <ResponsiveDialogTitle>{account ? words.edit : words.add}</ResponsiveDialogTitle>
       </ResponsiveDialogHeader>
-      <FieldGroup className="max-h-[65dvh] overflow-y-auto px-4 pb-2 sm:max-h-none sm:px-0">
+      <FieldGroup className="px-4 pb-2 sm:px-0">
         <Controller
           control={form.control}
           name="method"

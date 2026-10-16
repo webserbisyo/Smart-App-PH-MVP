@@ -256,7 +256,7 @@ function ItemForm({ item, onDone }: { item: StorefrontItem; onDone: () => void }
 export function ItemSheet({ item, open, onOpenChange }: { item: StorefrontItem | null; open: boolean; onOpenChange: (open: boolean) => void }) {
   return (
     <ResponsiveDialog open={open && item !== null} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-h-[92dvh] gap-4 overflow-y-auto px-4 pb-0 sm:max-w-lg">
+      <ResponsiveDialogContent className="gap-4 px-4 pb-0 sm:max-w-lg">
         {item ? (
           <ItemForm
             key={item.id}

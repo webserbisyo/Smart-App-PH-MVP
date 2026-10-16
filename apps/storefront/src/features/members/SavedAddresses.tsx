@@ -193,7 +193,7 @@ export function SavedAddresses({ slug, account }: { slug: string; account: Membe
         </Button>
       )}
       <ResponsiveDialog open={open} onOpenChange={setOpen}>
-        <ResponsiveDialogContent className="max-h-[92dvh] gap-4 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:max-w-md">
+        <ResponsiveDialogContent className="gap-4 px-4 pb-4 sm:max-w-md">
           <ResponsiveDialogHeader className="px-0 text-left">
             <ResponsiveDialogTitle>{editing === null ? words.addAddress : words.editAddress}</ResponsiveDialogTitle>
           </ResponsiveDialogHeader>

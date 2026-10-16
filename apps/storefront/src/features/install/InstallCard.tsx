@@ -71,7 +71,7 @@ function StepDrawing({ step }: { step: number }) {
 function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChange: (open: boolean) => void; shopName: string }) {
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-h-[92dvh] gap-4 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:max-w-md">
+      <ResponsiveDialogContent className="gap-4 px-4 pb-4 sm:max-w-md">
         <ResponsiveDialogHeader className="px-0 text-left">
           <ResponsiveDialogTitle>{words.iosTitle(shopName)}</ResponsiveDialogTitle>
           <ResponsiveDialogDescription>{words.text}</ResponsiveDialogDescription>

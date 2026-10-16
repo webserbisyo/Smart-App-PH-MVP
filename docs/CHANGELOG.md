@@ -5,6 +5,8 @@ under the new version and tags it on `main`.
 
 ## Unreleased
 
+- fix(ui): sheets, drawers and dialogs size to the screen with one scroll area, header and footer pinned, no
+  sideways scrollbar (storefront cart was cut off with two scrollbars).
 - docs(a0.1): local Supabase in Docker (`pnpm local`, `docs/local-dev.md`), CLI link allowed but never written to,
   api-surface checked against the code, docs trimmed to the current state (decisions A-9 to A-13).
 - docs(a0.1): AGENTS.md cut to 73 lines of general rules; area details moved to `docs/agent-reference.md`.
