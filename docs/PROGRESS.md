@@ -14,7 +14,7 @@ Stage 0, way of working
   - Fix: sheets and popups own their height and one scroll area (cart sheet cut off, double and sideways scrollbars).
 
 Stage 1, storefront v2 (`docs/storefront-v2.md`; replaces A1 to A12, decision SF-1)
-- [ ] SF1 Foundation and redesign (shell, palette, every page, privacy, icons, splash, brand editor)
+- [x] SF1 Foundation and redesign (shell, palette, every page, privacy, icons, splash, brand editor)
 - [ ] SF2 Database (rewards, shop content, order messages, delivery, ratings, push)
 - [ ] SF3 Features and demo content (banners, rewards, thread, tracking, push, SEO, caching, demo photos)
 - [ ] SF4 Smoke tests and docs (Playwright 390/1280, docs, repo description)
@@ -89,5 +89,7 @@ Modules (each: database prompt, API prompt, one prompt per page)
 
 ## Log
 
+- SF1: Storefront v2 foundation and redesign (shell, one-colour palette, semantic toasts/buttons, all pages restyled, privacy, shop icons/splash, brand editor).
+  Local gates passed (pnpm check, pnpm build, Playwright 390/1280).
 - A0.1: AGENTS.md as the one rulebook (CLAUDE.md points to it), PROGRESS, CHANGELOG, PR template, blueprints in
   `docs/blueprints/`, prompt template without "push to dev". Docs only; check green.
