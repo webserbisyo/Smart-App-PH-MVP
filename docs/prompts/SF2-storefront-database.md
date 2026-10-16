@@ -72,7 +72,20 @@ running. So every change is **additive and backward compatible**:
    `get_order` adds provider, rider, `rating`. New `order_ratings` (`order_id` pk, `tenant_id`, `stars` 1..5, `comment`
    ≤ 300, `created_at`); `rate_order(p_token, p_stars, p_comment)` only when completed, once. `get_sales_report` adds
    `ratingAverage` and `ratingCount` for the range. Commit `feat(sf2): delivery info and private ratings`.
-5. **Push.** New `push_subscriptions` (`id`, `endpoint` unique, `p256dh`, `auth`, `customer_id` nullable,
+5. **Delivery pins (decision SF-26).** Every pin is a `lat`/`lng` pair: both or neither, `lat` −90..90, `lng`
+   −180..180, `numeric(9,6)`, all nullable. `shop_settings`: `shop_lat`, `shop_lng` (owner sets them once; added to
+   the owner's column-level update grant). `customer_addresses`: `lat`, `lng` (added to the member's insert and update
+   column grants). `orders`: `delivery_lat`, `delivery_lng`, only on delivery orders (check). `build_order` /
+   `quote_order` / `place_order` accept an optional `delivery.pin` `{ lat, lng }` in the payload: bad shape or range =
+   `invalid`; ignored unless the order is delivery; stored on the order by `place_order`. A saved address's pin is
+   saved only with that address (the existing save step). `get_storefront` adds the shop's `pin` (null when unset),
+   `get_order` adds `deliveryPin`, `get_my_account` adds each address's `pin`. No distance in SQL, no consents row (the
+   pin is part of the delivery address the customer chose to send; the existing `consents.channel` check is not
+   touched). Core: `Pin` schema, `distanceKm(a, b)` (haversine, rounded to 0.1 km), `mapsLink(pin)`
+   (`https://www.google.com/maps?q=<lat>,<lng>`), `pinFromMapsLink(url)` (reads `@lat,lng`, `q=`/`query=`/`ll=` and
+   `!3d…!4d…`; returns null for short `maps.app.goo.gl` links, which hide the coordinates), with Vitest cases
+   (Manila to Quezon City about 11 km). Commit `feat(sf2): delivery pins for shop, addresses and orders`.
+6. **Push.** New `push_subscriptions` (`id`, `endpoint` unique, `p256dh`, `auth`, `customer_id` nullable,
    `created_at`, `last_used_at`), `order_push_subscriptions` (`order_id`, `subscription_id`), and
    `notification_outbox` (`id`, `tenant_id`, `subscription_id`, `payload` jsonb, `status` `queued`|`sent`|`failed`,
    `attempts`, `created_at`, `sent_at`). `subscribe_order_push(p_token, p_subscription jsonb)` (anon, by token; also
@@ -82,9 +95,9 @@ running. So every change is **additive and backward compatible**:
    with the secret header; when they do not exist it only queues (local default). `claim_push_batch(p_secret, p_limit)` and
    `finish_push(p_secret, p_id, p_ok, p_gone)` check `p_secret` against the Vault secret and refuse otherwise, so the
    dispatch route needs no service-role key (decision SF-16). Commit `feat(sf2): push subscriptions and outbox`.
-6. **Types and API.** `pnpm db:types`; Zod schemas in `packages/core/src/schemas/` (one file per shape: banner,
-   announcement, reward rule, reward claim, order message, rating, delivery info, push subscription); mappers and hooks
-   in `packages/api/src/<area>/` (`useShopBanners`, `useSaveShopBanners`, `useClaimReward`, `useSettleRewardClaim`,
+7. **Types and API.** `pnpm db:types`; Zod schemas in `packages/core/src/schemas/` (one file per shape: banner,
+   announcement, reward rule, reward claim, order message, rating, delivery info, pin, push subscription); mappers
+   and hooks in `packages/api/src/<area>/` (`useShopBanners`, `useSaveShopBanners`, `useClaimReward`, `useSettleRewardClaim`,
    `useOrderMessages` with live refresh, `useRateOrder`, `useSetDeliveryInfo`, `subscribeOrderPush`); server-only
    `packages/api/src/push/server.ts` stub for SF3 (no `web-push` yet). Update `docs/api-surface.md` for every new or
    changed name. Commit `feat(sf2): schemas, API and hooks`.
@@ -92,15 +105,18 @@ running. So every change is **additive and backward compatible**:
 ## Do not build
 
 Screens, the service worker, the dispatch route, `web-push`, Lalamove API calls, SMS, campaigns, free-text chat,
-public reviews, review markup. No change to existing columns or constraints.
+public reviews, review markup, PostGIS, map APIs, road distance. No change to existing columns or constraints.
 
 ## Tests (pgTAP plus Vitest)
 
 Per step: cross-shop isolation (shop A's owner cannot read or write shop B's rows), anon can only reach rows through
 the token functions, every check constraint, and the happy path. Rewards: free item adds one ₱0-net line and returns on
-cancel; custom claim takes stamps once, cancel returns them, a second pending claim is refused. Ratings: only after
+cancel; custom claim takes stamps once, cancel returns them, a second pending claim is refused. Pins: half a pin
+(only `lat`) and out-of-range values are refused; a pin on a pickup order is ignored; an order placed without a pin
+still works (old app unchanged); shop B's owner cannot read shop A's order pins. Ratings: only after
 completed, only once. Delivery: wrong host for the provider is refused. Push: a status change queues one row per
-linked subscription; nothing is called when Vault secrets are missing. Core: `trackingHostOk` cases shared with SQL.
+linked subscription; nothing is called when Vault secrets are missing. Core: `trackingHostOk` cases shared with SQL;
+`distanceKm` and `pinFromMapsLink` cases.
 Existing tests 01 to 07 still pass unchanged.
 
 ## Done when

@@ -48,10 +48,30 @@ Branch: `ag/sf3-storefront-features` from the latest `dev`.
    the file's first bytes; max 2 MB; 8 s timeout; stored in `shop-media/<tenant>/imported/<uuid>.<ext>`; returns the
    path. Never hotlink, never widen `images.remotePatterns` beyond the Supabase host and `i.ytimg.com`. Commit
    `feat(sf3): import image links into storage`.
-4. **Area and location.** `AreaPill` sheet gets "Use my location" (one `getCurrentPosition` on tap, nearest zone with a
-   centre point by straight-line distance, suggestion only, the customer confirms). Dashboard Order types: optional
-   zone centre (paste a Google Maps link and read the coordinates from it, or type them). Commit `feat(sf3): area and
-   nearest zone`.
+4. **Area, location and delivery pins (decisions SF-8, SF-26).** The browser's own location only (Geolocation API,
+   free, no map service, no API key). Ask only on a tap, never on page load; one `getCurrentPosition`
+   (`enableHighAccuracy`, 10 s timeout, `maximumAge` 60 s), never `watchPosition`.
+   - `AreaPill` sheet: "Use my location" suggests the nearest zone with a centre point by `distanceKm` (suggestion
+     only, the customer confirms) and keeps the position for checkout in memory for this visit only.
+   - Checkout address form (delivery): "Use my current location" button with one line of consent copy above it from
+     `words.ts` ("We'll send your pin to the shop with this order so the rider can find you."). After Allow: "Pin
+     added" with the accuracy ("about 30 m"; above 100 m add "add a landmark") and "Remove pin". The typed address
+     stays required (landmark optional, as today); the pin is optional and sent as `delivery.pin` only if still set when the order is
+     placed. Denied, unavailable or timed out: one calm line and the form works as before.
+   - Saved addresses (account and checkout): optional pin with the same button; picking a saved address with a pin
+     uses it; "Remove pin" on edit.
+   - Receipt and Messenger: `messengerOrderText` and "Copy order details" add a "Pin:" line with `mapsLink(pin)` when
+     the order has one; the receipt shows the address with "Open in Google Maps".
+   - Dashboard order detail and the delivery card on the board: "Open in Google Maps" (the same link) and
+     "~2.4 km from the shop (straight line)" from `distanceKm(shopPin, deliveryPin)`; hidden when either pin is
+     missing; the label always says straight line.
+   - Dashboard Settings (shop details): "Shop location" with "Use my current location here" (the owner stands in the
+     shop) or "Paste a Google Maps link" (`pinFromMapsLink`; a short `maps.app.goo.gl` link gets the words "Open the
+     link, then copy the long address from the browser"), a "Check on Google Maps" link to confirm, and "Remove".
+     Order types: optional zone centre the same way (paste a link or type the numbers).
+   - Privacy page (built in SF1): add one words.ts line that the delivery pin is used only for that order or saved
+     address and can be removed.
+   Commit `feat(sf3): area, nearest zone and delivery pins`.
 5. **Rewards.** Dashboard Stamp card screen: reward kind (discount, free item with item and variant picker, custom
    prize with title, description and picture via `PhotoField`), live `RewardCard` preview; Customers sheet: open claims
    with Given / Cancel. Storefront: `RewardCard` shows the reward picture or item; checkout reward switch for discount
@@ -89,19 +109,22 @@ Branch: `ag/sf3-storefront-features` from the latest `dev`.
    `packages/api/scripts/demo-media.ts` (`pnpm demo:media --target local|live`, reads `SUPABASE_URL` and
    `SUPABASE_SERVICE_ROLE_KEY` from the shell, never from files). New migration: `private.demo_seed_catalog` and
    `demo_reset` set logo, cover, item photos, banners (one YouTube slide in juans-cafe), announcement, about, review
-   link, zone centres, the free-item reward for juans-cafe and the custom prize (tote bag) for tala-apparel, a few
-   ratings and order threads. Only `is_demo` shops are touched; no demo data in app code. Commit `feat(sf3): demo photos
+   link, zone centres, a shop pin for both shops, a pin on a few delivery orders, the free-item reward for juans-cafe
+   and the custom prize (tote bag) for tala-apparel, a few ratings and order threads. Only `is_demo` shops are touched; no demo data in app code. Commit `feat(sf3): demo photos
    and content for both demo shops`.
 
 ## Do not build
 
 Lalamove API, SMS, owner campaign sending, free-text chat, public reviews or review markup, Apple/Google Wallet,
-subdomains per shop, Unsplash, `**` image hosts, Serwist, precaching menus.
+subdomains per shop, Unsplash, `**` image hosts, Serwist, precaching menus, a map picker or embedded map, address
+autocomplete, road distance or fees by distance, any paid or keyed map API, live rider tracking.
 
 ## States to show
 
 Blueprint A 4.2 plus: no banners (brand card), one banner (no dots), YouTube slide offline (thumbnail only),
-announcement ended (hidden), location denied (zones list stays), reward item sold out, claim pending/given, proof
+announcement ended (hidden), location denied (zones list stays, address form works), pin added (with accuracy), pin
+with low accuracy (landmark hint), pin removed, order without pin (no km line), shop pin not set (no km line), reward
+item sold out, claim pending/given, proof
 uploading/failed/rejected, product photos (3 uploading with the total bar, 1 failed with Retry, gallery full at 5), delivery without link, rating sent, push denied, push not supported, iOS not installed.
 
 ## Done when (agent in its browser, then the founder on a phone with both demo shops)
@@ -115,6 +138,9 @@ uploading/failed/rejected, product photos (3 uploading with the total bar, 1 fai
 - Juan's member with 10 stamps gets the free item at ₱0 net; Tala's member claims the tote bag, the owner marks it
   given.
 - Owner sets Lalamove + link; the customer's receipt shows "Track your delivery" and the rider.
+- A delivery order placed with "Use my current location" carries the pin: the Messenger text has the Google Maps
+  link, the dashboard order opens it in Google Maps and shows the straight-line km from the shop pin; denying the
+  location prompt still lets the customer order.
 - Proof upload appears as a message in both apps; the owner's approval appears as a system line live.
 - A completed order can be rated once; Reports shows the average.
 - On Android Chrome (localhost or preview with HTTPS), "Notify me" then "Ready" on the dashboard shows a push; airplane

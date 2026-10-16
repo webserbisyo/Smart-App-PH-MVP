@@ -82,7 +82,7 @@ Modules (each: database prompt, API prompt, one prompt per page)
 - Subdomains per shop (`<slug>.webserbisyo.com`)
 - Google reviews shown on the storefront
 - Free-text chat in the order thread
-- Maps and address search for delivery
+- Map picker, address search and road distance for delivery (pins are in at launch, SF-26)
 - Staff QR scanning for stamps and rewards
 - Extra reward rules: halfway bonus, birthday stamp, daily stamp cap
 - Precaching menus for offline browsing (Serwist)

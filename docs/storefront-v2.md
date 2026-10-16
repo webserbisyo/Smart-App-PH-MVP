@@ -1,13 +1,13 @@
 # Storefront v2: the approved spec
 
 The customer storefront is rebuilt in four prompts (`docs/prompts/SF1` to `SF4`). They replace Track A pages A1 to
-A12. Decisions: `docs/decisions.md` "Storefront v2" (SF-1 to SF-24). Component sources and the reasons for each pick:
+A12. Decisions: `docs/decisions.md` "Storefront v2" (SF-1 to SF-26). Component sources and the reasons for each pick:
 section 5 here, full research in the project files (`research/storefront-redesign/component-map.md`).
 
 | Prompt | What it delivers | Database? |
 | --- | --- | --- |
 | SF1 Foundation and redesign | tokens, 60/30/10 palette, shell, shared patterns, every storefront page restyled, system pages, privacy page, splash and icons, brand editor on existing columns | no |
-| SF2 Database | rewards types, shop content (announcement, banners, about, review link), order messages, ratings, delivery info, push subscriptions and outbox, zone locations | yes, additive only |
+| SF2 Database | rewards types, shop content (announcement, banners, about, review link), order messages, ratings, delivery info, push subscriptions and outbox, zone centres and delivery pins (shop, saved addresses, orders) | yes, additive only |
 | SF3 Features and demo content | the SF2 features on screen in both apps, service worker, push, SEO, caching, demo photos for both demo shops | no new tables |
 | SF4 Smoke tests and docs | Playwright smoke at 390 and 1280, docs refresh, repo description | no |
 
@@ -110,6 +110,12 @@ prices and order numbers; Plus Jakarta Sans only; money tabular.
 - **Area / location.** The Area pill opens a sheet: order type (Pickup, Delivery, Walk-in as enabled) and, for
   delivery, the shop's own zones with fee and ETA. "Use my location" asks the browser for a position once and
   suggests the nearest zone that has a centre point. No map API, no address search at launch.
+- **Delivery pin.** The address form has "Use my current location" (the phone's own location, free, asked only on a
+  tap with one line of consent copy). The pin goes with that order, and with a saved address if the member saves it;
+  it can be removed and the typed address stays required. The order and the Messenger text carry a
+  Google Maps link of the pin (no API key). The owner sets the shop's pin once (current location or a pasted Google
+  Maps link) and sees the straight-line km to each pinned order, labelled as straight line. No map picker,
+  autocomplete or road distance until the Lalamove API (decision SF-26).
 - **Delivery.** The owner books their own rider or Lalamove/Grab in that app, then in the order picks the provider
   (Own rider, Lalamove, Grab, Other), pastes the tracking link (https, known hosts only for Lalamove and Grab) and an
   optional rider name and phone, and taps the status steps. The customer sees "Track your delivery" and the rider on
@@ -161,7 +167,9 @@ New patterns in `packages/ui/src/patterns`: `StoreTopBar`, `AreaPill`, `StoreTab
 | `shop_settings` | `announcement_text`, `announcement_tone` (`info`, `promo`, `warning`), `announcement_ends_at`, `about_text`, `google_review_url` |
 | `shop_banners` (new) | up to 3 slides: `kind` (`image`, `youtube`), `image_path`, `youtube_id`, `title`, `link_url`, `sort`, `is_active` |
 | `delivery_zones` | `center_lat`, `center_lng` |
-| `orders` | `delivery_provider` (`own`, `lalamove`, `grab`, `other`), `rider_name`, `rider_phone` (`tracking_url` exists) |
+| `shop_settings` (pin) | `shop_lat`, `shop_lng` |
+| `customer_addresses` | `lat`, `lng` |
+| `orders` | `delivery_provider` (`own`, `lalamove`, `grab`, `other`), `rider_name`, `rider_phone` (`tracking_url` exists), `delivery_lat`, `delivery_lng` |
 | `order_messages` (new) | order thread: `sender` (`customer`, `owner`, `system`), `kind` (`text`, `image`, `payment_proof`, `status`), `body`, `attachment_path`, `payment_id` |
 | `order_ratings` (new) | one per order: `stars` 1 to 5, `comment` up to 300 |
 | `push_subscriptions` (new) | endpoint, keys, optional `customer_id`; link table `order_push_subscriptions` |
