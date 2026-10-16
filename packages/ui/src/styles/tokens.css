@@ -134,8 +134,10 @@
   --shop-30-foreground: #ffffff;
   --shop-10: #2456d3;
   --shop-10-foreground: #ffffff;
+  --shop-10-soft: #e6efff;
+  --shop-10-hover: #1a48bc;
 
-  /* Shell sizes */
+  /* Shell sizes and radiuses */
   --dock-height: 4rem;
   --dock-offset: 0.75rem;
   --dock-max-width: 27.5rem;
@@ -143,7 +145,17 @@
   --topbar-height-desktop: 4rem;
   --rail-width: 4.5rem; /* 72px icon rail */
   --radius: 0.75rem; /* 12px: buttons and inputs */
+  --radius-card: 1.25rem; /* 20px */
+  --radius-sheet: 1.5rem; /* 24px */
   --primary-edge: var(--primary);
+
+  /* Type scale from spec: 12, 14, 16, 18, 22, 28 px */
+  --font-size-12: 0.75rem; /* 12px */
+  --font-size-14: 0.875rem; /* 14px */
+  --font-size-16: 1rem; /* 16px */
+  --font-size-18: 1.125rem; /* 18px */
+  --font-size-22: 1.375rem; /* 22px */
+  --font-size-28: 1.75rem; /* 28px */
 
   /* Motion: exits are 0.75x entrances */
   --duration-fast: 120ms;

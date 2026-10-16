@@ -28,7 +28,6 @@ import { StampHistory } from './StampHistory';
 import { useMember } from './use-member';
 
 const words = WORDS.storefront.join;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
 
 /** Where the sheet was opened from: a receipt passes its order, so that order links and counts. */
 export interface JoinFrom {
@@ -85,7 +84,7 @@ function JoinDetails({ from }: { from: JoinFrom | null }) {
             <AlertDescription>{code === 'phone_needs_order' ? words.needsOrder : errorWords(code)}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit" size="lg" className={SHOP_BUTTON} disabled={join.isPending}>
+        <Button type="submit" size="lg" variant="shop" disabled={join.isPending}>
           {join.isPending ? (
             <>
               <Spinner />
@@ -138,7 +137,7 @@ export function JoinSheet({ open, onOpenChange, from }: { open: boolean; onOpenC
         {rule !== null && <StampHistory account={account} />}
         <Button
           size="lg"
-          className={SHOP_BUTTON}
+          variant="shop"
           onClick={() => {
             onOpenChange(false);
           }}

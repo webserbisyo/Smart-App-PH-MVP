@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, use, useCallback, useMemo, useState } from 'react';
+import { createContext, use, useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { addCartLine, canQuickAdd, priceCart, removeCartLine, setCartLineQty, WORDS } from '@smartapp/core';
@@ -66,8 +66,18 @@ export interface ShopProviderProps {
 /** The shop's data, cart, item sheet and cart sheet for every page of one storefront. */
 export function ShopProvider({ storefront, media, block, catalogLabel, children }: ShopProviderProps) {
   const [lines, updateLines] = useCartLines(storefront.shop.slug);
-  const [itemId, setItemId] = useState<string | null>(null);
-  const [itemOpen, setItemOpen] = useState(false);
+  const [itemId, setItemId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const itemParam = params.get('item');
+    return itemParam && storefront.items.some((i) => i.id === itemParam) ? itemParam : null;
+  });
+  const [itemOpen, setItemOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    const itemParam = params.get('item');
+    return Boolean(itemParam && storefront.items.some((i) => i.id === itemParam));
+  });
   const [cartOpen, setCartOpen] = useState(false);
   const [added, setAdded] = useState(0);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -85,15 +95,49 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
     [updateLines],
   );
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const itemParam = params.get('item');
+      if (itemParam && storefront.items.some((i) => i.id === itemParam)) {
+        setItemId(itemParam);
+        setItemOpen(true);
+      } else {
+        setItemOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [storefront.items]);
+
+  const handleItemOpenChange = useCallback((open: boolean) => {
+    setItemOpen(open);
+    if (!open && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('item')) {
+        params.delete('item');
+        const next = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+        window.history.replaceState(null, '', next);
+      }
+    }
+  }, []);
+
   const openItem = useCallback((id: string) => {
     setItemId(id);
     setItemOpen(true);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      params.set('item', id);
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    }
   }, []);
 
   const quickAdd = useCallback(
     (item: StorefrontItem) => {
       const [only] = item.variants;
-      if (block) toast(block.short, { description: block.alert });
+      if (block) toast.warning(block.short, { description: block.alert });
       else if (only && canQuickAdd(item)) addLine({ itemId: item.id, variantId: only.id, optionIds: [], qty: 1, note: null }, item.name);
       else openItem(item.id);
     },
@@ -144,7 +188,7 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
   return (
     <ShopContext value={value}>
       {children}
-      <ItemSheet item={item} open={itemOpen} onOpenChange={setItemOpen} />
+      <ItemSheet item={item} open={itemOpen} onOpenChange={handleItemOpenChange} />
       <CartSheet open={cartOpen} onOpenChange={setCartOpen} />
       <JoinSheet open={joinOpen} onOpenChange={setJoinOpen} from={joinFrom} />
       <Toaster position="top-center" />

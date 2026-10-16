@@ -201,16 +201,38 @@
   --color-shop-30-foreground: var(--shop-30-foreground);
   --color-shop-10: var(--shop-10);
   --color-shop-10-foreground: var(--shop-10-foreground);
+  --color-shop-10-soft: var(--shop-10-soft);
+  --color-shop-10-hover: var(--shop-10-hover);
   --radius-sm: calc(var(--radius) - 6px); /* 6: badges */
   --radius-md: calc(var(--radius) - 4px); /* 8: small controls */
   --radius-lg: var(--radius); /* 12: buttons, inputs */
   --radius-xl: calc(var(--radius) + 4px); /* 16: cards */
   --radius-2xl: calc(var(--radius) + 12px); /* 24: sheets, hero */
+  --radius-card: var(--radius-card); /* 20: storefront cards */
+  --radius-sheet: var(--radius-sheet); /* 24: storefront sheet top */
+  --text-12: var(--font-size-12);
+  --text-14: var(--font-size-14);
+  --text-16: var(--font-size-16);
+  --text-18: var(--font-size-18);
+  --text-22: var(--font-size-22);
+  --text-28: var(--font-size-28);
   --shadow-xs: var(--elevation-xs);
   --shadow-sm: var(--elevation-sm);
   --shadow-md: var(--elevation-md);
   --shadow-lg: var(--elevation-lg);
   --ease-soft: var(--ease-out-soft);
+  --animate-shine: shine var(--duration) infinite linear;
+  @keyframes shine {
+  0% {
+    background-position: 0% 0%;
+    }
+  50% {
+    background-position: 100% 100%;
+    }
+  to {
+    background-position: 0% 0%;
+    }
+  }
 }
 
 @layer base {
@@ -247,6 +269,25 @@
 @keyframes smartapp-bump {
   30% {
     transform: scale(1.04);
+  }
+}
+
+/* 300 ms CSS thunk for new/active stamp in RewardCard */
+@utility animate-thunk {
+  animation: smartapp-thunk 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes smartapp-thunk {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 

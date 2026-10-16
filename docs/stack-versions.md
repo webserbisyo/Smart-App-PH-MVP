@@ -45,6 +45,9 @@ date-fns 4.4.0, @tanstack/react-table 9.2.8, @dnd-kit/core 6.3.1, @dnd-kit/sorta
 @types/react-dom 19.3.0, @types/node 24.19.2, @types/canvas-confetti 1.9.0. Env checks use zod 4.6.6 in both apps.
 P4.0 added six kit components with no new npm package besides qrcode: DiceUI responsive-dialog, qr-code, stat, status,
 scroller and shadcn progress (kit total 57).
+SF1 added kit components for storefront v2: @reui/use-file-upload (hook), @diceui/cropper, @diceui/banner,
+carousel (embla-carousel-react 8.6.0, embla-carousel-autoplay 8.6.0 exact, decision SF-4), @magicui/dot-pattern,
+@magicui/shine-border. Removed DiceUI file-upload.tsx.
 
 pnpm `onlyBuiltDependencies`: none needed. No installed package needs an install script (Supabase CLI, Tailwind
 oxide and lightningcss ship platform binaries as optional dependencies).

@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CART_NOTE_MAX, choiceProblem, formatPeso, unitPrice, variantAvailable, WORDS } from '@smartapp/core';
 import type { OptionGroup, StorefrontItem } from '@smartapp/core';
 import { Badge } from '@smartapp/ui/components/badge';
 import { Button } from '@smartapp/ui/components/button';
+import {
+  Carousel,
+  type CarouselApi,
+  CarouselContent,
+  CarouselItem,
+} from '@smartapp/ui/components/carousel';
 import { Checkbox } from '@smartapp/ui/components/checkbox';
 import { Field, FieldContent, FieldLabel, FieldLegend, FieldSet } from '@smartapp/ui/components/field';
 import { RadioGroup, RadioGroupItem } from '@smartapp/ui/components/radio-group';
@@ -16,7 +22,6 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@smartapp/ui/components/responsive-dialog';
-import { Scroller } from '@smartapp/ui/components/scroller';
 import { Textarea } from '@smartapp/ui/components/textarea';
 import { cn } from '@smartapp/ui/lib/utils';
 import { Money } from '@smartapp/ui/patterns/Money';
@@ -24,14 +29,12 @@ import { QuantityStepper } from '@smartapp/ui/patterns/QuantityStepper';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
 import { useShop } from '../shell/ShopProvider';
+import { CHOICE_ROW, PICKED } from '../shell/choice';
 
 const words = WORDS.storefront.item;
 const shared = WORDS.shared;
 
-/** Choice rows in the shop's 10% colour when picked. */
-const CHOICE_ROW = 'flex w-full min-h-11 items-center gap-3 rounded-lg border px-3 py-2 has-data-checked:border-shop-10 has-disabled:opacity-60';
 const REQUIRED = 'bg-shop-10 text-shop-10-foreground';
-const PICKED = 'data-checked:border-shop-10 data-checked:bg-shop-10 data-checked:text-shop-10-foreground';
 
 function choiceId(itemId: string, groupId: string): string {
   return `choice-${itemId}-${groupId}`;
@@ -113,6 +116,88 @@ function OptionText({ name, priceDelta, soldOut }: { name: string; priceDelta: n
   );
 }
 
+function ItemPhotosCarousel({ photos, name }: { photos: readonly string[]; name: string }) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap());
+    };
+    api.on('select', onSelect);
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
+
+  if (photos.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Carousel setApi={setApi} className="w-full">
+        <CarouselContent>
+          {photos.map((url, index) => (
+            <CarouselItem key={index}>
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-shop-30">
+                <img
+                  src={url}
+                  alt={`${name} photo ${String(index + 1)}`}
+                  className="size-full object-cover"
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+
+      {photos.length > 1 && (
+        <>
+          {/* Mobile dots */}
+          <div className="flex items-center justify-center gap-1.5 py-1 sm:hidden">
+            {photos.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Go to slide ${String(index + 1)}`}
+                onClick={() => {
+                  api?.scrollTo(index);
+                }}
+                className={cn(
+                  'h-2 rounded-full transition-all',
+                  current === index ? 'w-5 bg-shop-10' : 'w-2 bg-shop-30-foreground/20',
+                )}
+              />
+            ))}
+          </div>
+
+          {/* Desktop thumbnails */}
+          <div className="hidden sm:flex items-center gap-2 overflow-x-auto py-1">
+            {photos.map((url, index) => (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Thumbnail ${String(index + 1)}`}
+                onClick={() => {
+                  api?.scrollTo(index);
+                }}
+                className={cn(
+                  'relative size-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all outline-none',
+                  current === index
+                    ? 'border-shop-10 ring-2 ring-shop-10/30'
+                    : 'border-transparent opacity-65 hover:opacity-100',
+                )}
+              >
+                <img src={url} alt="" className="size-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** The choices for one item; a new one per item, so nothing carries over. */
 function ItemForm({ item, onDone }: { item: StorefrontItem; onDone: () => void }) {
   const { media, block, addLine } = useShop();
@@ -157,19 +242,7 @@ function ItemForm({ item, onDone }: { item: StorefrontItem; onDone: () => void }
 
   return (
     <>
-      {photos.length > 0 && (
-        <Scroller orientation="horizontal" hideScrollbar aria-label={words.photos(item.name)} className="flex snap-x snap-mandatory gap-2">
-          {photos.map((url) => (
-            <img
-              key={url}
-              src={url}
-              alt=""
-              decoding="async"
-              className="aspect-[4/3] w-full shrink-0 snap-center rounded-xl object-cover"
-            />
-          ))}
-        </Scroller>
-      )}
+      <ItemPhotosCarousel photos={photos} name={item.name} />
       <ResponsiveDialogHeader className="px-0 text-left">
         <ResponsiveDialogTitle className="text-xl break-words">{item.name}</ResponsiveDialogTitle>
         {item.description ? (
@@ -255,7 +328,7 @@ function ItemForm({ item, onDone }: { item: StorefrontItem; onDone: () => void }
 /** The item sheet: photos, size, add-ons, note, quantity and "Add · ₱150". */
 export function ItemSheet({ item, open, onOpenChange }: { item: StorefrontItem | null; open: boolean; onOpenChange: (open: boolean) => void }) {
   return (
-    <ResponsiveDialog open={open && item !== null} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open && item !== null} onOpenChange={onOpenChange} breakpoint={1024}>
       <ResponsiveDialogContent className="gap-4 px-4 pb-0 sm:max-w-lg">
         {item ? (
           <ItemForm

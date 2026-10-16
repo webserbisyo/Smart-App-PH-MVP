@@ -18,6 +18,8 @@ export const IMAGE_SIZES = {
   thumb: { maxSize: 400, maxBytes: 60_000 },
   /** Shop logo and category photos. */
   logo: { maxSize: 512, square: true, maxBytes: 120_000 },
+  /** Shop banner / cover at 21:9 ratio (1600 x 686). */
+  banner: { maxSize: 1600, maxBytes: 300_000 },
   /** A payment account's QR: kept sharp so it still scans. */
   qr: { maxSize: 1024, maxBytes: 300_000 },
   /** A customer's payment screenshot. */

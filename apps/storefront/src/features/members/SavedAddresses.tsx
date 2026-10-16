@@ -22,7 +22,6 @@ import { IconMapPin, IconPencil, IconPlus } from '@smartapp/ui/icons';
 const words = WORDS.storefront.account;
 /** The database keeps at most 5 addresses per member. */
 const MAX_ADDRESSES = 5;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
 
 /** Add or edit one address; editing can also remove it. */
 function AddressForm({ slug, account, address, onDone }: { slug: string; account: MemberAccount; address: CustomerAddress | null; onDone: () => void }) {
@@ -108,7 +107,7 @@ function AddressForm({ slug, account, address, onDone }: { slug: string; account
             {errorWords(toApiError(failure).code)}
           </p>
         ) : null}
-        <Button type="submit" size="lg" className={SHOP_BUTTON} disabled={busy}>
+        <Button type="submit" size="lg" variant="shop" disabled={busy}>
           {save.isPending ? <Spinner /> : null}
           {words.save}
         </Button>
@@ -156,8 +155,8 @@ export function SavedAddresses({ slug, account }: { slug: string; account: Membe
       ) : (
         <ul className="flex flex-col gap-2">
           {addresses.map((address) => (
-            <li key={address.id} className="flex items-start gap-3 rounded-xl border p-3">
-              <IconMapPin aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+            <li key={address.id} className="flex items-start gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-card p-3.5 shadow-xs">
+              <IconMapPin aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-shop-10" />
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="flex items-center gap-2 font-semibold">
                   <span className="truncate">{address.label}</span>
@@ -192,7 +191,7 @@ export function SavedAddresses({ slug, account }: { slug: string; account: Membe
           {words.addAddress}
         </Button>
       )}
-      <ResponsiveDialog open={open} onOpenChange={setOpen}>
+      <ResponsiveDialog open={open} onOpenChange={setOpen} breakpoint={1024}>
         <ResponsiveDialogContent className="gap-4 px-4 pb-4 sm:max-w-md">
           <ResponsiveDialogHeader className="px-0 text-left">
             <ResponsiveDialogTitle>{editing === null ? words.addAddress : words.editAddress}</ResponsiveDialogTitle>

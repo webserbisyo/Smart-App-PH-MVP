@@ -11,5 +11,9 @@ export default async function ReceiptPage({ params, searchParams }: ReceiptParam
   const { shop, token } = await params;
   await storefrontOrNotFound(shop);
   const { placed } = await searchParams;
-  return <Receipt token={token} justPlaced={placed === '1'} />;
+  return (
+    <div className="mx-auto flex w-full max-w-[640px] flex-col gap-6 px-4 py-4 sm:py-6">
+      <Receipt token={token} justPlaced={placed === '1'} />
+    </div>
+  );
 }

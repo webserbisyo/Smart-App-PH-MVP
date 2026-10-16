@@ -10,16 +10,10 @@ import { cn } from '#lib/utils';
 export interface StoreTabBarProps {
   /** aria-label of the nav. */
   label: string;
-  /** Home · Menu or Products · Orders · Account. */
+  /** Home · Menu or Products · Rewards · Orders. */
   items: readonly ShellNavItem[];
   className?: string;
 }
-
-const tabClass = cn(
-  'pressable group/tab flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 select-none',
-  'text-xs font-medium text-shop-30-foreground/75 outline-none focus-visible:ring-2 focus-visible:ring-ring',
-  'data-active:font-bold data-active:text-shop-30-foreground',
-);
 
 function TabLink({ item, ...props }: { item: ShellNavItem } & Omit<ComponentProps<'a'>, 'children'>) {
   const icon = item.active && item.activeIcon !== undefined ? item.activeIcon : item.icon;
@@ -30,13 +24,10 @@ function TabLink({ item, ...props }: { item: ShellNavItem } & Omit<ComponentProp
         'aria-current': item.active ? 'page' : undefined,
         children: (
           <>
-            <span
-              aria-hidden="true"
-              className="flex h-8 w-14 max-w-full items-center justify-center rounded-full transition-colors duration-fast group-data-active/tab:bg-shop-10 group-data-active/tab:text-shop-10-foreground [&>svg]:size-5"
-            >
+            <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center [&>svg]:size-5">
               {icon}
             </span>
-            <span className="max-w-full truncate px-0.5">{item.label}</span>
+            <span className="max-w-full truncate text-[11px] leading-tight">{item.label}</span>
           </>
         ),
       },
@@ -46,20 +37,31 @@ function TabLink({ item, ...props }: { item: ShellNavItem } & Omit<ComponentProp
   });
 }
 
-/** Storefront phone and tablet nav: a bar along the bottom in the shop's 30% colour, above the safe area. */
+/**
+ * Storefront phone & tablet nav: a floating pill dock (64 px high, 12 px from edges and safe area,
+ * max 440 px wide, shop-30 at 90% with backdrop-blur; active tab is a shop-10-soft pill with filled icon).
+ */
 export function StoreTabBar({ label, items, className }: StoreTabBarProps) {
   return (
     <nav
       aria-label={label}
       className={cn(
-        'fixed inset-x-0 bottom-0 z-40 flex items-center gap-1 bg-shop-30 px-2 pb-safe text-shop-30-foreground shadow-lg',
+        'fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 mx-auto flex h-16 w-[calc(100%-1.5rem)] max-w-110 items-center justify-around gap-1 rounded-full bg-shop-30/90 p-1.5 shadow-lg backdrop-blur text-shop-30-foreground',
         'keyboard-open:hidden',
         className,
       )}
     >
       {items.map((item) => (
-        <TabLink key={item.key} item={item} className={tabClass} />
+        <TabLink
+          key={item.key}
+          item={item}
+          className={cn(
+            'pressable group/tab flex h-full flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-2 py-1 outline-none select-none focus-visible:ring-2 focus-visible:ring-ring transition-colors duration-fast',
+            item.active ? 'bg-shop-10-soft font-bold text-shop-10' : 'font-medium text-shop-30-foreground/75 hover:text-shop-30-foreground',
+          )}
+        />
       ))}
     </nav>
   );
 }
+

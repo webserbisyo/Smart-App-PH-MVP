@@ -6,10 +6,10 @@ What is installed in `packages/ui`, when to use each part, and the rules. Exact 
 
 | Library | What we use it for | Where |
 | --- | --- | --- |
-| shadcn/ui, Base UI flavour (`base-nova`) | every basic component | `packages/ui/src/components` |
-| ReUI (`@reui`) | data grid, timeline | same |
-| DiceUI (`@diceui`) | sortable, file upload, mask input, colour picker, responsive dialog, stat, status, scroller, qr code | same |
-| Magic UI (`@magicui`) | confetti and number ticker only | same |
+| shadcn/ui, Base UI flavour (`base-nova`) | every basic component, carousel | `packages/ui/src/components` |
+| ReUI (`@reui`) | data grid, timeline, use-file-upload hook | same, `packages/ui/src/hooks` |
+| DiceUI (`@diceui`) | sortable, cropper, banner, mask input, colour picker, responsive dialog, stat, status, scroller, qr code | `packages/ui/src/components` |
+| Magic UI (`@magicui`) | confetti, number ticker, dot pattern, shine border | same |
 | Tabler icons (`@tabler/icons-react`) | every icon | re-exported from `@smartapp/ui/icons` |
 | Plus Jakarta Sans (`@fontsource-variable/plus-jakarta-sans`) | the only font, self-hosted | `packages/ui` styles |
 | Recharts | through shadcn `chart`, lazy-loaded | `packages/ui/src/components/chart` |
@@ -39,10 +39,10 @@ Kit components are source files we own once installed.
 | Buttons, inputs, forms | button, button-group, toggle, input, label, field, input-group, textarea, input-otp (6-digit codes), select, native-select (long lists on phones), radio-group, checkbox, switch, toggle-group, DiceUI mask-input (phone, reference numbers), DiceUI color-picker |
 | Layout and lists | card, item (list rows), separator, scroll-area, tabs, collapsible, table, ReUI data-grid (sort, search, filters, CSV), DiceUI scroller (horizontal tabs and columns) |
 | Overlays | DiceUI responsive-dialog (drawer on phones, dialog on desktop; default for create/edit), sheet, drawer, dialog, alert-dialog (confirm), dropdown-menu, popover, tooltip |
-| Feedback | sonner (toasts), alert, skeleton, spinner, empty, progress, badge, DiceUI status (live dots) |
+| Feedback | sonner (toasts), alert, skeleton, spinner, empty, progress, badge, DiceUI banner, DiceUI status (live dots) |
 | Navigation | sidebar (desktop sidebar and tablet rail), breadcrumb |
-| Data and media | DiceUI stat (number tiles), chart, calendar, avatar, ReUI timeline, DiceUI sortable (drag to reorder), DiceUI file-upload, DiceUI qr-code |
-| Celebration | Magic UI confetti (reward reached only), Magic UI number-ticker (Home sales only) |
+| Data and media | DiceUI stat (number tiles), chart, calendar, avatar, ReUI timeline, DiceUI sortable (drag to reorder), ReUI use-file-upload, DiceUI cropper, DiceUI qr-code, shadcn carousel |
+| Celebration and visuals | Magic UI confetti (reward reached only), Magic UI number-ticker (Home sales only), Magic UI dot-pattern, Magic UI shine-border |
 
 Blocks in `packages/ui/src/blocks` (sidebar, login, sign-up, donut chart) are starting points, already trimmed.
 

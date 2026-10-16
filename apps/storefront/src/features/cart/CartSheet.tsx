@@ -25,7 +25,6 @@ import { useReward } from '../members/use-reward';
 import { useShop } from '../shell/ShopProvider';
 
 const words = WORDS.storefront.cart;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
 
 /** The cart: lines with quantity and remove, the subtotal, and "Checkout · ₱345". */
 export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -39,7 +38,7 @@ export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
   };
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange} desktop="right">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} desktop="right" breakpoint={1024}>
       <ResponsiveDialogContent className="gap-4 px-4 pb-0 sm:max-w-md">
         <ResponsiveDialogHeader className="px-0 text-left">
           <ResponsiveDialogTitle>{words.title}</ResponsiveDialogTitle>
@@ -121,11 +120,11 @@ export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
             )}
             <StickyActionBar className="-mx-4">
               {cart.hasUnavailable ? (
-                <Button size="lg" className={cn('flex-1', SHOP_BUTTON)} disabled>
+                <Button size="lg" variant="shop" className="flex-1" disabled>
                   {words.checkout(formatPeso(total))}
                 </Button>
               ) : (
-                <Link href={`${base}/checkout`} onClick={close} className={cn(buttonVariants({ size: 'lg' }), 'flex-1', SHOP_BUTTON)}>
+                <Link href={`${base}/checkout`} onClick={close} className={cn(buttonVariants({ variant: 'shop', size: 'lg' }), 'flex-1')}>
                   <span className="tabular">{words.checkout(formatPeso(total))}</span>
                 </Link>
               )}

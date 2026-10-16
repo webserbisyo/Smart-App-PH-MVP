@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { readableTextOn } from '@smartapp/core';
+import { hoverOf, readableTextOn, softOf } from '@smartapp/core';
 
 import { cn } from '#lib/utils';
 import { cssVars } from '#lib/style';
@@ -31,6 +31,8 @@ export function ShopTheme({ colors, className, root = false, children }: ShopThe
     '--shop-30-foreground': readableTextOn(colors.secondary),
     '--shop-10': colors.accent,
     '--shop-10-foreground': readableTextOn(colors.accent),
+    '--shop-10-soft': softOf(colors.accent),
+    '--shop-10-hover': hoverOf(colors.accent),
   };
   // Only #RRGGBB values reach here (HexColor in core), so the rule cannot carry anything else.
   const rootRule = `:root{${Object.entries(vars)

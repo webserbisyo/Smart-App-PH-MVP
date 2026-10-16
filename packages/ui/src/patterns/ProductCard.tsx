@@ -11,26 +11,41 @@ import { Money } from './Money';
 
 export interface ProductCardProps {
   name: string;
-  photoUrl: string | null;
+  photoUrl?: string | null | undefined;
+  /** Custom photo element (e.g. Next.js Image with fill & sizes). */
+  photo?: ReactNode | undefined;
   /** Shown on the 30% colour when there is no photo: the category's icon (`CategoryIcon`). */
   fallbackIcon: ReactNode;
   /** The lowest variant price, in centavos. */
   price: number;
   /** Variants have different prices: show "from ₱120". */
-  priceVaries?: boolean;
-  soldOut?: boolean;
+  priceVaries?: boolean | undefined;
+  soldOut?: boolean | undefined;
   /** The shop takes no orders now: the "+" looks off (the app says why when it is tapped). */
-  addDisabled?: boolean;
+  addDisabled?: boolean | undefined;
   words: { soldOut: string; from: (price: string) => string; add: (name: string) => string };
   /** Opens the item sheet. */
   onOpen: () => void;
   /** The round "+": adds directly when there is nothing to choose, else opens the sheet. */
   onAdd: () => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** A storefront card: photo (or the category icon), name, price, "+". Sold out stays visible, greyed. */
-export function ProductCard({ name, photoUrl, fallbackIcon, price, priceVaries = false, soldOut = false, addDisabled = false, words, onOpen, onAdd, className }: ProductCardProps) {
+export function ProductCard({
+  name,
+  photoUrl,
+  photo,
+  fallbackIcon,
+  price,
+  priceVaries = false,
+  soldOut = false,
+  addDisabled = false,
+  words,
+  onOpen,
+  onAdd,
+  className,
+}: ProductCardProps) {
   return (
     <article
       data-sold-out={soldOut || undefined}
@@ -38,7 +53,9 @@ export function ProductCard({ name, photoUrl, fallbackIcon, price, priceVaries =
     >
       <button type="button" onClick={onOpen} className="flex flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-shop-30">
-          {photoUrl ? (
+          {photo ? (
+            photo
+          ) : photoUrl ? (
             <img src={photoUrl} alt="" loading="lazy" decoding="async" className={cn('size-full object-cover', soldOut && 'grayscale')} />
           ) : (
             <span className="flex size-1/2 items-center justify-center *:size-full">{fallbackIcon}</span>

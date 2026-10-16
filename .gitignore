@@ -14,3 +14,7 @@ next-env.d.ts
 
 # Vercel CLI link folders (vercel link)
 .vercel/
+.vercel
+
+# Supabase Studio throwaway snippets
+supabase/snippets/Untitled*.sql

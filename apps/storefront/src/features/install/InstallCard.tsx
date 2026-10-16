@@ -16,15 +16,10 @@ import { IconDeviceMobileDown, IconSquareArrowUp, IconSquarePlus } from '@smarta
 import { cn } from '@smartapp/ui/lib/utils';
 
 import { useShop } from '../shell/ShopProvider';
-import { useHydrated } from '../shell/use-hydrated';
+import { subscribeNothing, useHydrated } from '../shell/use-hydrated';
 import { canPromptInstall, isStandalone, promptInstall, readDismissedRaw, saveDismissed, subscribeInstallPrompt, subscribeStandalone } from './install-prompt';
 
 const words = WORDS.storefront.install;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
-
-function subscribeNothing(): () => void {
-  return () => undefined;
-}
 
 /** On the server nothing is offered, so the page never renders a card the browser would then remove. */
 const SERVER_PLATFORM: InstallPlatform = 'in_app';
@@ -70,7 +65,7 @@ function StepDrawing({ step }: { step: number }) {
 /** iPhone: Share → Add to Home Screen → Add, drawn. */
 function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChange: (open: boolean) => void; shopName: string }) {
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} breakpoint={1024}>
       <ResponsiveDialogContent className="gap-4 px-4 pb-4 sm:max-w-md">
         <ResponsiveDialogHeader className="px-0 text-left">
           <ResponsiveDialogTitle>{words.iosTitle(shopName)}</ResponsiveDialogTitle>
@@ -94,7 +89,7 @@ function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChang
         </ol>
         <Button
           size="lg"
-          className={SHOP_BUTTON}
+          variant="shop"
           onClick={() => {
             onOpenChange(false);
           }}
@@ -110,7 +105,7 @@ function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChang
  * "Add <shop> to your home screen" (paper 14). Android and desktop: the browser's install prompt. iPhone: the drawn
  * steps. Hidden when opened from the home screen, in Facebook and Messenger's browsers, and for 14 days after Not now.
  */
-export function InstallCard({ className }: { className?: string }) {
+export function InstallCard({ className, buttonVariant = 'shop' }: { className?: string | undefined; buttonVariant?: 'shop' | 'outline' | 'shopOutline' | undefined }) {
   const hydrated = useHydrated();
   const { storefront } = useShop();
   const { slug, name } = storefront.shop;
@@ -124,10 +119,10 @@ export function InstallCard({ className }: { className?: string }) {
 
   if (!hydrated || offer === 'none') return null;
   return (
-    <section aria-labelledby="install-title" className={cn('flex flex-col gap-3 rounded-xl border bg-card p-4 print:hidden', className)}>
+    <section aria-labelledby="install-title" className={cn('flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border bg-shop-30 p-4 print:hidden', className)}>
       <div className="flex items-start gap-3">
-        <IconDeviceMobileDown aria-hidden="true" className="mt-0.5 size-6 shrink-0" />
-        <div className="flex min-w-0 flex-col gap-0.5">
+        <IconDeviceMobileDown aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-shop-10" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <h2 id="install-title" className="font-semibold">
             {words.title(name)}
           </h2>
@@ -146,7 +141,7 @@ export function InstallCard({ className }: { className?: string }) {
           {words.notNow}
         </Button>
         <Button
-          className={SHOP_BUTTON}
+          variant={buttonVariant}
           onClick={() => {
             if (offer === 'prompt') void promptInstall();
             else setStepsOpen(true);

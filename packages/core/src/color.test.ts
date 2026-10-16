@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { contrastRatio, luminance, MIN_TEXT_CONTRAST, readableTextOn, THEME_PRESET_KEYS, THEME_PRESETS, themeContrastIssues } from './color';
+import {
+  contrastRatio,
+  fromOklch,
+  hoverOf,
+  luminance,
+  MIN_TEXT_CONTRAST,
+  readableTextOn,
+  shopPalette,
+  softOf,
+  THEME_PRESET_KEYS,
+  THEME_PRESETS,
+  themeContrastIssues,
+  toOklch,
+} from './color';
 
 describe('luminance', () => {
   it('is 0 for black and 1 for white', () => {
@@ -56,3 +69,65 @@ describe('themeContrastIssues', () => {
     expect(themeContrastIssues({ primary: '#FFFFFF', secondary: '#F4F7FA', accent: '#2456D3' })).toEqual([]);
   });
 });
+
+describe('toOklch and fromOklch', () => {
+  it('round-trips hex colors accurately', () => {
+    for (const hex of ['#2456D3', '#000000', '#FFFFFF', '#6F4E37', '#6B3FA0', '#0B6E99', '#FFE066', '#111111']) {
+      expect(fromOklch(toOklch(hex))).toBe(hex);
+    }
+  });
+
+  it('extracts expected OKLCH coordinates', () => {
+    const oklch = toOklch('#2456D3');
+    expect(oklch.l).toBeCloseTo(0.5, 1);
+    expect(oklch.c).toBeCloseTo(0.2, 1);
+    expect(oklch.h).toBeCloseTo(264, 0);
+  });
+});
+
+describe('shopPalette', () => {
+  it('passes themeContrastIssues for all four presets', () => {
+    for (const key of THEME_PRESET_KEYS) {
+      const palette = shopPalette(THEME_PRESETS[key].accent);
+      expect(themeContrastIssues(palette)).toEqual([]);
+    }
+  });
+
+  it('passes themeContrastIssues for very light brand #FFE066 by darkening in OKLCH', () => {
+    const palette = shopPalette('#FFE066');
+    expect(themeContrastIssues(palette)).toEqual([]);
+    expect(contrastRatio(palette.accent, '#ffffff')).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+    expect(contrastRatio(palette.accent, palette.primary)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+  });
+
+  it('passes themeContrastIssues for very dark brand #111111', () => {
+    const palette = shopPalette('#111111');
+    expect(themeContrastIssues(palette)).toEqual([]);
+    expect(palette.accent).toBe('#111111');
+  });
+
+  it('produces 60/30 background and card surfaces derived from brand hue', () => {
+    const palette = shopPalette('#2456D3');
+    expect(themeContrastIssues(palette)).toEqual([]);
+    const oklchPrimary = toOklch(palette.primary);
+    const oklchSecondary = toOklch(palette.secondary);
+    expect(oklchPrimary.l).toBeCloseTo(0.975, 2);
+    expect(oklchSecondary.l).toBeCloseTo(0.995, 2);
+  });
+});
+
+describe('softOf and hoverOf', () => {
+  it('softOf returns a light tint at L 0.93', () => {
+    const soft = softOf('#2456D3');
+    const oklch = toOklch(soft);
+    expect(oklch.l).toBeCloseTo(0.93, 2);
+  });
+
+  it('hoverOf returns a darkened color at 0.06 L lower', () => {
+    const original = toOklch('#2456D3');
+    const hover = hoverOf('#2456D3');
+    const oklchHover = toOklch(hover);
+    expect(oklchHover.l).toBeCloseTo(original.l - 0.06, 2);
+  });
+});
+
