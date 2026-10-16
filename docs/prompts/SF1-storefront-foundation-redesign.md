@@ -105,7 +105,7 @@ mode on the storefront. No new package beyond step 1.
 
 ## Exact values
 
-Tab bar 64 px high, 12 px from the sides and the safe area, radius full, shadow `--shadow-lg`. Top bar 56 px. Cart bar
+Tab bar: a floating pill dock (not a full-width bar), 64 px high, 12 px from the sides and above the bottom safe area, max width 440 px centred, radius full, shadow `--shadow-lg`, shop-30 surface at 90% with `backdrop-blur`, no raised centre button (decision from P4); active tab = shop-10 soft pill with filled icon and label. Page content gets bottom padding of dock + cart bar + safe area so nothing is hidden under them; neither causes sideways scroll at 360 px. Top bar 56 px. Cart bar
 56 px, 8 px above the tab bar. Touch targets 44 px, inputs 16 px. Motion per Blueprint A 4.4 (200 ms enter, 300/225 ms
 sheets, nothing over 400 ms); the storefront does not import `motion`.
 
