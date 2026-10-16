@@ -137,7 +137,7 @@ Full table with sources: project files `research/storefront-redesign/component-m
 
 | Need | Use |
 | --- | --- |
-| Logo, banner, product photos, payment proof | `PhotoField` family on ReUI `use-file-upload`, each built from one ReUI example: `LogoField` = `c-file-upload-2` (1:1), `BannerField` = `c-file-upload-10` (21:9, with its guidelines panel), `PhotoGallery` = `c-file-upload-4` + `-8` (up to 5, sortable), `ProofDrop` = `c-file-upload-3` (camera or gallery). DiceUI `cropper` enforces the ratio; every image is compressed on the phone and uploaded to Supabase Storage with real progress, real errors and Retry. DiceUI `file-upload` is removed |
+| Logo, banner, product photos, payment proof | `PhotoField` family on ReUI `use-file-upload`, each built from one ReUI example: `LogoField` = `c-file-upload-2` (1:1), `BannerField` = `c-file-upload-10` (21:9, with its guidelines panel), `PhotoGallery` = `c-file-upload-4` + `-8` + the `-5` summary row (up to 5 picked at once, sortable, total progress), `ProofDrop` = `c-file-upload-3` (camera or gallery). DiceUI `cropper` enforces the ratio; every image is compressed on the phone and uploaded to Supabase Storage with real progress, real errors and Retry. DiceUI `file-upload` is removed |
 | Brand colour | DiceUI `color-picker` (installed) inside our `BrandColorField` (presets, logo colour, contrast preview) |
 | Banner carousel, item photos | shadcn `carousel` (Embla 8.6.0 + autoplay); `VideoSlide` facade for YouTube |
 | Announcement | DiceUI `banner` |
