@@ -49,7 +49,9 @@ export function ShopSplash({ name, logoUrl }: ShopSplashProps) {
       // If sessionStorage is unavailable, continue
     }
 
-    setVisible(true);
+    const showTimer = setTimeout(() => {
+      setVisible(true);
+    }, 0);
 
     const fadeTimer = setTimeout(() => {
       setFading(true);
@@ -62,6 +64,7 @@ export function ShopSplash({ name, logoUrl }: ShopSplashProps) {
     }, 600);
 
     return () => {
+      clearTimeout(showTimer);
       clearTimeout(fadeTimer);
     };
   }, []);
