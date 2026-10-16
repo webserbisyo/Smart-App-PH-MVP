@@ -338,5 +338,75 @@ prompts build them; their P5 numbers stay the same so later checkpoints add only
 - A-13: Repo docs describe the current state only (what is installed, where it lives, the rules); history and
   debate stay in this file and in git.
 
-Still waiting for the founder's yes (Blueprint A section 9): A-1 staging database, A-3 test packages, A-4 storefront
-caching, A-5 Turnstile timing, A-6 icons and offline page without new packages.
+Still waiting for the founder's yes (Blueprint A section 9): A-1 staging database, A-3 test packages (dashboard
+render tests; the storefront gets Playwright smoke by SF-4), A-5 Turnstile timing. A-4 is settled by SF-20 and A-6 by
+SF-13.
+
+## Storefront v2 (2026-10-16, approved by the founder)
+
+Spec: `docs/storefront-v2.md`. Prompts: `docs/prompts/SF1` to `SF4`.
+
+- SF-1: The storefront is rebuilt in four prompts that replace Track A pages A1 to A12: SF1 front-end foundation and
+  redesign (no database change), SF2 database, SF3 features and demo content, SF4 Playwright smoke and docs. The
+  database comes before demo content so demo shops use real columns. SF1 runs after the overlay fix (sheets inside the
+  screen, one scroll area).
+- SF-2: Layout. Phone: top bar (logo, name, open state, Area pill, bell, avatar), floating 4-tab bar Home, Menu,
+  Rewards, Orders (Rewards hidden when the stamp card is off), Account behind the avatar, cart bar only with items.
+  Desktop from 1024 px: top nav, content max 1120 px, menu with a category rail and, from 1280 px, a sticky cart panel.
+  Nav and overlays switch at the same 1024 px breakpoint. Checkout and receipt are one centred column (max 640 px).
+- SF-3: Colour. The owner picks one brand colour (or a preset, or the logo colour); `shopPalette` in core fills the
+  existing three columns as 60 page / 30 surfaces / 10 accent with 4.5:1 text. Three colours stay editable under
+  Advanced with the contrast warning. Status colours never follow the shop (green success, red error, amber warning,
+  blue info); sonner uses `richColors` mapped to our tokens. One filled shop button per screen.
+- SF-4: New packages, exact versions: `embla-carousel-react` 8.6.0 and `embla-carousel-autoplay` 8.6.0 (SF1, via
+  shadcn `carousel`), `web-push` 3.6.7 and `@types/web-push` 3.6.4 (SF3, `packages/api` server only),
+  `@playwright/test` 1.64.1 (SF4, `tooling/e2e`). Nothing else.
+- SF-5: Components are copy-in registry source where possible: ReUI `use-file-upload`, DiceUI `cropper`, `banner`,
+  `rating`, shadcn `carousel`, `message`, `bubble`, `attachment`, Magic UI `dot-pattern`, `shine-border`. DiceUI
+  `file-upload` is removed (one upload primitive). DiceUI `color-picker` stays (its eyedropper hides itself where the
+  browser lacks it). Not used: `react-colorful`, `react-easy-crop`, `qrcode.react`, `vaul`, Serwist,
+  `react-lite-youtube-embed`, colour libraries. Registry blocks are layout references, not installs.
+- SF-6: Defaults for a new shop: brand `#2456D3`, initials logo, brand card instead of a banner, no announcement,
+  about and contact hidden until filled, hours always shown, first enabled order type preselected, stamp card off (10
+  stamps, ₱100 off, 1 welcome stamp when on), notifications off, no review link.
+- SF-7: Rewards have three kinds: peso discount, free item (added at its price with an equal discount, so sales
+  reports keep the item), custom prize (title, picture, description; the member claims it with a code, stamps are
+  taken at the claim and returned if the owner cancels it). Stamps stay server-awarded. No stamps for reviews.
+- SF-8: Location at launch is the shop's own delivery zones. "Use my location" only suggests the nearest zone that
+  has a centre point. No map API or address search.
+- SF-9: Delivery at launch: the owner books the rider in their own app, then records the provider (Own rider,
+  Lalamove, Grab, Other), the tracking link (Lalamove and Grab links must be on their own hosts) and an optional rider
+  name and phone. The customer sees "Track your delivery". The Lalamove API is after launch.
+- SF-10: The receipt keeps its QR of the receipt link, save and share, and the Messenger hand-off. No WhatsApp.
+- SF-11: `order_messages` is the order thread. At launch only payment proofs and system lines are written; the
+  `payments` table stays the source of truth for money. Free-text chat comes later on the same table.
+- SF-12: Reviews: a private 1 to 5 rating with an optional comment per completed order, seen by the owner, plus a
+  "Review us on Google" button when the owner sets a link. No review markup, no public stars, no rewards for reviews.
+- SF-13: PWA: per-shop icons from the logo with `next/og` (192, 512, maskable, apple-touch 180); Android splash from
+  the manifest; an in-app splash (at most 600 ms, standalone mode, once per session) for iOS; a hand-written service
+  worker for the offline page and push that never caches orders, prices or API answers.
+- SF-14: Push at launch is transactional only: order status to customers who tapped "Notify me" (iOS only when
+  installed). Marketing messages need a separate unticked opt-in per channel, stored in `consents`; none are offered
+  until campaign sending is built (after launch).
+- SF-15: Push path: an order status change queues `notification_outbox` rows; when the Vault secrets exist, pg_net
+  calls the storefront's dispatch route, which sends with VAPID and removes dead subscriptions.
+- SF-16: The dispatch route reads the outbox through secret-checked SQL functions; no service-role key is stored on
+  Vercel.
+- SF-17: Pasted image links are fetched on the server (https, no private addresses, image type checked by its bytes,
+  2 MB, 8 s) and stored in Storage; never hotlinked. `images.remotePatterns` is only the Supabase host and
+  `i.ytimg.com`. YouTube slides use a facade that loads the `youtube-nocookie.com` player on tap.
+- SF-18: Demo photos are Pexels photos re-hosted in Storage with `supabase/demo-media/CREDITS.md`, only for the two
+  demo shops, set by the demo SQL functions. No Unsplash re-hosting, no demo data in app code.
+- SF-19: SEO: per-shop Open Graph image, `LocalBusiness` JSON-LD without ratings, a sitemap of active shops,
+  canonical URLs.
+- SF-20: Shop pages are cached per shop (tag `shop:<slug>`) and refreshed when the owner saves; `quote_order` still
+  re-checks prices and stock at checkout. Replaces `force-dynamic`.
+- SF-21: No NestJS for the storefront. It stays on Supabase (reads, SQL functions, Realtime); the few server needs
+  (push dispatch, image import, cache refresh) are Next.js route handlers on Vercel with logic in `packages/api`.
+  NestJS arrives with Product B; `packages/api` is the seam that makes the later move cheap.
+- SF-22: Storefront v2 migrations are additive and backward compatible (new nullable or defaulted columns, new tables,
+  functions that only add output keys), because a merge into `dev` deploys them to the live database.
+- SF-23: Each shop has a privacy page (`/[shop]/privacy`) in SF1, linked from checkout, account and the home footer.
+- SF-24: After launch (backlog in `docs/PROGRESS.md`): SMS, Lalamove API, owner campaign sending, Apple and Google
+  Wallet passes, subdomains per shop, Google reviews shown on the storefront, free-text order chat, maps and address
+  search, staff QR stamp scanning, extra reward rules (halfway, birthday, daily caps), menu precaching.

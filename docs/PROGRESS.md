@@ -12,19 +12,11 @@ Stage 0, way of working
 - [ ] A0.2 Staging database (by hand M1 to M4, then the prompt)
 - [ ] A0.3 Test harness and small fixes
 
-Stage 1, storefront
-- [ ] A1 Shop shell and system pages
-- [ ] A2 Shop home
-- [ ] A3 Menu
-- [ ] A4 Item sheet
-- [ ] A5 Cart sheet and cart bar
-- [ ] A6 Checkout (a, b)
-- [ ] A7 Receipt (a, b)
-- [ ] A8 My orders
-- [ ] A9 Account and member card
-- [ ] A10 Privacy notice
-- [ ] A11 Install and offline (a, b)
-- [ ] A12 Storefront speed pass
+Stage 1, storefront v2 (`docs/storefront-v2.md`; replaces A1 to A12, decision SF-1)
+- [ ] SF1 Foundation and redesign (shell, palette, every page, privacy, icons, splash, brand editor)
+- [ ] SF2 Database (rewards, shop content, order messages, delivery, ratings, push)
+- [ ] SF3 Features and demo content (banners, rewards, thread, tracking, push, SEO, caching, demo photos)
+- [ ] SF4 Smoke tests and docs (Playwright 390/1280, docs, repo description)
 
 Stage 2, dashboard
 - [ ] D0a Login, sign up, forgot password
@@ -79,6 +71,20 @@ Modules (each: database prompt, API prompt, one prompt per page)
 - [ ] M16 Platform
 - [ ] M17 Storefront through the API
 - [ ] M18 Integrations and native
+
+## Backlog: after launch (decision SF-24)
+
+- SMS order updates (sender name registration takes 2 to 4 weeks; about ₱0.50 per SMS)
+- Lalamove API booking ("Book rider", live quote, status webhooks)
+- Owner campaign sending (push, email, SMS) with per-channel marketing opt-ins
+- Apple Wallet and Google Wallet stamp cards
+- Subdomains per shop (`<slug>.webserbisyo.com`)
+- Google reviews shown on the storefront
+- Free-text chat in the order thread
+- Maps and address search for delivery
+- Staff QR scanning for stamps and rewards
+- Extra reward rules: halfway bonus, birthday stamp, daily stamp cap
+- Precaching menus for offline browsing (Serwist)
 
 ## Log
 
