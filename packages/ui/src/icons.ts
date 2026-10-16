@@ -6,6 +6,7 @@ export {
   IconArchive,
   IconArrowRight,
   IconBell,
+  IconBrandFacebook,
   IconBrandMessenger,
   IconBuildingStore,
   IconCash,
