@@ -30,7 +30,7 @@ Branch: `ag/sf3-storefront-features` from the latest `dev`.
    `i.ytimg.com` through a fixed `remotePatterns` entry, `youtube-nocookie.com` iframe only after tap, unloaded when the
    slide leaves), `AnnouncementStrip` (DiceUI `banner`, tone colour from status tokens, dismiss kept per shop and text),
    About section in `ShopInfoList`, "Review us on Google" on the receipt after completion. Dashboard Settings: "Home
-   page" screen (banners: up to 3, `BannerField` with image upload or "Paste image link" or YouTube link, reorder with
+   page" screen (banners: up to 3, `BannerField` (SF1 upload rules: 21:9 crop, compressed on the phone, real upload and Retry) with image upload or "Paste image link" or YouTube link, reorder with
    `sortable`; announcement text, tone, end date; about text; Google review link). Commit `feat(sf3): banners,
    announcement, about`.
 2. **Image links, imported safely.** Route handler `apps/storefront/src/app/api/media/import/route.ts` with the logic in
@@ -49,7 +49,7 @@ Branch: `ag/sf3-storefront-features` from the latest `dev`.
    and free item; Rewards tab "Claim prize" for custom (QR + 6-character code, pending state, given state). Commit
    `feat(sf3): three reward kinds on screen`.
 5. **Order thread, delivery, rating.** Receipt: `OrderThread` (shadcn `message`, `bubble`, `attachment`) with the
-   payment proof as the customer's message (`ProofDrop`: camera or gallery, compress, reference number) and system
+   payment proof as the customer's message (`ProofDrop` per the SF1 upload rules: camera or gallery, compress, real upload with progress and Retry, reference number) and system
    lines in words; "Track your delivery" button and rider name/phone (`tel:`) when set; `RatingField` (DiceUI `rating`
    + comment) once completed. Dashboard order detail: the same thread, a Delivery card (provider, link, rider; replaces
    the tracking dialog flow), the rating read-only; Reports: rating average and count. Commit `feat(sf3): order thread,

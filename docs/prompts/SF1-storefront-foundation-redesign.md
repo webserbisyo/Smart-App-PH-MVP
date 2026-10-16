@@ -77,9 +77,25 @@ Branch: `ag/sf1-storefront-foundation` from the latest `dev`.
    session, gone after first paint or 600 ms, opacity only with reduced motion. Commit `feat(sf1): shop icons and splash`.
 10. **Brand editor** (dashboard `features/settings/screens/LookScreen.tsx`, existing columns only): `BrandColorField`
     (one colour, the 4 presets, "Use logo colour" from a `dominantColor` canvas helper in `packages/ui/src/lib`, live
-    preview of 60/30/10, "Advanced" for three colours with the contrast warning), `LogoField` (1:1 crop) and
-    `BannerField` (2:1 crop, writes `cover_path`) built on `use-file-upload` + `cropper` + `PhotoField`'s compress and
-    upload. Live phone preview uses the new storefront patterns. Commit `feat(sf1): brand editor`.
+    preview of 60/30/10, "Advanced" for three colours with the contrast warning), `LogoField` and `BannerField`
+    (writes `cover_path`). Live phone preview uses the new storefront patterns. Commit `feat(sf1): brand editor`.
+
+    **Upload fields (one family, used in SF1 and SF3).** Each is our pattern in `packages/ui/src/patterns`, built on
+    `@reui/use-file-upload` and copying the layout of one ReUI example (open it with
+    `pnpm dlx shadcn@4.21.4 view @reui/<id>` or on reui.io; do not install the examples):
+    | Pattern | ReUI layout | Ratio and size | Used in |
+    | --- | --- | --- | --- |
+    | `LogoField` | `c-file-upload-2` (avatar) | 1:1, `IMAGE_SIZES.logo` 512 | Look |
+    | `BannerField` | `c-file-upload-10` (cover: drop zone, hover/tap Change and Remove, progress ring, error alert with Retry, guidelines panel) | 21:9, new `IMAGE_SIZES.banner` 1600 × 686, 300 KB | Look (cover), SF3 Home page banners |
+    | `PhotoGallery` | `c-file-upload-4` gallery + `c-file-upload-8` sorting (our DiceUI `sortable`) | 1:1, `IMAGE_SIZES.photo` | product editor (SF3 restyle) |
+    | `ProofDrop` | `c-file-upload-3` drag and drop | any, `IMAGE_SIZES.proof` | receipt (SF3) |
+    Rules for all four: the ReUI examples fake progress with `setInterval` and fail at random with `Math.random`, and
+    preload a `picsum.photos` image; none of that is copied. Flow: pick or drop, then `cropper` at the fixed ratio
+    (skipped for proofs), then `compressImage` on the phone (WebP, size above, before any upload: slow data), then the
+    real upload to Supabase Storage through `PhotoField`'s upload function with real percent progress, real error
+    text from `words.ts`, Retry and Remove. Guidelines panel text lives in `words.ts` in our words (for example "Wide
+    photo, main subject in the middle", "21:9, at least 1600 px wide", "JPG, PNG or WebP, up to 10 MB before we shrink
+    it"). Tabler icons only. Touch: Change and Remove are always visible on phones (no hover).
 
 ## Do not build
 

@@ -21,7 +21,7 @@ section 5 here, full research in the project files (`research/storefront-redesig
 │ ● Open until 9 PM            │
 │ [ Pickup ▾ · Poblacion ]     │  Area pill: order type + delivery zone
 ├──────────────────────────────┤
-│ ┌──────────────────────────┐ │  banner carousel (up to 3), 2:1, radius 20,
+│ ┌──────────────────────────┐ │  banner carousel (up to 3), 21:9, radius 20,
 │ │   banner / video slide   │ │  dots; no banner = brand card with logo + tagline
 │ └──────────── • ○ ○ ───────┘ │
 │ (i) Announcement text   [x]  │  announcement strip (DiceUI banner), tone colour
@@ -53,7 +53,7 @@ section 5 here, full research in the project files (`research/storefront-redesig
 ├──────────────────────────────────────────────────────────────────────┤
 │        max width 1120, centred, 24 px gutters                         │
 │  ┌────────────────────────────────────┐ ┌──────────────────────────┐ │
-│  │ banner carousel 2.5:1              │ │ RewardCard               │ │  home: 8/4 columns
+│  │ banner carousel 21:9               │ │ RewardCard               │ │  home: 8/4 columns
 │  └────────────────────────────────────┘ │ About · Hours · Contact  │ │
 │  chips · best sellers (4 across)        └──────────────────────────┘ │
 │ ─────────────────────────────────────────────────────────────────── │
@@ -137,7 +137,7 @@ Full table with sources: project files `research/storefront-redesign/component-m
 
 | Need | Use |
 | --- | --- |
-| Logo, banner, product photos, payment proof | `PhotoField` family on ReUI `use-file-upload`: `LogoField`, `BannerField`, `PhotoGallery`, `ProofDrop`; DiceUI `cropper`. DiceUI `file-upload` is removed |
+| Logo, banner, product photos, payment proof | `PhotoField` family on ReUI `use-file-upload`, each built from one ReUI example: `LogoField` = `c-file-upload-2` (1:1), `BannerField` = `c-file-upload-10` (21:9, with its guidelines panel), `PhotoGallery` = `c-file-upload-4` + `-8` (up to 5, sortable), `ProofDrop` = `c-file-upload-3` (camera or gallery). DiceUI `cropper` enforces the ratio; every image is compressed on the phone and uploaded to Supabase Storage with real progress, real errors and Retry. DiceUI `file-upload` is removed |
 | Brand colour | DiceUI `color-picker` (installed) inside our `BrandColorField` (presets, logo colour, contrast preview) |
 | Banner carousel, item photos | shadcn `carousel` (Embla 8.6.0 + autoplay); `VideoSlide` facade for YouTube |
 | Announcement | DiceUI `banner` |
