@@ -76,6 +76,13 @@ export default async function ShopHomePage({ params }: { params: Promise<{ shop:
           {words.home.messenger}
         </a>
       )}
+
+      <footer className="mt-8 pt-6 border-t border-shop-30-foreground/10 flex flex-col items-center gap-2 text-center text-xs text-muted-foreground">
+        <p>© {new Date().getFullYear()} {shop.name} · Powered by Smart App PH</p>
+        <Link href={`${base}/privacy`} className="underline underline-offset-4 hover:text-shop-10">
+          Data Privacy Notice
+        </Link>
+      </footer>
     </div>
   );
 }

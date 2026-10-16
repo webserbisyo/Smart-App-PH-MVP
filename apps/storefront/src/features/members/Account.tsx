@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
+
 import { stampRuleLine, WORDS } from '@smartapp/core';
 import { Alert, AlertDescription } from '@smartapp/ui/components/alert';
 import { Button } from '@smartapp/ui/components/button';
 import { ItemGroup } from '@smartapp/ui/components/item';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconGift } from '@smartapp/ui/icons';
+import { IconGift, IconShieldCheck } from '@smartapp/ui/icons';
 
 import { SignOutButton } from '../account/SignOutButton';
 import { InstallCard } from '../install/InstallCard';
@@ -128,6 +130,16 @@ export function Account({ serverSignedIn }: { serverSignedIn: boolean }) {
       <SavedAddresses slug={slug} account={account} />
 
       <InstallCard />
+
+      <div className="flex items-center justify-between rounded-xl border border-border/60 bg-card p-3.5 text-sm shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <IconShieldCheck className="size-5 text-shop-10" />
+          <span className="font-medium">Data Privacy Notice</span>
+        </div>
+        <Link href={`/${slug}/privacy`} className="text-xs font-semibold text-shop-10 underline underline-offset-4">
+          Read
+        </Link>
+      </div>
 
       <SignOutButton />
     </div>

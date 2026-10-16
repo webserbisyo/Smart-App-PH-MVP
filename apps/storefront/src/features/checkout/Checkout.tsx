@@ -425,7 +425,14 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
             <Checkbox id="privacy" checked={field.value} onCheckedChange={field.onChange} aria-invalid={errors.privacy !== undefined} className={cn('mt-0.5', PICKED)} />
             <div className="flex flex-col gap-1">
               <FieldLabel htmlFor="privacy" className="font-normal">
-                {words.privacy(shop.name)}
+                {words.privacy(shop.name)}{' '}
+                <Link
+                  href={`/${shop.slug}/privacy`}
+                  target="_blank"
+                  className="font-medium underline underline-offset-4 hover:text-shop-10"
+                >
+                  Privacy notice
+                </Link>
               </FieldLabel>
               <FieldError>{errors.privacy?.message}</FieldError>
             </div>
