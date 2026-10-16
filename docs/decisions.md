@@ -410,3 +410,6 @@ Spec: `docs/storefront-v2.md`. Prompts: `docs/prompts/SF1` to `SF4`.
 - SF-24: After launch (backlog in `docs/PROGRESS.md`): SMS, Lalamove API, owner campaign sending, Apple and Google
   Wallet passes, subdomains per shop, Google reviews shown on the storefront, free-text order chat, maps and address
   search, staff QR stamp scanning, extra reward rules (halfway, birthday, daily caps), menu precaching.
+- SF-25: The product editor takes several photos in one pick (`PhotoGallery`, up to 5): each one is cropped,
+  compressed on the phone (`IMAGE_SIZES.photo` and `thumb`) and uploaded at most 2 at a time, with its own real percent
+  plus one total bar and "x of y uploaded" (summary row from ReUI `c-file-upload-5`). Built in SF3 step 2.

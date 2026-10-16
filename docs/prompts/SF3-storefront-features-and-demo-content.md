@@ -33,28 +33,37 @@ Branch: `ag/sf3-storefront-features` from the latest `dev`.
    page" screen (banners: up to 3, `BannerField` (SF1 upload rules: 21:9 crop, compressed on the phone, real upload and Retry) with image upload or "Paste image link" or YouTube link, reorder with
    `sortable`; announcement text, tone, end date; about text; Google review link). Commit `feat(sf3): banners,
    announcement, about`.
-2. **Image links, imported safely.** Route handler `apps/storefront/src/app/api/media/import/route.ts` with the logic in
+2. **Product photos, several at once (dashboard product editor).** Replace the one-at-a-time `EditorPhotos` with
+   `PhotoGallery` (SF1 upload rules; layout `c-file-upload-4` grid + `c-file-upload-8` sorting, plus the summary row of
+   `c-file-upload-5` "Progress List"). The owner picks or drops several photos in one go (only as many as the free
+   slots up to `MAX_PHOTOS` 5; extra ones get a words.ts message). Each photo: crop at the vocab ratio (1:1 food, 4:5
+   apparel; the owner may confirm all with the default centre crop), `compressImage` with `IMAGE_SIZES.photo` and
+   `thumb`, then the real upload, at most 2 at a time (slow data). Each tile shows its own real percent and Retry or
+   Remove; above the grid one total bar (average of the photos' real percents) and the line "2 of 4 uploaded, 1 failed"
+   from `words.ts`, with "Retry failed" when any failed. Save stays disabled while any photo is uploading. First photo
+   is the cover; drag to reorder. Commit `feat(sf3): product photos, several at once`.
+3. **Image links, imported safely.** Route handler `apps/storefront/src/app/api/media/import/route.ts` with the logic in
    `packages/api` (server): owner's JWT required and must own the shop; https only; resolve DNS and refuse private,
    loopback and link-local addresses (also after redirects, max 2); `content-type` jpeg, png or webp checked against
    the file's first bytes; max 2 MB; 8 s timeout; stored in `shop-media/<tenant>/imported/<uuid>.<ext>`; returns the
    path. Never hotlink, never widen `images.remotePatterns` beyond the Supabase host and `i.ytimg.com`. Commit
    `feat(sf3): import image links into storage`.
-3. **Area and location.** `AreaPill` sheet gets "Use my location" (one `getCurrentPosition` on tap, nearest zone with a
+4. **Area and location.** `AreaPill` sheet gets "Use my location" (one `getCurrentPosition` on tap, nearest zone with a
    centre point by straight-line distance, suggestion only, the customer confirms). Dashboard Order types: optional
    zone centre (paste a Google Maps link and read the coordinates from it, or type them). Commit `feat(sf3): area and
    nearest zone`.
-4. **Rewards.** Dashboard Stamp card screen: reward kind (discount, free item with item and variant picker, custom
+5. **Rewards.** Dashboard Stamp card screen: reward kind (discount, free item with item and variant picker, custom
    prize with title, description and picture via `PhotoField`), live `RewardCard` preview; Customers sheet: open claims
    with Given / Cancel. Storefront: `RewardCard` shows the reward picture or item; checkout reward switch for discount
    and free item; Rewards tab "Claim prize" for custom (QR + 6-character code, pending state, given state). Commit
    `feat(sf3): three reward kinds on screen`.
-5. **Order thread, delivery, rating.** Receipt: `OrderThread` (shadcn `message`, `bubble`, `attachment`) with the
+6. **Order thread, delivery, rating.** Receipt: `OrderThread` (shadcn `message`, `bubble`, `attachment`) with the
    payment proof as the customer's message (`ProofDrop` per the SF1 upload rules: camera or gallery, compress, real upload with progress and Retry, reference number) and system
    lines in words; "Track your delivery" button and rider name/phone (`tel:`) when set; `RatingField` (DiceUI `rating`
    + comment) once completed. Dashboard order detail: the same thread, a Delivery card (provider, link, rider; replaces
    the tracking dialog flow), the rating read-only; Reports: rating average and count. Commit `feat(sf3): order thread,
    delivery tracking, ratings`.
-6. **Service worker and push.** Add `web-push` 3.6.7 and `@types/web-push` 3.6.4 to `packages/api` (approved, decision
+7. **Service worker and push.** Add `web-push` 3.6.7 and `@types/web-push` 3.6.4 to `packages/api` (approved, decision
    SF-4). Hand-written `apps/storefront/public/sw.js` (no library): `push` shows the notification, `notificationclick`
    opens or focuses the receipt URL, navigation failure shows `/offline.html` (shop-neutral, retry button); it never
    caches orders, prices or API responses. Register with `scope: '/'` and `updateViaCache: 'none'`; headers for
@@ -65,12 +74,12 @@ Branch: `ag/sf3-storefront-features` from the latest `dev`.
    in `.env.example` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `PUSH_DISPATCH_SECRET`);
    never read or print real values. Marketing opt-ins: none are offered yet (decision SF-14). Commit `feat(sf3):
    service worker, offline page, order push`.
-7. **SEO and speed.** `opengraph-image` per shop (logo, name, palette), `LocalBusiness` JSON-LD from shop data (the
+8. **SEO and speed.** `opengraph-image` per shop (logo, name, palette), `LocalBusiness` JSON-LD from shop data (the
    schema type word comes from vocab; no ratings), `sitemap.ts` of active shops, canonical URLs, `robots.ts`. Replace
    `force-dynamic` with cached shop data per slug tagged `shop:<slug>`; a revalidate route checks the owner's JWT and
    refreshes the tag; `packages/api` calls it after every owner save that changes storefront data (stock and prices
    stay safe: `quote_order` re-checks at checkout). Commit `feat(sf3): SEO and cached shop pages`.
-8. **Demo content (the two demo shops only).** About 30 Pexels photos (license allows re-hosting; credits file
+9. **Demo content (the two demo shops only).** About 30 Pexels photos (license allows re-hosting; credits file
    required), chosen by hand: juans-cafe (17 items, 4 category photos optional, logo, 3 banners: coffee, pastries,
    rice meal), tala-apparel (14 items, logo, 3 banners: new arrivals, dresses, accessories). Convert to WebP at
    `IMAGE_SIZES` (photo 1600 px max, 300 KB; thumb 400; logo 512 square) plus `-thumb`. Commit them to
@@ -93,12 +102,14 @@ subdomains per shop, Unsplash, `**` image hosts, Serwist, precaching menus.
 
 Blueprint A 4.2 plus: no banners (brand card), one banner (no dots), YouTube slide offline (thumbnail only),
 announcement ended (hidden), location denied (zones list stays), reward item sold out, claim pending/given, proof
-uploading/failed/rejected, delivery without link, rating sent, push denied, push not supported, iOS not installed.
+uploading/failed/rejected, product photos (3 uploading with the total bar, 1 failed with Retry, gallery full at 5), delivery without link, rating sent, push denied, push not supported, iOS not installed.
 
 ## Done when (agent in its browser, then the founder on a phone with both demo shops)
 
 - Both demo shops show real photos everywhere, 3 banners, an announcement and an about text, after `pnpm local reset`
   and `pnpm local demo`, with no image from outside our storage except YouTube thumbnails.
+- The owner picks 4 product photos at once on a phone: each is shrunk before upload (under 300 KB in Storage), the
+  total bar and "x of 4 uploaded" move with the real uploads, a failed one retries alone, Save waits for all.
 - A pasted image link to a private address (for example `http://127.0.0.1/x.png`) is refused; a public JPEG is stored
   and shown.
 - Juan's member with 10 stamps gets the free item at ₱0 net; Tala's member claims the tote bag, the owner marks it
