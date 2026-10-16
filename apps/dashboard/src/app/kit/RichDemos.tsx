@@ -15,22 +15,24 @@ import {
   ColorPickerTrigger,
 } from '@smartapp/ui/components/color-picker';
 import { ConfettiButton } from '@smartapp/ui/components/confetti';
+import { Banner, BannerClose, BannerDescription, BannerTitle } from '@smartapp/ui/components/banner';
 import {
-  FileUpload,
-  FileUploadDropzone,
-  FileUploadItem,
-  FileUploadItemDelete,
-  FileUploadItemMetadata,
-  FileUploadItemPreview,
-  FileUploadList,
-  FileUploadTrigger,
-} from '@smartapp/ui/components/file-upload';
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@smartapp/ui/components/carousel';
+import { Cropper, CropperArea, CropperImage } from '@smartapp/ui/components/cropper';
+import { DotPattern } from '@smartapp/ui/components/dot-pattern';
 import { Label } from '@smartapp/ui/components/label';
 import { MaskInput } from '@smartapp/ui/components/mask-input';
 import { NumberTicker } from '@smartapp/ui/components/number-ticker';
 import { Timeline, TimelineContent, TimelineDate, TimelineHeader, TimelineIndicator, TimelineItem, TimelineSeparator, TimelineTitle } from '@smartapp/ui/components/reui/timeline';
+import { ShineBorder } from '@smartapp/ui/components/shine-border';
 import { SidebarProvider } from '@smartapp/ui/components/sidebar';
 import { Sortable, SortableContent, SortableItem, SortableItemHandle } from '@smartapp/ui/components/sortable';
+import { useFileUpload } from '@smartapp/ui/hooks/use-file-upload';
 import { IconGripVertical, IconUpload, IconX } from '@smartapp/ui/icons';
 
 import { DataGridDemo } from './DataGridDemo';
@@ -62,27 +64,111 @@ function SortableDemo() {
   );
 }
 
-function FileUploadDemo() {
-  const [files, setFiles] = useState<File[]>([]);
+function FileUploadHookDemo() {
+  const [fileUploadState, { openFileDialog, removeFile, getInputProps, handleDragEnter, handleDragLeave, handleDragOver, handleDrop }] = useFileUpload({
+    maxFiles: 1,
+    accept: 'image/*',
+  });
+
   return (
-    <FileUpload value={files} onValueChange={setFiles} accept="image/*" maxFiles={1} className="w-full max-w-sm">
-      <FileUploadDropzone className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border p-6 text-center text-sm">
+    <div className="w-full max-w-sm space-y-2">
+      <div
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onClick={openFileDialog}
+        className={`flex flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center text-sm transition-colors cursor-pointer ${
+          fileUploadState.isDragging ? 'border-primary bg-primary/5' : 'border-border'
+        }`}
+      >
+        <input {...getInputProps()} />
         <IconUpload className="size-6 text-muted-foreground" />
-        <span>Drop a product photo</span>
-        <FileUploadTrigger render={<Button variant="outline" size="sm" />}>Choose photo</FileUploadTrigger>
-      </FileUploadDropzone>
-      <FileUploadList>
-        {files.map((file) => (
-          <FileUploadItem key={file.name} value={file}>
-            <FileUploadItemPreview />
-            <FileUploadItemMetadata />
-            <FileUploadItemDelete render={<Button variant="ghost" size="icon-sm" aria-label="Remove" />}>
-              <IconX />
-            </FileUploadItemDelete>
-          </FileUploadItem>
+        <span>Drop a product photo or click to browse</span>
+        <Button variant="outline" size="sm" type="button">
+          Choose photo
+        </Button>
+      </div>
+      {fileUploadState.files.length > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3 text-sm">
+          <span className="truncate">{fileUploadState.files[0]?.file.name}</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => {
+              const fileId = fileUploadState.files[0]?.id;
+              if (fileId) removeFile(fileId);
+            }}
+            aria-label="Remove"
+          >
+            <IconX />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CropperDemo() {
+  return (
+    <div className="relative h-64 w-full max-w-sm overflow-hidden rounded-xl border border-border bg-muted">
+      <Cropper aspectRatio={1} shape="circle">
+        <CropperImage src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='400' height='400' fill='%2308775f'/><circle cx='200' cy='200' r='120' fill='%23f9c635'/></svg>" alt="Sample" />
+        <CropperArea />
+      </Cropper>
+    </div>
+  );
+}
+
+function BannerDemo() {
+  return (
+    <div className="w-full max-w-md space-y-3">
+      <Banner variant="info">
+        <BannerTitle>Store open</BannerTitle>
+        <BannerDescription>Now accepting delivery and pickup orders.</BannerDescription>
+        <BannerClose />
+      </Banner>
+      <Banner variant="warning">
+        <BannerTitle>Limited stocks</BannerTitle>
+        <BannerDescription>Ube Cheese Pandesal is selling fast today.</BannerDescription>
+      </Banner>
+    </div>
+  );
+}
+
+function CarouselDemo() {
+  return (
+    <Carousel className="w-full max-w-xs">
+      <CarouselContent>
+        {['Juan Barako', 'Spanish Latte', 'Ube Halaya Cake'].map((item) => (
+          <CarouselItem key={item}>
+            <div className="flex aspect-square items-center justify-center rounded-xl border border-border bg-card p-6">
+              <span className="text-base font-semibold">{item}</span>
+            </div>
+          </CarouselItem>
         ))}
-      </FileUploadList>
-    </FileUpload>
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
+  );
+}
+
+function DotPatternDemo() {
+  return (
+    <div className="relative flex h-48 w-full max-w-sm items-center justify-center overflow-hidden rounded-xl border border-border bg-background p-6">
+      <DotPattern className="[mask-image:radial-gradient(180px_circle_at_center,white,transparent)]" />
+      <span className="z-10 text-sm font-medium">Background Dot Pattern</span>
+    </div>
+  );
+}
+
+function ShineBorderDemo() {
+  return (
+    <div className="relative flex h-32 w-full max-w-sm items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-6">
+      <ShineBorder shineColor={['#2456d3', '#08775f', '#f9c635']} />
+      <span className="z-10 text-sm font-semibold">Special Reward Card</span>
+    </div>
   );
 }
 
@@ -146,7 +232,12 @@ export function RichDemos() {
         )}
       </Demo>
       <Demo name="DiceUI sortable">{() => <SortableDemo />}</Demo>
-      <Demo name="DiceUI file-upload">{() => <FileUploadDemo />}</Demo>
+      <Demo name="ReUI use-file-upload">{() => <FileUploadHookDemo />}</Demo>
+      <Demo name="DiceUI cropper">{() => <CropperDemo />}</Demo>
+      <Demo name="DiceUI banner">{() => <BannerDemo />}</Demo>
+      <Demo name="shadcn carousel">{() => <CarouselDemo />}</Demo>
+      <Demo name="Magic UI dot-pattern">{() => <DotPatternDemo />}</Demo>
+      <Demo name="Magic UI shine-border">{() => <ShineBorderDemo />}</Demo>
       <Demo name="DiceUI mask-input">{() => <MaskInputDemo />}</Demo>
       <Demo name="DiceUI color-picker">{() => <ColorPickerDemo />}</Demo>
       <Demo name="Magic UI confetti (marigold: celebrations only)">
