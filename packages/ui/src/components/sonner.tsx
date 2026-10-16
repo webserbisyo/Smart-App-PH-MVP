@@ -33,6 +33,7 @@ const Toaster = ({ theme: themeProp, ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={themeProp ?? documentTheme}
+      richColors
       className="toaster group"
       icons={{
         success: (
@@ -57,6 +58,18 @@ const Toaster = ({ theme: themeProp, ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          "--success-bg": "var(--success-soft)",
+          "--success-text": "var(--success-soft-foreground)",
+          "--success-border": "var(--success-soft)",
+          "--error-bg": "var(--destructive-soft)",
+          "--error-text": "var(--destructive-soft-foreground)",
+          "--error-border": "var(--destructive-soft)",
+          "--warning-bg": "var(--warning-soft)",
+          "--warning-text": "var(--warning-soft-foreground)",
+          "--warning-border": "var(--warning-soft)",
+          "--info-bg": "var(--info-soft)",
+          "--info-text": "var(--info-soft-foreground)",
+          "--info-border": "var(--info-soft)",
         }
       }
       toastOptions={{

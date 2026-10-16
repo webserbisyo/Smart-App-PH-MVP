@@ -16,15 +16,10 @@ import { IconDeviceMobileDown, IconSquareArrowUp, IconSquarePlus } from '@smarta
 import { cn } from '@smartapp/ui/lib/utils';
 
 import { useShop } from '../shell/ShopProvider';
-import { useHydrated } from '../shell/use-hydrated';
+import { subscribeNothing, useHydrated } from '../shell/use-hydrated';
 import { canPromptInstall, isStandalone, promptInstall, readDismissedRaw, saveDismissed, subscribeInstallPrompt, subscribeStandalone } from './install-prompt';
 
 const words = WORDS.storefront.install;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
-
-function subscribeNothing(): () => void {
-  return () => undefined;
-}
 
 /** On the server nothing is offered, so the page never renders a card the browser would then remove. */
 const SERVER_PLATFORM: InstallPlatform = 'in_app';
@@ -94,7 +89,7 @@ function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChang
         </ol>
         <Button
           size="lg"
-          className={SHOP_BUTTON}
+          variant="shop"
           onClick={() => {
             onOpenChange(false);
           }}
@@ -146,7 +141,7 @@ export function InstallCard({ className }: { className?: string }) {
           {words.notNow}
         </Button>
         <Button
-          className={SHOP_BUTTON}
+          variant="shop"
           onClick={() => {
             if (offer === 'prompt') void promptInstall();
             else setStepsOpen(true);

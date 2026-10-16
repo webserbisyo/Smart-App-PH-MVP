@@ -93,7 +93,7 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
   const quickAdd = useCallback(
     (item: StorefrontItem) => {
       const [only] = item.variants;
-      if (block) toast(block.short, { description: block.alert });
+      if (block) toast.warning(block.short, { description: block.alert });
       else if (only && canQuickAdd(item)) addLine({ itemId: item.id, variantId: only.id, optionIds: [], qty: 1, note: null }, item.name);
       else openItem(item.id);
     },

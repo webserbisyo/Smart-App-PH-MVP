@@ -28,15 +28,11 @@ import { StatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 import { InstallCard } from '../install/InstallCard';
 import { ReceiptStamps } from '../members/ReceiptStamps';
 import { useShop } from '../shell/ShopProvider';
+import { subscribeNothing } from '../shell/use-hydrated';
 import { customerOrderLook, customerPaymentLook } from './order-look';
 import { ProofUpload } from './ProofUpload';
 
 const words = WORDS.storefront.receipt;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
-
-function subscribeNothing(): () => void {
-  return () => undefined;
-}
 
 /** This site's origin in the browser (the receipt renders in the browser only). */
 function useOrigin(): string {
@@ -173,7 +169,7 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
 
       <div className="flex flex-col gap-2 print:hidden">
         {messenger !== null && (
-          <a href={messengerLink(messenger, text)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ size: 'lg' }), SHOP_BUTTON)}>
+          <a href={messengerLink(messenger, text)} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'shop', size: 'lg' })}>
             <IconBrandMessenger aria-hidden="true" />
             {words.messenger}
           </a>

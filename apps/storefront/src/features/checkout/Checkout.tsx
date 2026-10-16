@@ -43,15 +43,13 @@ import { useMember } from '../members/use-member';
 import { useReward } from '../members/use-reward';
 import { useShop } from '../shell/ShopProvider';
 import { useHydrated } from '../shell/use-hydrated';
+import { CHOICE_ROW, PICKED } from '../shell/choice';
 import { checkoutSchema, toOrderInput, toQuotePayload } from './checkout-form';
 import type { CheckoutValues } from './checkout-form';
 import { readRemembered, saveRemembered } from './remember-me';
 import { TransferAccounts } from './TransferAccounts';
 
 const words = WORDS.storefront.checkout;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
-const CHOICE_ROW = 'flex w-full min-h-11 items-center gap-3 rounded-lg border px-3 py-2 has-data-checked:border-shop-10';
-const PICKED = 'data-checked:border-shop-10 data-checked:bg-shop-10 data-checked:text-shop-10-foreground';
 const PRESSED = 'flex-1 aria-pressed:border-shop-10 aria-pressed:bg-shop-10 aria-pressed:text-shop-10-foreground';
 /** Pickup slots are rebuilt every minute, so a time that has passed drops out. */
 const CLOCK_MS = 60_000;
@@ -441,7 +439,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
             {errorWords(shopError, vocab)}
           </p>
         )}
-        <Button type="submit" size="lg" className={cn('w-full', SHOP_BUTTON)} disabled={!online || sending || blocked}>
+        <Button type="submit" size="lg" variant="shop" className="w-full" disabled={!online || sending || blocked}>
           {!online ? (
             WORDS.shared.offlineShort
           ) : sending ? (

@@ -24,14 +24,12 @@ import { QuantityStepper } from '@smartapp/ui/patterns/QuantityStepper';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
 import { useShop } from '../shell/ShopProvider';
+import { CHOICE_ROW, PICKED } from '../shell/choice';
 
 const words = WORDS.storefront.item;
 const shared = WORDS.shared;
 
-/** Choice rows in the shop's 10% colour when picked. */
-const CHOICE_ROW = 'flex w-full min-h-11 items-center gap-3 rounded-lg border px-3 py-2 has-data-checked:border-shop-10 has-disabled:opacity-60';
 const REQUIRED = 'bg-shop-10 text-shop-10-foreground';
-const PICKED = 'data-checked:border-shop-10 data-checked:bg-shop-10 data-checked:text-shop-10-foreground';
 
 function choiceId(itemId: string, groupId: string): string {
   return `choice-${itemId}-${groupId}`;

@@ -22,7 +22,6 @@ import { IconMapPin, IconPencil, IconPlus } from '@smartapp/ui/icons';
 const words = WORDS.storefront.account;
 /** The database keeps at most 5 addresses per member. */
 const MAX_ADDRESSES = 5;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
 
 /** Add or edit one address; editing can also remove it. */
 function AddressForm({ slug, account, address, onDone }: { slug: string; account: MemberAccount; address: CustomerAddress | null; onDone: () => void }) {
@@ -108,7 +107,7 @@ function AddressForm({ slug, account, address, onDone }: { slug: string; account
             {errorWords(toApiError(failure).code)}
           </p>
         ) : null}
-        <Button type="submit" size="lg" className={SHOP_BUTTON} disabled={busy}>
+        <Button type="submit" size="lg" variant="shop" disabled={busy}>
           {save.isPending ? <Spinner /> : null}
           {words.save}
         </Button>

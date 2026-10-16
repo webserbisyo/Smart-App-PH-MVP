@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-function subscribeNothing(): () => void {
+export function subscribeNothing(): () => void {
   return () => undefined;
 }
 

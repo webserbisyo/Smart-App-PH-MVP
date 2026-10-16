@@ -16,7 +16,6 @@ import { PhotoField } from '@smartapp/ui/patterns/PhotoField';
 import { TransferAccounts } from '../checkout/TransferAccounts';
 
 const words = WORDS.storefront.receipt.upload;
-const SHOP_BUTTON = 'bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80';
 
 /** The same length rule as submit_payment_proof. */
 function referenceOk(reference: string): boolean {
@@ -106,7 +105,7 @@ export function ProofUpload({ order, method }: { order: Order; method: TransferM
           {errorWords(failure)}
         </p>
       )}
-      <Button type="button" size="lg" className={SHOP_BUTTON} onClick={send} disabled={!online || uploading || submit.isPending}>
+      <Button type="button" size="lg" variant="shop" onClick={send} disabled={!online || uploading || submit.isPending}>
         {!online ? (
           WORDS.shared.offlineShort
         ) : submit.isPending ? (
