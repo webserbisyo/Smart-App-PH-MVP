@@ -41,8 +41,8 @@ export default async function ShopLayout({ params, children }: ShopParams & { ch
       <DataProvider>
         <ShopProvider storefront={storefront} media={shopMedia(storefront)} block={orderingBlock(storefront, new Date())} catalogLabel={catalogLabel}>
           <StoreNav slug={shop.slug} shopName={shop.name} catalogLabel={catalogLabel} />
-          {/* Clears the tab bar (56 px) and the cart bar above it on phones and tablets. */}
-          <main id="main" className="mx-auto w-full max-w-320 px-4 pt-4 pb-[calc(8.5rem+env(safe-area-inset-bottom))] lg:px-8 lg:pt-8 lg:pb-12">
+          {/* Clears the floating tab bar (64 px) and the cart bar (56 px) above it on phones and tablets. */}
+          <main id="main" className="mx-auto w-full max-w-320 px-4 pt-4 pb-[calc(9.5rem+env(safe-area-inset-bottom))] lg:px-8 lg:pt-8 lg:pb-12">
             {children}
           </main>
         </ShopProvider>

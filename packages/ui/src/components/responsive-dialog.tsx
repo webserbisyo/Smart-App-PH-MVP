@@ -45,11 +45,13 @@ interface ResponsiveDialogProps {
   onOpenChange?: (open: boolean) => void
   /** What wider screens get: a centred dialog (default) or a drawer from the right. */
   desktop?: "dialog" | "right"
+  /** Screen width in px where sheet transitions to desktop layout (defaults to 768). */
+  breakpoint?: number
   children?: React.ReactNode
 }
 
-function ResponsiveDialog({ open, defaultOpen, onOpenChange, desktop = "dialog", children }: ResponsiveDialogProps) {
-  const isMobile = useIsMobile()
+function ResponsiveDialog({ open, defaultOpen, onOpenChange, desktop = "dialog", breakpoint = 768, children }: ResponsiveDialogProps) {
+  const isMobile = useIsMobile(breakpoint)
   const shape: Shape = isMobile ? "sheet" : desktop
   const rootProps = {
     ...(open === undefined ? {} : { open }),

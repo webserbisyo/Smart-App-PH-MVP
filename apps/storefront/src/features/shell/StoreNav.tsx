@@ -1,28 +1,64 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useMyOrderTokens } from '@smartapp/api';
 import { formatPeso, WORDS } from '@smartapp/core';
-import { Button } from '@smartapp/ui/components/button';
+import type { Fulfillment } from '@smartapp/core';
+import { useKeyboardOpen } from '@smartapp/ui/hooks/use-keyboard-open';
 import {
   IconBuildingStore,
+  IconGift,
+  IconGiftFilled,
   IconHome,
   IconHomeFilled,
   IconReceipt,
   IconReceiptFilled,
-  IconShoppingBag,
-  IconUser,
-  IconUserFilled,
 } from '@smartapp/ui/icons';
 import type { ShellNavItem } from '@smartapp/ui/lib/nav';
-import { cn } from '@smartapp/ui/lib/utils';
+import { AreaPill, type AreaChoice } from '@smartapp/ui/patterns/AreaPill';
 import { CartBar } from '@smartapp/ui/patterns/CartBar';
+import { DesktopNav } from '@smartapp/ui/patterns/DesktopNav';
+import { OfflineBanner } from '@smartapp/ui/patterns/OfflineBanner';
 import { StoreTabBar } from '@smartapp/ui/patterns/StoreTabBar';
+import { StoreTopBar } from '@smartapp/ui/patterns/StoreTopBar';
 
+import { UpdatesSheet } from '../orders/UpdatesSheet';
 import { useShop } from './ShopProvider';
 
 const words = WORDS.storefront;
+
+function isFulfillment(val: unknown): val is Fulfillment {
+  return val === 'pickup' || val === 'delivery' || val === 'walk_in';
+}
+
+function readAreaChoice(slug: string, defaultType: Fulfillment): AreaChoice {
+  if (typeof window === 'undefined') return { fulfillment: defaultType };
+  try {
+    const raw = localStorage.getItem(`smartapp_area_${slug}`);
+    if (!raw) return { fulfillment: defaultType };
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed === 'object' && parsed !== null) {
+      const f = 'fulfillment' in parsed ? parsed.fulfillment : undefined;
+      const z = 'zoneId' in parsed ? parsed.zoneId : undefined;
+      const fulfillment = isFulfillment(f) ? f : defaultType;
+      const zoneId = typeof z === 'string' ? z : null;
+      return { fulfillment, zoneId };
+    }
+    return { fulfillment: defaultType };
+  } catch {
+    return { fulfillment: defaultType };
+  }
+}
+
+function saveAreaChoice(slug: string, choice: AreaChoice) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`smartapp_area_${slug}`, JSON.stringify(choice));
+  } catch {}
+}
 
 export interface StoreNavProps {
   slug: string;
@@ -32,67 +68,130 @@ export interface StoreNavProps {
 }
 
 /**
- * Storefront nav, one per device: phones and tablets get the bottom tab bar with the cart bar above it;
- * desktops (from 1024 px) get the top navigation. Both open the one cart sheet (ShopProvider). The cart bar
- * bumps when an item is added.
+ * Storefront shell navigation:
+ * Phone: StoreTopBar (56px) + floating CartBar (56px) + floating dock StoreTabBar (64px).
+ * Desktop (1024px+): DesktopNav (64px).
+ * Sets data-keyboard so floating bars hide while typing.
  */
 export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
   const pathname = usePathname();
-  const { cart, added, openCart } = useShop();
-  const cartText = words.cart.bar(cart.count, formatPeso(cart.subtotal));
+  const { storefront, media, block, cart, added, openCart } = useShop();
+  const keyboardOpen = useKeyboardOpen();
+  const [updatesOpen, setUpdatesOpen] = useState(false);
+  const deviceTokens = useMyOrderTokens(slug);
+
   const base = `/${slug}`;
+  const settings = storefront.shop.settings;
+  const logoPath = settings.logoPath;
+  const logoUrl = logoPath ? (media[logoPath]?.thumb ?? media[logoPath]?.full ?? null) : null;
+
+  const availableTypes: Fulfillment[] = [];
+  if (settings.pickupEnabled) availableTypes.push('pickup');
+  if (settings.deliveryEnabled) availableTypes.push('delivery');
+  if (settings.walkInEnabled) availableTypes.push('walk_in');
+  if (availableTypes.length === 0) availableTypes.push('pickup');
+
+  const defaultType = availableTypes[0] ?? 'pickup';
+  const [areaChoice, setAreaChoice] = useState<AreaChoice>(() => readAreaChoice(slug, defaultType));
+
+  const handleAreaChoice = (choice: AreaChoice) => {
+    setAreaChoice(choice);
+    saveAreaChoice(slug, choice);
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-keyboard', keyboardOpen ? 'open' : 'closed');
+  }, [keyboardOpen]);
+
+  const hasRewards = storefront.stampRule !== null;
+  const cartText = words.cart.bar(cart.count, formatPeso(cart.subtotal));
+
+  // 4 tabs: Home, Menu/Products, Rewards (if stamp card active), Orders
   const entries = [
     { key: 'home', href: base, label: words.nav.home, icon: <IconHome />, activeIcon: <IconHomeFilled /> },
     { key: 'menu', href: `${base}/menu`, label: catalogLabel, icon: <IconBuildingStore />, activeIcon: <IconBuildingStore stroke={2.5} /> },
+    ...(hasRewards
+      ? [{ key: 'rewards', href: `${base}/rewards`, label: 'Rewards', icon: <IconGift />, activeIcon: <IconGiftFilled /> }]
+      : []),
     { key: 'orders', href: `${base}/orders`, label: words.nav.orders, icon: <IconReceipt />, activeIcon: <IconReceiptFilled /> },
-    { key: 'account', href: `${base}/account`, label: words.nav.account, icon: <IconUser />, activeIcon: <IconUserFilled /> },
   ];
-  const items: (ShellNavItem & { href: string })[] = entries.map((entry) => ({
+
+  const tabBarItems: (ShellNavItem & { href: string })[] = entries.map((entry) => ({
     ...entry,
     link: <Link href={entry.href} />,
     active: entry.href === base ? pathname === base : pathname.startsWith(entry.href),
   }));
 
+  const isCheckoutOrReceipt = pathname.endsWith('/checkout') || pathname.includes('/receipt') || pathname.includes('/o/');
+  const showCartBar = cart.count > 0 && !isCheckoutOrReceipt;
+
+  const areaPillNode = (
+    <AreaPill
+      fulfillment={areaChoice.fulfillment}
+      availableTypes={availableTypes}
+      zones={storefront.deliveryZones}
+      selectedZoneId={areaChoice.zoneId}
+      onChoiceChange={handleAreaChoice}
+    />
+  );
+
   return (
-    <>
-      {/* Desktop: top navigation. */}
-      <header className="sticky top-0 z-30 hidden h-16 items-center gap-6 bg-shop-30 px-8 pt-safe text-shop-30-foreground shadow-sm lg:flex">
-        <Link href={base} className="truncate text-lg font-bold">
-          {shopName}
-        </Link>
-        <nav aria-label={words.nav.label} className="flex flex-1 items-center gap-1">
-          {items.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              aria-current={item.active ? 'page' : undefined}
-              className={cn(
-                'flex h-11 items-center rounded-full px-4 text-sm font-medium text-shop-30-foreground/80 outline-none hover:text-shop-30-foreground focus-visible:ring-2 focus-visible:ring-ring',
-                item.active && 'bg-shop-10 font-semibold text-shop-10-foreground hover:text-shop-10-foreground',
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <Button
-          key={added}
-          onClick={openCart}
-          aria-label={`${words.cart.open}: ${cartText}`}
-          className={cn('bg-shop-10 text-shop-10-foreground hover:bg-shop-10/90 active:bg-shop-10/80', added > 0 && 'bump')}
-        >
-          <IconShoppingBag aria-hidden="true" />
-          <span className="tabular">{cartText}</span>
-        </Button>
-      </header>
-      {/* Phones and tablets: bottom tab bar with the cart bar floating above it. */}
+    <div data-keyboard={keyboardOpen ? 'open' : 'closed'}>
+      {/* Offline banner */}
+      <OfflineBanner text={WORDS.shared.offline} />
+
+      {/* Desktop navigation (1024 px and up) */}
+      <DesktopNav
+        name={shopName}
+        logoUrl={logoUrl}
+        baseHref={base}
+        items={tabBarItems}
+        areaPill={areaPillNode}
+        onOpenUpdates={() => {
+          setUpdatesOpen(true);
+        }}
+        updateCount={deviceTokens.length}
+        accountHref={`${base}/account`}
+        cartText={cartText}
+        cartCount={cart.count}
+        onOpenCart={openCart}
+        addedCount={added}
+      />
+
+      {/* Phone / Tablet header (under 1024 px) */}
+      <StoreTopBar
+        name={shopName}
+        logoUrl={logoUrl}
+        isOpen={block === null}
+        statusText={block?.short}
+        accountHref={`${base}/account`}
+        onOpenUpdates={() => {
+          setUpdatesOpen(true);
+        }}
+        updateCount={deviceTokens.length}
+        areaPill={areaPillNode}
+      />
+
+      {/* Phone / Tablet bottom bars */}
       <div className="lg:hidden">
-        {/* Checkout has its own Place order bar. */}
-        {pathname !== `${base}/checkout` && (
-          <CartBar key={added} text={cartText} onClick={openCart} aria-label={`${words.cart.open}: ${cartText}`} className={cn(added > 0 && 'bump')} />
+        {showCartBar && (
+          <CartBar
+            key={added}
+            text={cartText}
+            total={formatPeso(cart.subtotal)}
+            onClick={openCart}
+            aria-label={`${words.cart.open}: ${cartText}`}
+          />
         )}
-        <StoreTabBar label={words.nav.label} items={items} />
+        <StoreTabBar label={words.nav.label} items={tabBarItems} />
       </div>
-    </>
+
+      {/* Updates sheet from bell */}
+      <UpdatesSheet
+        slug={slug}
+        open={updatesOpen}
+        onOpenChange={setUpdatesOpen}
+      />
+    </div>
   );
 }

@@ -21,6 +21,7 @@ export {
   IconDownload,
   IconExternalLink,
   IconGift,
+  IconGiftFilled,
   IconGripVertical,
   IconHome,
   IconHomeFilled,

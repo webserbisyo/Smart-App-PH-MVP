@@ -20,7 +20,7 @@ const words = WORDS.storefront.account;
 const JOIN_BUTTON = 'bg-member text-member-foreground hover:bg-member-hover';
 
 /** Signed out, or signed in without joining this shop: what the stamp card is, and Join. */
-function JoinPrompt({ signedIn }: { signedIn: boolean }) {
+export function JoinPrompt({ signedIn }: { signedIn: boolean }) {
   const { openJoin } = useShop();
   const { rule, email } = useMember();
   return (

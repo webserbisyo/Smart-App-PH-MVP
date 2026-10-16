@@ -1,30 +1,38 @@
 import type { ComponentProps } from 'react';
 
-import { IconShoppingBag } from '@tabler/icons-react';
+import { IconChevronRight, IconShoppingBag } from '@tabler/icons-react';
 
 import { cn } from '#lib/utils';
 
 export interface CartBarProps extends Omit<ComponentProps<'button'>, 'children'> {
-  /** "Cart · 0 items ₱0". */
+  /** "Cart · 0 items ₱0" or formatted text. */
   text: string;
+  total?: string;
 }
 
-/** The floating cart bar above the storefront's tab bar (phones and tablets), in the shop's 10% colour. */
-export function CartBar({ text, className, ...props }: CartBarProps) {
+/** The floating cart bar 56 px high, 8 px above the floating tab bar (phones and tablets), in shop-10. */
+export function CartBar({ text, total, className, ...props }: CartBarProps) {
   return (
     <button
       type="button"
       className={cn(
-        'pressable fixed inset-x-0 z-30 mx-auto flex h-12 w-[calc(100%-2rem)] max-w-(--dock-max-width) items-center gap-3 rounded-full px-5',
-        'bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)]',
-        'bg-shop-10 text-left text-base font-semibold text-shop-10-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'pressable fixed inset-x-3 z-30 mx-auto flex h-14 w-[calc(100%-1.5rem)] max-w-110 items-center justify-between rounded-full px-5',
+        'bottom-[calc(5.25rem+env(safe-area-inset-bottom))]',
+        'bg-shop-10 text-left text-base font-semibold text-shop-10-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-ring hover:bg-shop-10-hover active:bg-shop-10/90',
         'keyboard-open:hidden',
         className,
       )}
       {...props}
     >
-      <IconShoppingBag aria-hidden="true" className="size-5 shrink-0" />
-      <span className="tabular min-w-0 flex-1 truncate">{text}</span>
+      <div className="flex min-w-0 items-center gap-2.5 truncate">
+        <IconShoppingBag aria-hidden="true" className="size-5 shrink-0" />
+        <span className="tabular truncate">{text}</span>
+      </div>
+      <div className="flex shrink-0 items-center gap-1 font-bold">
+        {total && <span className="tabular">{total}</span>}
+        <IconChevronRight aria-hidden="true" className="size-4 opacity-80" />
+      </div>
     </button>
   );
 }
+
