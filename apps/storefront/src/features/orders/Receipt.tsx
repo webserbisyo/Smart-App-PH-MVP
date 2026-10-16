@@ -103,6 +103,8 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
   const url = `${origin}/${shop.slug}/o/${order.token}`;
   const text = messengerOrderText(order, lines, url, now);
   const messenger = shop.settings.messengerUsername;
+  const isTransfer = TransferMethod.safeParse(order.paymentMethod).success;
+  const isProofActive = isTransfer && order.paymentStatus === 'unpaid' && order.status !== 'cancelled' && order.status !== 'expired';
 
   const save = () => {
     if ('share' in navigator) {
@@ -115,29 +117,31 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
   };
 
   return (
-    <article className="mx-auto flex w-full max-w-xl flex-col gap-6">
-      <header className={cn('flex flex-col items-center gap-1 rounded-xl p-6 text-center', justPlaced ? 'bg-shop-30 text-shop-30-foreground' : 'border')}>
+    <article className="mx-auto flex w-full max-w-[640px] flex-col gap-6">
+      <header className={cn('flex flex-col items-center gap-1.5 rounded-[var(--radius-card,1.25rem)] p-6 text-center shadow-xs', justPlaced ? 'border border-shop-10/20 bg-shop-30 text-shop-30-foreground' : 'border border-border/60 bg-shop-30')}>
         {justPlaced && (
           <p className="flex items-center gap-2 text-lg font-semibold">
             <IconCircleCheckFilled aria-hidden="true" className="size-6 text-success" />
             {words.placed}
           </p>
         )}
-        <h1 className="tabular text-5xl font-bold">
+        <h1 className="tabular text-5xl font-bold tracking-tight">
           <span className="sr-only">{words.title('')}</span>
           {ticket}
         </h1>
-        <p className="text-base">{typeLine(order)}</p>
+        <p className="text-base text-muted-foreground">{typeLine(order)}</p>
         <StatusBadge look={customerOrderLook(order.status)} className="mt-2" />
       </header>
 
-      <QRCode value={url} size={160} className="rounded-xl border p-4">
-        <QRCodeSkeleton />
-        <QRCodeImage alt={words.qrAlt} />
-        <p className="text-center text-sm text-muted-foreground">{words.qrHint}</p>
-      </QRCode>
+      <div className="flex flex-col items-center justify-center rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-6 shadow-xs">
+        <QRCode value={url} size={160} className="rounded-xl border border-border/40 bg-white p-3 shadow-xs">
+          <QRCodeSkeleton />
+          <QRCodeImage alt={words.qrAlt} />
+        </QRCode>
+        <p className="mt-3 text-center text-xs text-muted-foreground">{words.qrHint}</p>
+      </div>
 
-      <section aria-labelledby="receipt-status" className="flex flex-col gap-3">
+      <section aria-labelledby="receipt-status" className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <h2 id="receipt-status" className="text-lg font-semibold">
           {words.status}
         </h2>
@@ -146,7 +150,7 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         {order.status === 'expired' && <p className="text-sm text-muted-foreground">{words.expired}</p>}
       </section>
 
-      <section aria-labelledby="receipt-payment" className="flex flex-col gap-3">
+      <section aria-labelledby="receipt-payment" className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="receipt-payment" className="text-lg font-semibold">
             {words.payment}
@@ -159,17 +163,24 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         <PaymentPart receipt={receipt} />
       </section>
 
-      <OrderLines
-        lines={lines}
-        totals={{ subtotal: order.subtotal, deliveryFee: order.deliveryFee, discount: order.discountTotal, total: order.total }}
-        words={WORDS.order}
-      />
+      <div className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
+        <OrderLines
+          lines={lines}
+          totals={{ subtotal: order.subtotal, deliveryFee: order.deliveryFee, discount: order.discountTotal, total: order.total }}
+          words={WORDS.order}
+        />
+      </div>
 
       <ReceiptStamps order={order} />
 
       <div className="flex flex-col gap-2 print:hidden">
         {messenger !== null && (
-          <a href={messengerLink(messenger, text)} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'shop', size: 'lg' })}>
+          <a
+            href={messengerLink(messenger, text)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: isProofActive ? 'shopOutline' : 'shop', size: 'lg' })}
+          >
             <IconBrandMessenger aria-hidden="true" />
             {words.messenger}
           </a>
@@ -183,7 +194,7 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         </div>
       </div>
 
-      <InstallCard />
+      <InstallCard buttonVariant="outline" />
 
       <p className="text-center text-xs text-muted-foreground">{words.slip}</p>
     </article>

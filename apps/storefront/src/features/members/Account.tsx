@@ -5,38 +5,33 @@ import Link from 'next/link';
 import { stampRuleLine, WORDS } from '@smartapp/core';
 import { Alert, AlertDescription } from '@smartapp/ui/components/alert';
 import { Button } from '@smartapp/ui/components/button';
-import { ItemGroup } from '@smartapp/ui/components/item';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconGift, IconShieldCheck } from '@smartapp/ui/icons';
+import { IconGift, IconMail, IconPhone, IconShieldCheck } from '@smartapp/ui/icons';
 
 import { SignOutButton } from '../account/SignOutButton';
 import { InstallCard } from '../install/InstallCard';
-import { OrderSummaryRow } from '../orders/MyOrders';
 import { useShop } from '../shell/ShopProvider';
-import { MemberCard } from './MemberCard';
 import { SavedAddresses } from './SavedAddresses';
-import { StampHistory } from './StampHistory';
 import { useMember } from './use-member';
 
 const words = WORDS.storefront.account;
-const JOIN_BUTTON = 'bg-member text-member-foreground hover:bg-member-hover';
 
 /** Signed out, or signed in without joining this shop: what the stamp card is, and Join. */
 export function JoinPrompt({ signedIn }: { signedIn: boolean }) {
   const { openJoin } = useShop();
   const { rule, email } = useMember();
   return (
-    <section aria-labelledby="account-join" className="flex flex-col gap-3 rounded-xl border border-member/20 bg-member-soft p-4 text-member-soft-foreground">
+    <section aria-labelledby="account-join" className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-shop-10/20 bg-shop-30 p-5 shadow-xs">
       <h2 id="account-join" className="flex items-center gap-2 text-lg font-semibold">
-        <IconGift aria-hidden="true" className="size-5" />
+        <IconGift aria-hidden="true" className="size-5 text-shop-10" />
         {words.joinTitle}
       </h2>
-      {rule !== null && <p className="font-medium">{stampRuleLine(rule)}</p>}
-      <p className="text-sm">{signedIn ? words.notMember : rule !== null ? words.joinText : words.noCard}</p>
-      {signedIn && email !== null && <p className="text-sm">{words.signedInAs(email)}</p>}
+      {rule !== null && <p className="font-medium text-foreground">{stampRuleLine(rule)}</p>}
+      <p className="text-sm text-muted-foreground">{signedIn ? words.notMember : rule !== null ? words.joinText : words.noCard}</p>
+      {signedIn && email !== null && <p className="text-sm text-muted-foreground">{words.signedInAs(email)}</p>}
       <Button
         size="lg"
-        className={JOIN_BUTTON}
+        variant="shop"
         onClick={() => {
           openJoin(null);
         }}
@@ -48,14 +43,14 @@ export function JoinPrompt({ signedIn }: { signedIn: boolean }) {
 }
 
 /**
- * The account page (P4.6). Signed out: the stamp card explainer and Join. Member: the stamp card (confetti once per
- * reward), stamp history, orders from any device, saved addresses, Sign out. The install card on both.
- * `serverSignedIn` is the server's verified answer, used until the browser's session is read.
+ * The account page (P4.6 / SF1 Step 8):
+ * Formatted as a grouped list: profile, saved addresses, install, privacy, sign out.
+ * Stamps and rewards live on /[shop]/rewards.
  */
 export function Account({ serverSignedIn }: { serverSignedIn: boolean }) {
   const { storefront } = useShop();
   const member = useMember();
-  const { account, rule } = member;
+  const { account } = member;
   const slug = storefront.shop.slug;
   const signedIn = member.signedIn ?? serverSignedIn;
 
@@ -75,9 +70,9 @@ export function Account({ serverSignedIn }: { serverSignedIn: boolean }) {
   if (!signedIn || account === null) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold">{words.title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{words.title}</h1>
         <JoinPrompt signedIn={signedIn} />
-        <InstallCard />
+        <InstallCard buttonVariant="outline" />
         {signedIn && <SignOutButton />}
       </div>
     );
@@ -87,61 +82,77 @@ export function Account({ serverSignedIn }: { serverSignedIn: boolean }) {
     return (
       <div className="flex flex-col gap-6" aria-busy="true">
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-28 w-full rounded-[var(--radius-card,1.25rem)]" />
+        <Skeleton className="h-40 w-full rounded-[var(--radius-card,1.25rem)]" />
+        <Skeleton className="h-20 w-full rounded-[var(--radius-card,1.25rem)]" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">{account.customer.name}</h1>
-        {member.email !== null && <p className="text-sm text-muted-foreground">{words.signedInAs(member.email)}</p>}
-      </header>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-bold tracking-tight">{words.title}</h1>
 
-      {rule !== null && (
-        <section aria-labelledby="account-stamps" className="flex flex-col gap-3">
-          <h2 id="account-stamps" className="sr-only">
-            {WORDS.shared.stamps.title}
-          </h2>
-          <MemberCard slug={slug} account={account} rule={rule} />
-          <p className="text-sm text-muted-foreground">{stampRuleLine(rule)}</p>
-          <h3 className="font-semibold">{words.history}</h3>
-          <StampHistory account={account} />
-        </section>
-      )}
-
-      <section aria-labelledby="account-orders" className="flex flex-col gap-3">
-        <h2 id="account-orders" className="text-lg font-semibold">
-          {words.orders}
-        </h2>
-        {account.orders.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{words.ordersEmpty}</p>
-        ) : (
-          <ItemGroup className="gap-2">
-            {account.orders.map((order) => (
-              <OrderSummaryRow key={order.id} slug={slug} order={order} />
-            ))}
-          </ItemGroup>
-        )}
+      {/* 1. Profile */}
+      <section aria-labelledby="profile-heading" className="flex items-center gap-4 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-shop-10 text-shop-10-foreground font-bold text-xl shadow-xs">
+          {account.customer.name.slice(0, 1).toUpperCase()}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <h2 id="profile-heading" className="text-lg font-bold truncate">
+              {account.customer.name}
+            </h2>
+            <span className="rounded-full bg-shop-10-soft px-2 py-0.5 text-xs font-semibold text-shop-10">
+              Member
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+            {member.email && (
+              <span className="flex items-center gap-1.5 truncate">
+                <IconMail className="size-3.5 shrink-0" />
+                {member.email}
+              </span>
+            )}
+            {account.customer.phone && (
+              <span className="flex items-center gap-1.5">
+                <IconPhone className="size-3.5 shrink-0" />
+                {account.customer.phone}
+              </span>
+            )}
+          </div>
+        </div>
       </section>
 
-      <SavedAddresses slug={slug} account={account} />
+      {/* 2. Saved Addresses */}
+      <div className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
+        <SavedAddresses slug={slug} account={account} />
+      </div>
 
-      <InstallCard />
+      {/* 3. Install App */}
+      <InstallCard buttonVariant="outline" />
 
-      <div className="flex items-center justify-between rounded-xl border border-border/60 bg-card p-3.5 text-sm shadow-xs">
-        <div className="flex items-center gap-2.5">
+      {/* 4. Privacy Notice */}
+      <div className="flex items-center justify-between rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-4 shadow-xs">
+        <div className="flex items-center gap-3">
           <IconShieldCheck className="size-5 text-shop-10" />
-          <span className="font-medium">Data Privacy Notice</span>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold">Data Privacy Notice</span>
+            <span className="text-xs text-muted-foreground">How {storefront.shop.name} protects your data</span>
+          </div>
         </div>
-        <Link href={`/${slug}/privacy`} className="text-xs font-semibold text-shop-10 underline underline-offset-4">
+        <Link
+          href={`/${slug}/privacy`}
+          className="text-xs font-semibold text-shop-10 underline underline-offset-4 hover:opacity-80"
+        >
           Read
         </Link>
       </div>
 
-      <SignOutButton />
+      {/* 5. Sign Out */}
+      <div className="pt-2">
+        <SignOutButton />
+      </div>
     </div>
   );
 }

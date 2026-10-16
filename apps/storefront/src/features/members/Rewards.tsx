@@ -75,7 +75,7 @@ export function Rewards() {
 
       <MemberCard slug={slug} account={account} rule={rule} />
 
-      <section aria-labelledby="rewards-history" className="flex flex-col gap-3">
+      <section aria-labelledby="rewards-history" className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <h2 id="rewards-history" className="text-lg font-semibold">{words.history}</h2>
         <StampHistory account={account} />
       </section>

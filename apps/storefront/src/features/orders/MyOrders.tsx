@@ -25,7 +25,11 @@ const words = WORDS.storefront.orders;
 export function OrderSummaryRow({ slug, order }: { slug: string; order: Order }) {
   const ticket = ticketNo(order.orderNo);
   return (
-    <Item variant="outline" render={<Link href={`/${slug}/o/${order.token}`} aria-label={words.open(ticket)} />}>
+    <Item
+      variant="outline"
+      className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-4 transition-all hover:border-shop-10/40 hover:shadow-xs"
+      render={<Link href={`/${slug}/o/${order.token}`} aria-label={words.open(ticket)} />}
+    >
       <ItemContent>
         <ItemTitle className="tabular text-base font-bold">{ticket}</ItemTitle>
         <ItemDescription>
@@ -43,7 +47,7 @@ export function OrderSummaryRow({ slug, order }: { slug: string; order: Order })
 /** One order on this phone. A link that is no longer an order is left out. */
 function OrderRow({ slug, token }: { slug: string; token: string }) {
   const { data, isPending } = useOrder(token);
-  if (isPending) return <Skeleton className="h-16 w-full" />;
+  if (isPending) return <Skeleton className="h-20 w-full rounded-[var(--radius-card,1.25rem)]" />;
   if (!data) return null;
   return <OrderSummaryRow slug={slug} order={data.order} />;
 }
@@ -63,12 +67,12 @@ export function MyOrders() {
   const none = accountOrders.length === 0 && tokens.length === 0;
 
   return (
-    <section className="mx-auto flex w-full max-w-xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold">{words.title}</h1>
+    <section className="mx-auto flex w-full max-w-[640px] flex-col gap-6">
+      <h1 className="text-2xl font-bold tracking-tight">{words.title}</h1>
       {!hydrated ? (
-        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-20 w-full rounded-[var(--radius-card,1.25rem)]" />
       ) : none ? (
-        <Empty>
+        <Empty className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-8 shadow-xs">
           <EmptyHeader>
             <EmptyMedia>
               <img src={FLUENT_ICONS['shopping-bags'].url} alt="" className="size-16" />
@@ -76,13 +80,13 @@ export function MyOrders() {
             <EmptyTitle>{words.empty}</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
-            <Link href={`/${slug}/menu`} className={cn(buttonVariants({ variant: 'outline' }))}>
+            <Link href={`/${slug}/menu`} className={cn(buttonVariants({ variant: 'shop' }))}>
               {WORDS.storefront.cart.seeCatalog(catalogLabel)}
             </Link>
           </EmptyContent>
         </Empty>
       ) : (
-        <ItemGroup className="gap-2">
+        <ItemGroup className="gap-3">
           {accountOrders.map((order) => (
             <OrderSummaryRow key={order.id} slug={slug} order={order} />
           ))}

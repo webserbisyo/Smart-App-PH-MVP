@@ -56,7 +56,7 @@ const CLOCK_MS = 60_000;
 
 function CheckoutSkeleton() {
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-6" aria-busy="true">
+    <div className="mx-auto flex w-full max-w-[640px] flex-col gap-6" aria-busy="true">
       <Skeleton className="h-8 w-40" />
       <Skeleton className="h-11 w-full" />
       <Skeleton className="h-40 w-full" />
@@ -207,16 +207,16 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         void submit(event);
       }}
       // The Place order bar rides above the tab bar on phones (56 px) and at the bottom on desktop.
-      className="mx-auto -mb-20 flex w-full max-w-xl flex-col gap-8 [--above-dock:calc(3.5rem+env(safe-area-inset-bottom))] lg:mb-0 lg:[--above-dock:0px]"
+      className="mx-auto -mb-20 flex w-full max-w-[640px] flex-col gap-8 [--above-dock:calc(3.5rem+env(safe-area-inset-bottom))] lg:mb-0 lg:[--above-dock:0px]"
     >
-      <h1 className="text-2xl font-semibold">{words.title}</h1>
+      <h1 className="text-2xl font-bold tracking-tight">{words.title}</h1>
       {block && (
         <Alert>
           <AlertDescription>{block.alert}</AlertDescription>
         </Alert>
       )}
 
-      <FieldSet>
+      <FieldSet className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <FieldLegend className="text-lg font-semibold">{words.how}</FieldLegend>
         <FieldGroup>
           <ToggleGroup
@@ -296,7 +296,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         </FieldGroup>
       </FieldSet>
 
-      <FieldSet>
+      <FieldSet className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <FieldLegend className="text-lg font-semibold">{words.who}</FieldLegend>
         <FieldGroup>
           <Field data-invalid={errors.name !== undefined}>
@@ -335,7 +335,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         </FieldGroup>
       </FieldSet>
 
-      <FieldSet>
+      <FieldSet className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <FieldLegend className="text-lg font-semibold">{words.pay}</FieldLegend>
         {methods.length === 0 ? (
           <Alert variant="destructive">
@@ -370,7 +370,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         {transfer?.success && <TransferAccounts method={transfer.data} amount={total} />}
       </FieldSet>
 
-      <section className="flex flex-col gap-3" aria-labelledby="checkout-summary">
+      <section className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs" aria-labelledby="checkout-summary">
         <h2 id="checkout-summary" className="text-lg font-semibold">
           {words.summary}
         </h2>
@@ -417,28 +417,30 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         )}
       </section>
 
-      <Controller
-        control={form.control}
-        name="privacy"
-        render={({ field }) => (
-          <Field orientation="horizontal" data-invalid={errors.privacy !== undefined} className="items-start">
-            <Checkbox id="privacy" checked={field.value} onCheckedChange={field.onChange} aria-invalid={errors.privacy !== undefined} className={cn('mt-0.5', PICKED)} />
-            <div className="flex flex-col gap-1">
-              <FieldLabel htmlFor="privacy" className="font-normal">
-                {words.privacy(shop.name)}{' '}
-                <Link
-                  href={`/${shop.slug}/privacy`}
-                  target="_blank"
-                  className="font-medium underline underline-offset-4 hover:text-shop-10"
-                >
-                  Privacy notice
-                </Link>
-              </FieldLabel>
-              <FieldError>{errors.privacy?.message}</FieldError>
-            </div>
-          </Field>
-        )}
-      />
+      <div className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-4 shadow-xs">
+        <Controller
+          control={form.control}
+          name="privacy"
+          render={({ field }) => (
+            <Field orientation="horizontal" data-invalid={errors.privacy !== undefined} className="items-start">
+              <Checkbox id="privacy" checked={field.value} onCheckedChange={field.onChange} aria-invalid={errors.privacy !== undefined} className={cn('mt-0.5', PICKED)} />
+              <div className="flex flex-col gap-1">
+                <FieldLabel htmlFor="privacy" className="font-normal">
+                  {words.privacy(shop.name)}{' '}
+                  <Link
+                    href={`/${shop.slug}/privacy`}
+                    target="_blank"
+                    className="font-medium underline underline-offset-4 hover:text-shop-10"
+                  >
+                    Privacy notice
+                  </Link>
+                </FieldLabel>
+                <FieldError>{errors.privacy?.message}</FieldError>
+              </div>
+            </Field>
+          )}
+        />
+      </div>
 
       <StickyActionBar aboveDock className="flex-col items-stretch gap-2">
         {shopError !== null && (
