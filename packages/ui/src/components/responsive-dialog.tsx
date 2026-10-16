@@ -91,6 +91,7 @@ function ResponsiveDialogContent({
   children,
   showCloseButton,
 }: {
+  /** Lands on the scroll area: padding, gap and `sm:max-w-*`. Height and scrolling are handled here. */
   className?: string
   children?: React.ReactNode
   /** Dialog only: the corner close button (sheets close by swiping down or tapping outside). */
@@ -104,16 +105,31 @@ function ResponsiveDialogContent({
       </DialogContent>
     )
   }
+  // One scroll area: the drawer popup only sizes itself (it must never scroll, or its swipe bleed adds a sideways
+  // scrollbar); this body scrolls, `className` (padding, gap, width) lands on it, and the header and footer stick.
+  // The home-bar space sits on the popup, outside the scroll area, so a stuck footer has nothing showing under it.
   return (
-    <DrawerContent className={cn(shape === "sheet" && "pb-safe", className)}>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
+    <DrawerContent className={cn(shape === "sheet" && "pb-safe")}>
+      <div
+        data-slot="responsive-dialog-body"
+        className={cn(
+          "mx-auto flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain",
+          className
+        )}
+      >
+        {children}
+      </div>
     </DrawerContent>
   )
 }
 
 function ResponsiveDialogHeader(props: React.ComponentProps<"div">) {
   const shape = useShape("ResponsiveDialogHeader")
-  return shape === "dialog" ? <DialogHeader {...props} /> : <DrawerHeader {...props} />
+  return shape === "dialog" ? (
+    <DialogHeader {...props} />
+  ) : (
+    <DrawerHeader {...props} className={cn("sticky top-0 z-10 bg-popover pb-2", props.className)} />
+  )
 }
 
 function ResponsiveDialogFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -121,7 +137,7 @@ function ResponsiveDialogFooter({ className, ...props }: React.ComponentProps<"d
   return shape === "dialog" ? (
     <DialogFooter className={className} {...props} />
   ) : (
-    <DrawerFooter className={cn("mt-auto", className)} {...props} />
+    <DrawerFooter className={cn("sticky bottom-0 z-10 mt-auto bg-popover pt-4", className)} {...props} />
   )
 }
 

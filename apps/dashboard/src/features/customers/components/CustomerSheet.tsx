@@ -98,7 +98,7 @@ export function CustomerSheet({ customer, onClose }: { customer: CustomerRow | n
         if (!open) onClose();
       }}
     >
-      <ResponsiveDialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+      <ResponsiveDialogContent className="sm:max-w-lg">
         {customer ? (
           <>
             <ResponsiveDialogHeader>

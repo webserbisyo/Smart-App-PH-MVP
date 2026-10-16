@@ -61,8 +61,8 @@ function ProofPhoto({ path, alt }: { path: string; alt: string }) {
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>{words.proof}</ResponsiveDialogTitle>
           </ResponsiveDialogHeader>
-          <div className="overflow-auto px-4 pb-4 sm:px-0">
-            <img src={url.data} alt={alt} className="mx-auto max-h-[75vh] w-auto" />
+          <div className="px-4 pb-4 sm:px-0">
+            <img src={url.data} alt={alt} className="mx-auto max-h-[75dvh] w-auto max-w-full" />
           </div>
         </ResponsiveDialogContent>
       </ResponsiveDialog>

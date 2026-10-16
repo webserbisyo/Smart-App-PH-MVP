@@ -11,6 +11,7 @@ Stage 0, way of working
 - [x] A0.1 Rules and docs (AGENTS.md, PROGRESS, CHANGELOG, PR template)
 - [ ] A0.2 Staging database (by hand M1 to M4, then the prompt)
 - [ ] A0.3 Test harness and small fixes
+  - Fix: sheets and popups own their height and one scroll area (cart sheet cut off, double and sideways scrollbars).
 
 Stage 1, storefront v2 (`docs/storefront-v2.md`; replaces A1 to A12, decision SF-1)
 - [ ] SF1 Foundation and redesign (shell, palette, every page, privacy, icons, splash, brand editor)

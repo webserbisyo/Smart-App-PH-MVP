@@ -5,7 +5,7 @@ Track A, storefront v2 prompt 1 of 4. Replaces pages A1 to A10 of Blueprint A (A
 To run it, paste this one line into Antigravity:
 `Read @AGENTS.md and @docs/prompts/SF1-storefront-foundation-redesign.md and do exactly that prompt.`
 
-**Runs after** the PR from the thread "Fix cut-off sheets and double scroll" is merged into `dev` (sheets stay inside
+**Runs after** the overlay fix (sheets stay inside
 the screen with one scroll area). If that PR is not merged yet, stop and say so.
 
 ## Read first
