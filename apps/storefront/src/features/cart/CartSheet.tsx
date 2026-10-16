@@ -40,7 +40,7 @@ export function CartSheet({ open, onOpenChange }: { open: boolean; onOpenChange:
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange} desktop="right">
-      <ResponsiveDialogContent className="max-h-[92dvh] gap-4 overflow-y-auto px-4 pb-0 sm:max-w-md">
+      <ResponsiveDialogContent className="gap-4 px-4 pb-0 sm:max-w-md">
         <ResponsiveDialogHeader className="px-0 text-left">
           <ResponsiveDialogTitle>{words.title}</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
