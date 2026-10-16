@@ -373,7 +373,7 @@ Spec: `docs/storefront-v2.md`. Prompts: `docs/prompts/SF1` to `SF4`.
   reports keep the item), custom prize (title, picture, description; the member claims it with a code, stamps are
   taken at the claim and returned if the owner cancels it). Stamps stay server-awarded. No stamps for reviews.
 - SF-8: Location at launch is the shop's own delivery zones. "Use my location" only suggests the nearest zone that
-  has a centre point. No map API or address search.
+  has a centre point. No map API or address search. Delivery pins are added by SF-26.
 - SF-9: Delivery at launch: the owner books the rider in their own app, then records the provider (Own rider,
   Lalamove, Grab, Other), the tracking link (Lalamove and Grab links must be on their own hosts) and an optional rider
   name and phone. The customer sees "Track your delivery". The Lalamove API is after launch.
@@ -413,3 +413,11 @@ Spec: `docs/storefront-v2.md`. Prompts: `docs/prompts/SF1` to `SF4`.
 - SF-25: The product editor takes several photos in one pick (`PhotoGallery`, up to 5): each one is cropped,
   compressed on the phone (`IMAGE_SIZES.photo` and `thumb`) and uploaded at most 2 at a time, with its own real percent
   plus one total bar and "x of y uploaded" (summary row from ReUI `c-file-upload-5`). Built in SF3 step 2.
+- SF-26: Delivery pins with the phone's own location (browser Geolocation API; free, no map service, no API key).
+  Checkout and saved addresses get "Use my current location", asked only on a tap with one line of consent copy; the
+  pin is optional, removable, sent only with that order or saved with an address the member saves, and never tracked
+  in the background. The shop gets one pin set by the owner (current location or a pasted Google Maps link). Orders
+  store the pin; the order, the receipt and the Messenger text carry `https://www.google.com/maps?q=<lat>,<lng>`. The
+  owner sees the straight-line (haversine) km from the shop, always labelled straight line; zone fees stay as they
+  are. Columns are nullable pairs (SF2 step 5); screens in SF3 step 4. Map picker, autocomplete, road distance and
+  fees by distance wait for the Lalamove API (SF-24).
