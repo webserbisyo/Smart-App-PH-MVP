@@ -71,3 +71,145 @@ export function themeContrastIssues(colors: ThemeColors): ContrastIssue[] {
   if (contrastRatio(colors.accent, colors.primary) < MIN_TEXT_CONTRAST) issues.push('buttonsOnBackground');
   return issues;
 }
+
+export interface OklchColor {
+  /** Lightness: 0 (black) to 1 (white). */
+  l: number;
+  /** Chroma: saturation distance from neutral axis (>= 0). */
+  c: number;
+  /** Hue: angle in degrees [0, 360). */
+  h: number;
+}
+
+function srgbToLinear(c: number): number {
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+function linearToSrgb(c: number): number {
+  return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.max(0, c) ** (1 / 2.4) - 0.055;
+}
+
+function linearRgbToOklab(r: number, g: number, b: number): [number, number, number] {
+  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+
+  const l_ = Math.cbrt(l);
+  const m_ = Math.cbrt(m);
+  const s_ = Math.cbrt(s);
+
+  const L = 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_;
+  const a = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_;
+  const bOklab = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_;
+
+  return [L, a, bOklab];
+}
+
+function oklabToLinearRgb(L: number, a: number, bOklab: number): [number, number, number] {
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * bOklab;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * bOklab;
+  const s_ = L - 0.0894841775 * a - 1.291485548 * bOklab;
+
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+
+  const r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  const g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  const b = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+
+  return [r, g, b];
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    throw new Error(`Not a #RRGGBB colour: ${hex}`);
+  }
+  const r = Number.parseInt(hex.slice(1, 3), 16) / 255;
+  const g = Number.parseInt(hex.slice(3, 5), 16) / 255;
+  const b = Number.parseInt(hex.slice(5, 7), 16) / 255;
+  return [r, g, b];
+}
+
+/** Converts a `#RRGGBB` hex string to OKLCH. */
+export function toOklch(hex: string): OklchColor {
+  const [r, g, b] = hexToRgb(hex);
+  const [L, a, bOklab] = linearRgbToOklab(srgbToLinear(r), srgbToLinear(g), srgbToLinear(b));
+  const c = Math.sqrt(a * a + bOklab * bOklab);
+  let h = (Math.atan2(bOklab, a) * 180) / Math.PI;
+  if (h < 0) h += 360;
+  if (c < 1e-6) h = 0;
+  return { l: L, c, h };
+}
+
+/**
+ * Converts an OKLCH color to a `#RRGGBB` hex string.
+ * Applies CSS Color 4 chroma reduction gamut mapping if coordinates fall outside sRGB.
+ */
+export function fromOklch(oklch: OklchColor): string {
+  const l = Math.max(0, Math.min(1, oklch.l));
+  const rad = (oklch.h * Math.PI) / 180;
+  let a = oklch.c * Math.cos(rad);
+  let bOklab = oklch.c * Math.sin(rad);
+  let [rLin, gLin, bLin] = oklabToLinearRgb(l, a, bOklab);
+
+  const outOfGamut = rLin < 0 || rLin > 1 || gLin < 0 || gLin > 1 || bLin < 0 || bLin > 1;
+  if (outOfGamut) {
+    let low = 0;
+    let high = oklch.c;
+    for (let i = 0; i < 20; i += 1) {
+      const mid = (low + high) / 2;
+      const testA = mid * Math.cos(rad);
+      const testB = mid * Math.sin(rad);
+      const [tr, tg, tb] = oklabToLinearRgb(l, testA, testB);
+      if (tr >= -1e-4 && tr <= 1 + 1e-4 && tg >= -1e-4 && tg <= 1 + 1e-4 && tb >= -1e-4 && tb <= 1 + 1e-4) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+    a = low * Math.cos(rad);
+    bOklab = low * Math.sin(rad);
+    [rLin, gLin, bLin] = oklabToLinearRgb(l, a, bOklab);
+  }
+
+  const r = Math.min(255, Math.max(0, Math.round(linearToSrgb(rLin) * 255)));
+  const g = Math.min(255, Math.max(0, Math.round(linearToSrgb(gLin) * 255)));
+  const b = Math.min(255, Math.max(0, Math.round(linearToSrgb(bLin) * 255)));
+  const hex = [r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('');
+  return `#${hex.toUpperCase()}`;
+}
+
+/**
+ * Builds the 60/30/10 shop palette from a single brand color (docs/storefront-v2.md section 2).
+ * 60% background: brand hue at OKLCH L 0.975, C 0.012.
+ * 30% cards/sheets: brand hue at OKLCH L 0.995, C 0.004.
+ * 10% buttons/highlights: brand color, darkened in OKLCH until white text and background contrast pass 4.5:1.
+ */
+export function shopPalette(brandHex: string): ThemeColors {
+  const oklch = toOklch(brandHex);
+  const primary = fromOklch({ l: 0.975, c: 0.012, h: oklch.h });
+  const secondary = fromOklch({ l: 0.995, c: 0.004, h: oklch.h });
+
+  let accent = brandHex.toUpperCase();
+  let l = oklch.l;
+  while (l > 0.01 && (contrastRatio(accent, '#ffffff') < MIN_TEXT_CONTRAST || contrastRatio(accent, primary) < MIN_TEXT_CONTRAST)) {
+    l -= 0.005;
+    accent = fromOklch({ l, c: oklch.c, h: oklch.h });
+  }
+
+  return { primary, secondary, accent };
+}
+
+/** Soft fill for selected chips and subtle badges: 10% accent color at OKLCH L 0.93. */
+export function softOf(hex: string): string {
+  const oklch = toOklch(hex);
+  return fromOklch({ l: 0.93, c: Math.min(oklch.c, 0.04), h: oklch.h });
+}
+
+/** Hover fill for buttons and pressable surfaces: 10% accent color darkened by 0.06 L. */
+export function hoverOf(hex: string): string {
+  const oklch = toOklch(hex);
+  return fromOklch({ l: Math.max(0, oklch.l - 0.06), c: oklch.c, h: oklch.h });
+}
+
