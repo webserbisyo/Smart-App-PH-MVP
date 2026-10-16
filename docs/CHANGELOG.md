@@ -5,6 +5,8 @@ under the new version and tags it on `main`.
 
 ## Unreleased
 
+- docs(sf): storefront v2 spec (`docs/storefront-v2.md`), prompts SF1 to SF4, decisions SF-1 to SF-24, post-launch
+  backlog in PROGRESS.
 - fix(ui): sheets, drawers and dialogs size to the screen with one scroll area, header and footer pinned, no
   sideways scrollbar (storefront cart was cut off with two scrollbars).
 - docs(a0.1): local Supabase in Docker (`pnpm local`, `docs/local-dev.md`), CLI link allowed but never written to,

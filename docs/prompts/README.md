@@ -26,10 +26,24 @@ and the template in `docs/build-plan.md`; the table below is the finished P1 to 
 | P4.6 | `P4.6-members-and-stamps.md` | member sign-in, member card, my orders | yes |
 | P5.6 | `P5.6-home-reports-and-demo-reset.md` | Home numbers, reports, CSV, `demo_reset` | no |
 | P4.7 | `P4.7-home-customers-reports.md` | dashboard Home, Customers, Reports | yes |
-| P6 | later | speed, PWA polish, production, launch | |
+| P6 | replaced by Track A in `docs/blueprints/` and storefront v2 below | | |
 
 No mock data: each P4 step builds on the real API from the P5 step before it. The names every screen may call are
 in `docs/api-surface.md`.
+
+## Storefront v2 (Track A, from 2026-10-16)
+
+Run in this order, one at a time, each merged before the next. Spec: `docs/storefront-v2.md`. They replace
+Blueprint A pages A1 to A12 (decision SF-1).
+
+| # | Prompt | What you get | Database? |
+| --- | --- | --- | --- |
+| SF1 | `SF1-storefront-foundation-redesign.md` | new shell, 60/30/10 palette, every storefront page redesigned, 404/error/privacy pages, shop icons and splash, brand editor | no |
+| SF2 | `SF2-storefront-database.md` | reward kinds, banners, announcement, about, order messages, delivery info, ratings, push tables | yes (additive; the merge deploys it live) |
+| SF3 | `SF3-storefront-features-and-demo-content.md` | those features on screen, push, offline page, SEO, cached pages, real demo photos | demo functions only |
+| SF4 | `SF4-storefront-smoke-tests-and-docs.md` | Playwright smoke at 390 and 1280, CI job, docs, repo description | no |
+
+SF1 starts only after the "Fix cut-off sheets and double scroll" PR is merged.
 
 ## Moved to P6 (approved by the founder 2026-10-11, `docs/decisions.md` P5-6 and P5-15)
 
