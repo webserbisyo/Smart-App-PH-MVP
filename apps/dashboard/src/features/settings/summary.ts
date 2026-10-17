@@ -16,6 +16,12 @@ export function matchingPreset(colors: { primary: string; secondary: string; acc
   );
 }
 
+export function homeSummary(settings: ShopSettings, banners: readonly { isActive: boolean }[]): string {
+  const activeBanners = banners.filter((b) => b.isActive).length;
+  const hasAnnouncement = Boolean(settings.announcementText?.trim());
+  return words.summary.home(activeBanners, hasAnnouncement);
+}
+
 export function lookSummary(name: string, settings: ShopSettings): string {
   const preset = matchingPreset({ primary: settings.colorPrimary, secondary: settings.colorSecondary, accent: settings.colorAccent });
   return words.summary.look(name, preset ? words.look.presetNames[preset] : words.summary.customColors);

@@ -1,8 +1,10 @@
 import type { NextConfig } from 'next';
 
-// Shop images come from the project's public `shop-media` bucket only.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const mediaPattern = supabaseUrl ? [new URL('/storage/v1/object/public/shop-media/**', supabaseUrl)] : [];
+const mediaPattern = [
+  ...(supabaseUrl ? [new URL('/storage/v1/object/public/shop-media/**', supabaseUrl)] : []),
+  new URL('https://i.ytimg.com/**'),
+];
 
 const config: NextConfig = {
   // The shared packages export TypeScript source.

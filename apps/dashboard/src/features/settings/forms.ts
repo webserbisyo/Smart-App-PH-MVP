@@ -321,3 +321,61 @@ export function stampRuleFromForm(tenantId: string, form: StampsForm): StampRule
     rewardLabel: rewardLabel(rewardAmount),
   };
 }
+
+// --- home page -------------------------------------------------------------------------------------
+
+export const BannerItemForm = z.object({
+  id: z.string().nullable(),
+  kind: z.enum(['image', 'youtube']),
+  imagePath: z.string().nullable(),
+  youtubeId: z.string().nullable(),
+  title: z.string().max(60),
+  linkUrl: z.string().nullable().optional(),
+  sort: z.number().int(),
+  isActive: z.boolean(),
+});
+export type BannerItemForm = z.infer<typeof BannerItemForm>;
+
+export const HomeForm = z.object({
+  announcementText: z.string().max(160),
+  announcementTone: z.enum(['info', 'promo', 'warning']),
+  announcementEndsAt: z.string().nullable(),
+  aboutText: z.string().max(600),
+  googleReviewUrl: z.string().nullable().optional(),
+  banners: z.array(BannerItemForm).max(3),
+});
+export type HomeForm = z.infer<typeof HomeForm>;
+
+export function homeFromSettings(settings: ShopSettings, banners: readonly { id: string | null; kind: 'image' | 'youtube'; imagePath: string | null; youtubeId: string | null; title: string; linkUrl: string | null; sort: number; isActive: boolean }[]): HomeForm {
+  return {
+    announcementText: settings.announcementText ?? '',
+    announcementTone: settings.announcementTone ?? 'info',
+    announcementEndsAt: settings.announcementEndsAt ? settings.announcementEndsAt.slice(0, 10) : null,
+    aboutText: settings.aboutText ?? '',
+    googleReviewUrl: settings.googleReviewUrl ?? '',
+    banners: banners.map((b, idx) => ({
+      id: b.id,
+      kind: b.kind,
+      imagePath: b.imagePath,
+      youtubeId: b.youtubeId,
+      title: b.title,
+      linkUrl: b.linkUrl ?? '',
+      sort: idx,
+      isActive: b.isActive,
+    })),
+  };
+}
+
+export function homePatch(form: HomeForm): ShopSettingsPatch {
+  const announcementText = form.announcementText.trim();
+  const aboutText = form.aboutText.trim();
+  const googleReviewUrl = form.googleReviewUrl?.trim();
+
+  return {
+    announcementText: announcementText === '' ? null : announcementText,
+    announcementTone: form.announcementTone,
+    announcementEndsAt: form.announcementEndsAt && form.announcementEndsAt !== '' ? new Date(form.announcementEndsAt).toISOString() : null,
+    aboutText: aboutText === '' ? null : aboutText,
+    googleReviewUrl: googleReviewUrl && googleReviewUrl !== '' ? googleReviewUrl : null,
+  };
+}

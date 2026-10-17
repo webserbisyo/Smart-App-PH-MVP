@@ -1,16 +1,16 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
-import { useBusinessHours, useClosures, usePaymentAccounts, useShopSettings, useStampRule } from '@smartapp/api';
+import { useBusinessHours, useClosures, usePaymentAccounts, useShopBanners, useShopSettings, useStampRule } from '@smartapp/api';
 import { shopUrl, WORDS } from '@smartapp/core';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@smartapp/ui/components/item';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconAddressBook, IconChevronRight, IconClock, IconCreditCard, IconGift, IconPalette, IconTruckDelivery } from '@smartapp/ui/icons';
+import { IconAddressBook, IconChevronRight, IconClock, IconCreditCard, IconGift, IconHome, IconPalette, IconTruckDelivery } from '@smartapp/ui/icons';
 import { CopyButton } from '@smartapp/ui/patterns/CopyButton';
 
 import { useShop } from '../../../app/shop';
 import { SettingsLoader } from '../components/SettingsPage';
-import { hoursSummary, infoSummary, lookSummary, orderTypesSummary, paymentsSummary, stampsSummary } from '../summary';
+import { homeSummary, hoursSummary, infoSummary, lookSummary, orderTypesSummary, paymentsSummary, stampsSummary } from '../summary';
 
 const words = WORDS.dashboard.settings;
 
@@ -33,6 +33,7 @@ function SectionLink({ path, icon, title, summary }: { path: string; icon: React
 export default function SettingsScreen() {
   const shop = useShop();
   const settings = useShopSettings(shop.id);
+  const banners = useShopBanners(shop.id);
   const hours = useBusinessHours(shop.id);
   const closures = useClosures(shop.id);
   const accounts = usePaymentAccounts(shop.id);
@@ -41,7 +42,7 @@ export default function SettingsScreen() {
   const data = settings.data;
 
   return (
-    <SettingsLoader queries={[settings]}>
+    <SettingsLoader queries={[settings, banners]}>
       {() => (
         <>
           <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
@@ -53,6 +54,7 @@ export default function SettingsScreen() {
             <p className="text-sm text-muted-foreground">{words.shopLinkHint}</p>
           </div>
           <ItemGroup className="gap-2">
+            <SectionLink path="settings/home" icon={<IconHome />} title={words.sections.home} summary={data && banners.data ? homeSummary(data, banners.data) : null} />
             <SectionLink path="settings/look" icon={<IconPalette />} title={words.sections.look} summary={data ? lookSummary(shop.name, data) : null} />
             <SectionLink path="settings/info" icon={<IconAddressBook />} title={words.sections.info} summary={data ? infoSummary(data) : null} />
             <SectionLink

@@ -17,7 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@smartapp/ui/components/ale
 import { Button, buttonVariants } from '@smartapp/ui/components/button';
 import { QRCode, QRCodeImage, QRCodeSkeleton } from '@smartapp/ui/components/qr-code';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconBrandMessenger, IconCircleCheckFilled, IconDownload, IconReceiptOff } from '@smartapp/ui/icons';
+import { IconBrandMessenger, IconCircleCheckFilled, IconDownload, IconExternalLink, IconReceiptOff, IconStar } from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { CopyButton } from '@smartapp/ui/patterns/CopyButton';
 import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
@@ -174,6 +174,18 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
       <ReceiptStamps order={order} />
 
       <div className="flex flex-col gap-2 print:hidden">
+        {order.status === 'completed' && shop.settings.googleReviewUrl && (
+          <a
+            href={shop.settings.googleReviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: 'outline', size: 'lg', className: 'border-warning/30 bg-warning/5 text-foreground hover:bg-warning/10' })}
+          >
+            <IconStar aria-hidden="true" className="size-5 text-warning fill-warning" />
+            <span className="font-semibold">{words.reviewOnGoogle}</span>
+            <IconExternalLink aria-hidden="true" className="size-4 ml-auto text-muted-foreground" />
+          </a>
+        )}
         {messenger !== null && (
           <a
             href={messengerLink(messenger, text)}

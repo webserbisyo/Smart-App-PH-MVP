@@ -22,6 +22,8 @@ export interface ShopInfoListProps {
   address?: string | null | undefined;
   /** City or municipality. */
   city?: string | null | undefined;
+  /** About text (story, description). */
+  about?: string | null | undefined;
   /** Facebook page or profile URL. */
   facebookUrl?: string | null | undefined;
   /** Facebook Messenger username. */
@@ -41,7 +43,7 @@ const WEEKDAYS = [
 
 /**
  * ShopInfoList pattern:
- * Shows hours for the week with today bold, phone as tel:,
+ * Shows about description, hours for the week with today bold, phone as tel:,
  * address, Google Maps link, Facebook, Messenger.
  * Rows are hidden when empty.
  */
@@ -50,6 +52,7 @@ export function ShopInfoList({
   phone,
   address,
   city,
+  about,
   facebookUrl,
   messengerUsername,
   className,
@@ -63,16 +66,32 @@ export function ShopInfoList({
   const todayWeekday = new Date().getDay();
 
   const hasHours = hours.length > 0;
+  const hasAbout = Boolean(about?.trim());
   const hasContact = Boolean(phone || fullAddress || facebookUrl || messengerUsername);
 
-  if (!hasHours && !hasContact) return null;
+  if (!hasHours && !hasContact && !hasAbout) return null;
 
   return (
     <Card className={cn('border-shop-30-foreground/10 bg-shop-30/70 shadow-xs backdrop-blur', className)}>
       <CardContent className="p-4 sm:p-5 flex flex-col gap-5 text-sm">
+        {/* About Section */}
+        {hasAbout && (
+          <section aria-labelledby="shop-about-title" className="flex flex-col gap-1.5">
+            <h3 id="shop-about-title" className="font-bold text-foreground text-sm">
+              About
+            </h3>
+            <p className="text-xs sm:text-sm text-shop-30-foreground/85 whitespace-pre-line leading-relaxed">
+              {about}
+            </p>
+          </section>
+        )}
+
         {/* Weekly Hours */}
         {hasHours && (
-          <section aria-labelledby="shop-hours-title" className="flex flex-col gap-2.5">
+          <section
+            aria-labelledby="shop-hours-title"
+            className={cn('flex flex-col gap-2.5', hasAbout && 'pt-3 border-t border-shop-30-foreground/10')}
+          >
             <div className="flex items-center gap-2 font-bold text-foreground">
               <IconClock className="size-4 text-shop-10 shrink-0" />
               <h3 id="shop-hours-title" className="text-sm">

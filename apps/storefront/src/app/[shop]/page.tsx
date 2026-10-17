@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { orderingBlock, WORDS } from '@smartapp/core';
 import { Alert, AlertDescription } from '@smartapp/ui/components/alert';
 import { IconClock } from '@smartapp/ui/icons';
-import { BrandCard } from '@smartapp/ui/patterns/BrandCard';
+import { AnnouncementStrip } from '@smartapp/ui/patterns/AnnouncementStrip';
+import { BannerCarousel } from '@smartapp/ui/patterns/BannerCarousel';
 import { ShopInfoList } from '@smartapp/ui/patterns/ShopInfoList';
 
 import { BestSellers } from '../../features/catalog/BestSellers';
@@ -15,8 +16,8 @@ const words = WORDS.storefront;
 
 /**
  * Shop home page:
- * - Phone: BrandCard -> RewardCard -> Categories -> Best Sellers -> ShopInfoList
- * - Desktop (1024 px+): 8/4 grid: Left = BrandCard, Categories, Best Sellers; Right = RewardCard, ShopInfoList
+ * - Phone: BannerCarousel/BrandCard -> AnnouncementStrip -> RewardCard -> Categories -> Best Sellers -> ShopInfoList
+ * - Desktop (1024 px+): 8/4 grid: Left = BannerCarousel/BrandCard, AnnouncementStrip, Categories, Best Sellers; Right = RewardCard, ShopInfoList
  */
 export default async function ShopHomePage({ params }: { params: Promise<{ shop: string }> }) {
   const storefront = await storefrontOrNotFound((await params).shop);
@@ -27,17 +28,32 @@ export default async function ShopHomePage({ params }: { params: Promise<{ shop:
   const media = shopMedia(storefront);
   const logo = settings.logoPath ? media[settings.logoPath] : undefined;
   const base = `/${shop.slug}`;
+  const about = storefront.about ?? settings.aboutText;
+
+  // Resolve media URLs for banners
+  const banners = (storefront.banners ?? []).map((b) => ({
+    ...b,
+    imagePath: b.imagePath ? (media[b.imagePath]?.full ?? b.imagePath) : null,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-12 lg:gap-8 items-start">
         {/* Left Column (8 cols on desktop, full on phone) */}
         <div className="flex flex-col gap-6 lg:col-span-8 w-full">
-          <BrandCard
-            name={shop.name}
+          <BannerCarousel
+            banners={banners}
+            shopName={shop.name}
             tagline={settings.tagline}
             logoUrl={logo?.thumb ?? null}
           />
+
+          {storefront.announcement && (
+            <AnnouncementStrip
+              announcement={storefront.announcement}
+              shopSlug={shop.slug}
+            />
+          )}
 
           {block && (
             <Alert>
@@ -73,6 +89,7 @@ export default async function ShopHomePage({ params }: { params: Promise<{ shop:
               phone={settings.phone}
               address={settings.address}
               city={settings.city}
+              about={about}
               facebookUrl={settings.facebookUrl}
               messengerUsername={settings.messengerUsername}
             />
@@ -87,6 +104,7 @@ export default async function ShopHomePage({ params }: { params: Promise<{ shop:
             phone={settings.phone}
             address={settings.address}
             city={settings.city}
+            about={about}
             facebookUrl={settings.facebookUrl}
             messengerUsername={settings.messengerUsername}
           />
