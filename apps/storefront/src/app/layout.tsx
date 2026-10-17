@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 
 import { WORDS } from '@smartapp/core';
 
+import { ServiceWorkerRegister } from '../features/pwa/ServiceWorkerRegister';
+
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,7 +22,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="light">
-      <body>{children}</body>
+      <body>
+        <ServiceWorkerRegister />
+        {children}
+      </body>
     </html>
   );
 }

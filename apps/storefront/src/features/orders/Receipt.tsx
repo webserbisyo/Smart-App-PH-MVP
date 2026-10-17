@@ -43,6 +43,7 @@ import { ReceiptStamps } from '../members/ReceiptStamps';
 import { useShop } from '../shell/ShopProvider';
 import { subscribeNothing } from '../shell/use-hydrated';
 import { customerOrderLook, customerPaymentLook } from './order-look';
+import { OrderPush } from './OrderPush';
 import { ProofUpload } from './ProofUpload';
 
 const words = WORDS.storefront.receipt;
@@ -106,7 +107,15 @@ function PaymentPart({ receipt }: { receipt: OrderReceipt }) {
   );
 }
 
-function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlaced: boolean }) {
+function ReceiptView({
+  receipt,
+  justPlaced,
+  vapidPublicKey,
+}: {
+  receipt: OrderReceipt;
+  justPlaced: boolean;
+  vapidPublicKey?: string | null;
+}) {
   const { storefront } = useShop();
   const { shop } = storefront;
   const { order, lines, events } = receipt;
@@ -269,6 +278,8 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         />
       )}
 
+      <OrderPush order={order} shopName={shop.name} vapidPublicKey={vapidPublicKey ?? null} />
+
       <ReceiptStamps order={order} />
 
       <div className="flex flex-col gap-2 print:hidden">
@@ -312,7 +323,15 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
 }
 
 /** The receipt (P4.4): the order, its live status and the payment step, for anyone with the link. */
-export function Receipt({ token, justPlaced }: { token: string; justPlaced: boolean }) {
+export function Receipt({
+  token,
+  justPlaced,
+  vapidPublicKey,
+}: {
+  token: string;
+  justPlaced: boolean;
+  vapidPublicKey?: string | null;
+}) {
   const order = useOrder(token);
   useOrderLive(token);
   const offline = order.error ? toApiError(order.error).code === 'network' : false;
@@ -331,7 +350,13 @@ export function Receipt({ token, justPlaced }: { token: string; justPlaced: bool
       }}
       offline={offline ? { title: WORDS.shared.offlineShort } : null}
     >
-      {order.data && <ReceiptView receipt={order.data} justPlaced={justPlaced} />}
+      {order.data && (
+        <ReceiptView
+          receipt={order.data}
+          justPlaced={justPlaced}
+          vapidPublicKey={vapidPublicKey}
+        />
+      )}
     </QueryState>
   );
 }

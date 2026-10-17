@@ -198,6 +198,14 @@ export const WORDS = {
         yourRating: 'Your rating',
       },
       slip: 'ORDER SLIP · NOT AN OFFICIAL RECEIPT',
+      push: {
+        notifyMe: 'Notify me when it’s ready',
+        subscribed: 'We’ll notify you when it’s ready',
+        subscribing: 'Enabling notifications...',
+        denied: 'Notifications are blocked in your browser settings.',
+        unsupported: 'Push notifications are not supported on this browser.',
+        iosInstallNeeded: 'Install the app to enable notifications on iPhone.',
+      },
       /** The Messenger and "Copy order details" text (paper 6.6). */
       message: {
         greeting: (ticket: string, fulfillment: string) => `Hi! Order ${ticket} (${fulfillment})`,
