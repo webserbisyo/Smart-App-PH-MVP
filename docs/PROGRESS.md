@@ -15,7 +15,7 @@ Stage 0, way of working
 
 Stage 1, storefront v2 (`docs/storefront-v2.md`; replaces A1 to A12, decision SF-1)
 - [x] SF1 Foundation and redesign (shell, palette, every page, privacy, icons, splash, brand editor)
-- [ ] SF2 Database (rewards, shop content, order messages, delivery, ratings, push)
+- [x] SF2 Database (rewards, shop content, order messages, delivery, ratings, push)
 - [ ] SF3 Features and demo content (banners, rewards, thread, tracking, push, SEO, caching, demo photos)
 - [ ] SF4 Smoke tests and docs (Playwright 390/1280, docs, repo description)
 
@@ -89,6 +89,8 @@ Modules (each: database prompt, API prompt, one prompt per page)
 
 ## Log
 
+- SF2: Storefront v2 database schema, migrations, RLS and API surface (banners, announcements, 3 reward kinds, custom claims, order messages, delivery info, ratings, pins, push subscriptions and outbox).
+  Gates passed: pnpm local reset, 761 pgTAP tests (01-13) passed, pnpm check green, pnpm build green.
 - SF1: Storefront v2 foundation and redesign (shell, one-colour palette, semantic toasts/buttons, all pages restyled, privacy, shop icons/splash, brand editor).
   Local gates passed (pnpm check, pnpm build, Playwright 390/1280).
 - A0.1: AGENTS.md as the one rulebook (CLAUDE.md points to it), PROGRESS, CHANGELOG, PR template, blueprints in
