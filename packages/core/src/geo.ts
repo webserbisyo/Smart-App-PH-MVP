@@ -104,3 +104,36 @@ export function trackingHostOk(provider: string, url: string): boolean {
       return false;
   }
 }
+
+/**
+ * Finds the delivery zone with the center pin closest to the user's pin.
+ * Only considers active zones with defined center coordinates.
+ */
+export function findNearestZone<T extends {
+  id: string;
+  name: string;
+  centerLat?: number | null | undefined;
+  centerLng?: number | null | undefined;
+  center?: Pin | null | undefined;
+  isActive?: boolean | undefined;
+}>(
+  zones: readonly T[],
+  userPin: Pin,
+): { zone: T; distance: number } | null {
+  let closest: { zone: T; distance: number } | null = null;
+
+  for (const zone of zones) {
+    if (zone.isActive === false) continue;
+    const lat = zone.center?.lat ?? zone.centerLat;
+    const lng = zone.center?.lng ?? zone.centerLng;
+    if (lat === null || lat === undefined || lng === null || lng === undefined) continue;
+
+    const d = distanceKm(userPin, { lat, lng });
+    if (closest === null || d < closest.distance) {
+      closest = { zone, distance: d };
+    }
+  }
+
+  return closest;
+}
+

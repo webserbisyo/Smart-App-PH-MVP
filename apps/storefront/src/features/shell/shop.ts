@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
@@ -7,13 +8,29 @@ import type { Storefront } from '@smartapp/core';
 import { readEnv } from '../../env';
 
 /**
- * The shop's storefront data, read once per request (layout, metadata, viewport and page share it). No session:
- * shop pages are the same for every visitor. Not cached across requests yet, so owner edits show at once (P6).
+ * The shop's storefront data:
+ * Cached per slug with fallback revalidation of 60 seconds (Refinement D)
+ * and tagged `shop:<slug>` for instant on-demand owner revalidation (decisions SF-19, SF-20).
+ * Also wrapped in React cache() so multiple calls in one request share the result.
  */
 export const loadStorefront = cache(async (slug: string): Promise<Storefront | null> => {
-  const env = readEnv();
-  const client = createPublicClient({ url: env.NEXT_PUBLIC_SUPABASE_URL, publishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY });
-  return getStorefront(client, slug);
+  const getCached = unstable_cache(
+    async (s: string) => {
+      const env = readEnv();
+      const client = createPublicClient({
+        url: env.NEXT_PUBLIC_SUPABASE_URL,
+        publishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+      });
+      return getStorefront(client, s);
+    },
+    ['storefront', slug],
+    {
+      revalidate: 60,
+      tags: [`shop:${slug}`],
+    },
+  );
+
+  return getCached(slug);
 });
 
 /** The storefront for a `[shop]` route, or Next's not-found page (unknown, pending or suspended shop). */
@@ -46,6 +63,7 @@ export function shopMedia(storefront: Storefront): Record<string, MediaUrls> {
     ...storefront.categories.flatMap((category) => (category.icon?.kind === 'image' ? [category.icon.path] : [])),
     ...(settings.logoPath ? [settings.logoPath] : []),
     ...(settings.coverPath ? [settings.coverPath] : []),
+    ...(storefront.stampRule?.rewardImagePath ? [storefront.stampRule.rewardImagePath] : []),
     ...storefront.paymentAccounts.flatMap((account) => (account.qrPath && account.isActive ? [account.qrPath] : [])),
   ];
   return Object.fromEntries(paths.map((path) => [path, { thumb: mediaUrl(path, 'thumb'), full: mediaUrl(path, 'full') }]));

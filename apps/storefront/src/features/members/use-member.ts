@@ -2,7 +2,7 @@
 
 import { useMyAccount, useSession } from '@smartapp/api';
 import { stampProgress } from '@smartapp/core';
-import type { MemberAccount, StampProgress, StampRule } from '@smartapp/core';
+import type { MemberAccount, RewardRule, StampProgress } from '@smartapp/core';
 
 import { useShop } from '../shell/ShopProvider';
 
@@ -13,7 +13,7 @@ export interface MemberState {
   /** Undefined while loading (or signed out), null when signed in but not a member of this shop. */
   account: MemberAccount | null | undefined;
   /** The shop's stamp card when it is on, else null. */
-  rule: StampRule | null;
+  rule: RewardRule | null;
   /** Where the member stands; null for guests and when the stamp card is off. */
   progress: StampProgress | null;
   /** The account could not be loaded (offline or a server error). */

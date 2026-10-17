@@ -1,17 +1,18 @@
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
 
 import { useDeliveryZones, useRemoveDeliveryZone, useSaveDeliveryZone, useSaveSortOrder, useShopSettings, useUpdateShopSettings } from '@smartapp/api';
-import { WORDS } from '@smartapp/core';
-import type { DeliveryZone, ShopSettings } from '@smartapp/core';
+import { mapsLink, pinFromMapsLink, WORDS } from '@smartapp/core';
+import type { DeliveryZone, Pin, ShopSettings } from '@smartapp/core';
 import { Button } from '@smartapp/ui/components/button';
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@smartapp/ui/components/field';
 import { Input } from '@smartapp/ui/components/input';
 import { Sortable, SortableContent, SortableItem, SortableItemHandle } from '@smartapp/ui/components/sortable';
 import { Switch } from '@smartapp/ui/components/switch';
 import { useOnline } from '@smartapp/ui/hooks/use-online';
-import { IconGripVertical, IconPlus, IconTrash } from '@smartapp/ui/icons';
+import { IconExternalLink, IconGripVertical, IconPlus, IconTrash } from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { PesoField } from '@smartapp/ui/patterns/PesoField';
 
@@ -24,6 +25,91 @@ import { useSaveRunner } from '../hooks/useSaveRunner';
 
 const words = WORDS.dashboard.settings.orderTypes;
 const MAX_ZONES = 30;
+
+function ZoneCenterField({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: Pin | null | undefined;
+  onChange: (pin: Pin | null) => void;
+  disabled: boolean;
+}) {
+  const [pasteText, setPasteText] = useState('');
+  const isShortLink = pasteText.includes('maps.app.goo.gl') || pasteText.includes('goo.gl/maps');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    setPasteText(text);
+    if (!text.trim()) return;
+    if (text.includes('maps.app.goo.gl') || text.includes('goo.gl/maps')) {
+      return;
+    }
+    const pin = pinFromMapsLink(text);
+    if (pin) {
+      onChange(pin);
+      setPasteText('');
+      return;
+    }
+    const match = text.trim().match(/^(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)$/);
+    if (match && match[1] && match[2]) {
+      const lat = parseFloat(match[1]);
+      const lng = parseFloat(match[2]);
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        onChange({ lat, lng });
+        setPasteText('');
+      }
+    }
+  };
+
+  if (value) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-2 py-1.5 text-xs">
+        <span className="tabular font-medium">
+          {value.lat.toFixed(6)}, {value.lng.toFixed(6)}
+        </span>
+        <div className="flex items-center gap-2">
+          <a
+            href={mapsLink(value)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-medium text-primary underline-offset-4 hover:underline"
+          >
+            <IconExternalLink className="size-3" />
+            {WORDS.dashboard.settings.info.checkOnMaps}
+          </a>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              onChange(null);
+            }}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            {WORDS.dashboard.settings.info.removePin}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <Input
+        value={pasteText}
+        onChange={handleInputChange}
+        placeholder={words.zoneCenterHint}
+        className="h-8 text-xs"
+        disabled={disabled}
+      />
+      {isShortLink ? (
+        <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+          {WORDS.dashboard.settings.info.shortLinkHint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 type SwitchName = 'walkIn' | 'pickup' | 'delivery' | 'payLaterPickup' | 'cod' | 'viaMessenger';
 
@@ -88,35 +174,51 @@ function Zones({ control, disabled }: { control: Control<OrderTypesForm>; disabl
                   <SortableItemHandle disabled={disabled} render={<Button variant="ghost" size="icon-sm" className="mt-7" aria-label={words.moveZone(label)} />}>
                     <IconGripVertical />
                   </SortableItemHandle>
-                  <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-                    <Controller
-                      control={control}
-                      name={`zones.${row(index)}.name`}
-                      render={({ field: zoneName, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid || undefined}>
-                          <FieldLabel htmlFor={`zone-name-${field.key}`}>{words.zoneName}</FieldLabel>
-                          <Input
-                            id={`zone-name-${field.key}`}
-                            maxLength={60}
-                            placeholder={words.zonePlaceholder}
-                            aria-invalid={fieldState.invalid}
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                      <Controller
+                        control={control}
+                        name={`zones.${row(index)}.name`}
+                        render={({ field: zoneName, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid || undefined}>
+                            <FieldLabel htmlFor={`zone-name-${field.key}`}>{words.zoneName}</FieldLabel>
+                            <Input
+                              id={`zone-name-${field.key}`}
+                              maxLength={60}
+                              placeholder={words.zonePlaceholder}
+                              aria-invalid={fieldState.invalid}
+                              disabled={disabled}
+                              {...zoneName}
+                            />
+                            {fieldState.error?.message ? <FieldError>{fieldState.error.message}</FieldError> : null}
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        control={control}
+                        name={`zones.${row(index)}.fee`}
+                        render={({ field: fee, fieldState }) => (
+                          <div>
+                            <PesoField label={words.zoneFee} value={fee.value} onChange={fee.onChange} words={WORDS.shared} disabled={disabled} name={fee.name} />
+                            {fieldState.error?.message ? <FieldError className="mt-2">{fieldState.error.message}</FieldError> : null}
+                          </div>
+                        )}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <FieldLabel className="text-xs text-muted-foreground">{words.zoneCenter}</FieldLabel>
+                      <Controller
+                        control={control}
+                        name={`zones.${row(index)}.center`}
+                        render={({ field: center }) => (
+                          <ZoneCenterField
+                            value={center.value}
+                            onChange={center.onChange}
                             disabled={disabled}
-                            {...zoneName}
                           />
-                          {fieldState.error?.message ? <FieldError>{fieldState.error.message}</FieldError> : null}
-                        </Field>
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name={`zones.${row(index)}.fee`}
-                      render={({ field: fee, fieldState }) => (
-                        <div>
-                          <PesoField label={words.zoneFee} value={fee.value} onChange={fee.onChange} words={WORDS.shared} disabled={disabled} name={fee.name} />
-                          {fieldState.error?.message ? <FieldError className="mt-2">{fieldState.error.message}</FieldError> : null}
-                        </div>
-                      )}
-                    />
+                        )}
+                      />
+                    </div>
                   </div>
                   <Button
                     variant="ghost"

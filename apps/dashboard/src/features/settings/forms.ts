@@ -1,13 +1,15 @@
 import { z } from 'zod';
 
-import { Centavos, HexColor, rewardLabel, TimeOfDay, TransferMethod, Uuid, WORDS } from '@smartapp/core';
+import { Centavos, HexColor, Pin, RewardKind, rewardLabel, TimeOfDay, TransferMethod, Uuid, WORDS } from '@smartapp/core';
 import type {
   BusinessHours,
+  CatalogItem,
   DayHours,
   DeliveryZone,
   DeliveryZoneDraft,
   PaymentAccount,
   PaymentAccountDraft,
+  RewardRule,
   ShopSettings,
   ShopSettingsPatch,
   StampRule,
@@ -83,6 +85,7 @@ export const InfoForm = z
     address: z.string().max(200),
     facebook: z.string().max(200),
     messenger: z.string().max(80),
+    pin: Pin.nullable().optional(),
   })
   .superRefine((form, ctx) => {
     if (facebookUrl(form.facebook) === undefined) ctx.addIssue({ code: 'custom', path: ['facebook'], message: words.info.facebookInvalid });
@@ -96,6 +99,14 @@ export function infoFromSettings(settings: ShopSettings): InfoForm {
     address: settings.address ?? '',
     facebook: settings.facebookUrl ?? '',
     messenger: settings.messengerUsername ?? '',
+    pin:
+      settings.pin ??
+      (settings.shopLat !== null &&
+      settings.shopLat !== undefined &&
+      settings.shopLng !== null &&
+      settings.shopLng !== undefined
+        ? { lat: settings.shopLat, lng: settings.shopLng }
+        : null),
   };
 }
 
@@ -106,6 +117,7 @@ export function infoPatch(form: InfoForm): ShopSettingsPatch {
     address: address === '' ? null : address,
     facebookUrl: facebookUrl(form.facebook) ?? null,
     messengerUsername: messengerUsername(form.messenger) ?? null,
+    ...(form.pin !== undefined ? { pin: form.pin } : {}),
   };
 }
 
@@ -176,6 +188,7 @@ const ZoneForm = z.object({
   fee: Centavos.nullable(),
   etaText: z.string().nullable(),
   isActive: z.boolean(),
+  center: Pin.nullable().optional(),
 });
 export type ZoneForm = z.infer<typeof ZoneForm>;
 
@@ -200,7 +213,7 @@ export const OrderTypesForm = z
 export type OrderTypesForm = z.infer<typeof OrderTypesForm>;
 
 export function emptyZone(): ZoneForm {
-  return { id: null, name: '', fee: null, etaText: null, isActive: true };
+  return { id: null, name: '', fee: null, etaText: null, isActive: true, center: null };
 }
 
 export function orderTypesFromData(settings: ShopSettings, zones: readonly DeliveryZone[]): OrderTypesForm {
@@ -211,7 +224,21 @@ export function orderTypesFromData(settings: ShopSettings, zones: readonly Deliv
     payLaterPickup: settings.payLaterPickup,
     cod: settings.codEnabled,
     viaMessenger: settings.deliveryFeeViaMessenger,
-    zones: zones.map((zone) => ({ id: zone.id, name: zone.name, fee: zone.fee, etaText: zone.etaText, isActive: zone.isActive })),
+    zones: zones.map((zone) => ({
+      id: zone.id,
+      name: zone.name,
+      fee: zone.fee,
+      etaText: zone.etaText,
+      isActive: zone.isActive,
+      center:
+        zone.center ??
+        (zone.centerLat !== null &&
+        zone.centerLat !== undefined &&
+        zone.centerLng !== null &&
+        zone.centerLng !== undefined
+          ? { lat: zone.centerLat, lng: zone.centerLng }
+          : null),
+    })),
   };
 }
 
@@ -231,9 +258,28 @@ export function orderTypesPatch(form: OrderTypesForm): ShopSettingsPatch {
 export function zoneChanges(before: readonly DeliveryZone[], zones: readonly ZoneForm[]): { remove: string[]; save: { index: number; draft: DeliveryZoneDraft }[] } {
   const kept = new Set(zones.flatMap((zone) => (zone.id === null ? [] : [zone.id])));
   const save = zones.flatMap((zone, index) => {
-    const draft: DeliveryZoneDraft = { id: zone.id, name: zone.name.trim(), fee: zone.fee ?? 0, etaText: zone.etaText, isActive: zone.isActive };
+    const draft: DeliveryZoneDraft = {
+      id: zone.id,
+      name: zone.name.trim(),
+      fee: zone.fee ?? 0,
+      etaText: zone.etaText,
+      isActive: zone.isActive,
+      center: zone.center ?? null,
+    };
     const old = zone.id === null ? undefined : before.find((candidate) => candidate.id === zone.id);
-    const changed = !old || old.name !== draft.name || old.fee !== draft.fee || old.etaText !== draft.etaText || old.isActive !== draft.isActive;
+    const oldCenter =
+      old !== undefined
+        ? old.center ??
+          (old.centerLat !== null &&
+          old.centerLat !== undefined &&
+          old.centerLng !== null &&
+          old.centerLng !== undefined
+            ? { lat: old.centerLat, lng: old.centerLng }
+            : null)
+        : null;
+    const newCenter = draft.center ?? null;
+    const centerChanged = oldCenter?.lat !== newCenter?.lat || oldCenter?.lng !== newCenter?.lng;
+    const changed = !old || old.name !== draft.name || old.fee !== draft.fee || old.etaText !== draft.etaText || old.isActive !== draft.isActive || centerChanged;
     return changed ? [{ index, draft }] : [];
   });
   return { remove: before.filter((zone) => !kept.has(zone.id)).map((zone) => zone.id), save };
@@ -284,40 +330,160 @@ export function paymentDraft(id: string | null, form: PaymentForm): PaymentAccou
 
 // --- stamp card ------------------------------------------------------------------------------------
 
-export const StampsForm = z.object({
-  isActive: z.boolean(),
-  /** Typed text, so a half-typed number can be shown; checked as 1 to 50. */
-  stampsNeeded: z.string().refine((text) => /^\d{1,2}$/.test(text.trim()) && Number(text) >= 1 && Number(text) <= 50, words.stamps.stampsInvalid),
-  /** Centavos; empty is no minimum. */
-  minOrderTotal: Centavos.nullable(),
-  /** Centavos, at least ₱1. */
-  rewardAmount: Centavos.min(100, words.stamps.rewardNeeded).nullable(),
-  showMemberCount: z.boolean(),
-})
+export const StampsForm = z
+  .object({
+    isActive: z.boolean(),
+    /** Typed text, so a half-typed number can be shown; checked as 1 to 50. */
+    stampsNeeded: z
+      .string()
+      .refine(
+        (text) => /^\d{1,2}$/.test(text.trim()) && Number(text) >= 1 && Number(text) <= 50,
+        words.stamps.stampsInvalid,
+      ),
+    /** Centavos; empty is no minimum. */
+    minOrderTotal: Centavos.nullable(),
+    rewardKind: RewardKind,
+    /** Centavos, at least ₱1 for discount rewards. */
+    rewardAmount: Centavos.nullable(),
+    rewardItemId: Uuid.nullable(),
+    rewardVariantId: Uuid.nullable(),
+    rewardTitle: z.string().max(60),
+    rewardDescription: z.string().max(200),
+    rewardImagePath: z.string().nullable(),
+    showMemberCount: z.boolean(),
+  })
   .superRefine((form, ctx) => {
-    if (form.rewardAmount === null) ctx.addIssue({ code: 'custom', path: ['rewardAmount'], message: words.stamps.rewardNeeded });
+    if (form.rewardKind === 'discount') {
+      if (form.rewardAmount === null || form.rewardAmount < 100) {
+        ctx.addIssue({ code: 'custom', path: ['rewardAmount'], message: words.stamps.rewardNeeded });
+      }
+    } else if (form.rewardKind === 'free_item') {
+      if (!form.rewardItemId) {
+        ctx.addIssue({ code: 'custom', path: ['rewardItemId'], message: words.stamps.rewardItemNeeded });
+      }
+      if (!form.rewardVariantId) {
+        ctx.addIssue({ code: 'custom', path: ['rewardVariantId'], message: words.stamps.rewardItemNeeded });
+      }
+    } else {
+      if (!form.rewardTitle || form.rewardTitle.trim() === '') {
+        ctx.addIssue({ code: 'custom', path: ['rewardTitle'], message: words.stamps.rewardTitleNeeded });
+      }
+    }
   });
 export type StampsForm = z.infer<typeof StampsForm>;
 
-export function stampsFromData(rule: StampRule, settings: ShopSettings): StampsForm {
+export function stampsFromData(rule: RewardRule | StampRule, settings: ShopSettings): StampsForm {
+  const kind = 'rewardKind' in rule ? rule.rewardKind : 'discount';
   return {
     isActive: rule.isActive,
     stampsNeeded: String(rule.stampsNeeded),
     minOrderTotal: rule.minOrderTotal,
+    rewardKind: kind,
     rewardAmount: rule.rewardAmount,
+    rewardItemId: ('rewardItemId' in rule ? rule.rewardItemId : null) ?? null,
+    rewardVariantId: ('rewardVariantId' in rule ? rule.rewardVariantId : null) ?? null,
+    rewardTitle: 'rewardTitle' in rule && rule.rewardTitle ? rule.rewardTitle : '',
+    rewardDescription: 'rewardDescription' in rule && rule.rewardDescription ? rule.rewardDescription : '',
+    rewardImagePath: ('rewardImagePath' in rule ? rule.rewardImagePath : null) ?? null,
     showMemberCount: settings.showMemberCount,
   };
 }
 
-/** The stamp card row to save; the reward's words come from its amount ("₱100 off your order"). */
-export function stampRuleFromForm(tenantId: string, form: StampsForm): StampRule {
-  const rewardAmount = form.rewardAmount ?? 0;
+/** The stamp card row to save; derives label and amounts based on reward kind. */
+export function stampRuleFromForm(tenantId: string, form: StampsForm, items?: readonly CatalogItem[]): RewardRule {
+  const kind = form.rewardKind;
+  let rewardAmount = form.rewardAmount ?? 0;
+  let rewardLabelText = '';
+
+  if (kind === 'discount') {
+    rewardAmount = form.rewardAmount ?? 0;
+    rewardLabelText = rewardLabel(rewardAmount);
+  } else if (kind === 'free_item') {
+    const item = items?.find((i) => i.id === form.rewardItemId);
+    const variant = item?.variants.find((v) => v.id === form.rewardVariantId);
+    if (variant && item) {
+      rewardAmount = variant.price;
+      const isOnlyVariant = item.variants.length === 1 || variant.name === 'Standard' || variant.name === 'Default';
+      rewardLabelText = isOnlyVariant ? `Free ${item.name}` : `Free ${item.name} (${variant.name})`;
+    } else {
+      rewardAmount = form.rewardAmount ?? 0;
+      rewardLabelText = 'Free item';
+    }
+  } else {
+    rewardAmount = 0;
+    rewardLabelText = form.rewardTitle.trim();
+  }
+
   return {
     tenantId,
     isActive: form.isActive,
     stampsNeeded: Number(form.stampsNeeded.trim()),
     minOrderTotal: form.minOrderTotal ?? 0,
+    rewardKind: kind,
+    rewardLabel: rewardLabelText,
     rewardAmount,
-    rewardLabel: rewardLabel(rewardAmount),
+    rewardItemId: kind === 'free_item' ? form.rewardItemId : null,
+    rewardVariantId: kind === 'free_item' ? form.rewardVariantId : null,
+    rewardTitle: kind === 'custom' ? form.rewardTitle.trim() : null,
+    rewardDescription: kind === 'custom' && form.rewardDescription.trim() ? form.rewardDescription.trim() : null,
+    rewardImagePath: kind === 'custom' ? form.rewardImagePath : null,
+  };
+}
+
+// --- home page -------------------------------------------------------------------------------------
+
+export const BannerItemForm = z.object({
+  id: z.string().nullable(),
+  kind: z.enum(['image', 'youtube']),
+  imagePath: z.string().nullable(),
+  youtubeId: z.string().nullable(),
+  title: z.string().max(60),
+  linkUrl: z.string().nullable().optional(),
+  sort: z.number().int(),
+  isActive: z.boolean(),
+});
+export type BannerItemForm = z.infer<typeof BannerItemForm>;
+
+export const HomeForm = z.object({
+  announcementText: z.string().max(160),
+  announcementTone: z.enum(['info', 'promo', 'warning']),
+  announcementEndsAt: z.string().nullable(),
+  aboutText: z.string().max(600),
+  googleReviewUrl: z.string().nullable().optional(),
+  banners: z.array(BannerItemForm).max(3),
+});
+export type HomeForm = z.infer<typeof HomeForm>;
+
+export function homeFromSettings(settings: ShopSettings, banners: readonly { id: string | null; kind: 'image' | 'youtube'; imagePath: string | null; youtubeId: string | null; title: string; linkUrl: string | null; sort: number; isActive: boolean }[]): HomeForm {
+  return {
+    announcementText: settings.announcementText ?? '',
+    announcementTone: settings.announcementTone ?? 'info',
+    announcementEndsAt: settings.announcementEndsAt ? settings.announcementEndsAt.slice(0, 10) : null,
+    aboutText: settings.aboutText ?? '',
+    googleReviewUrl: settings.googleReviewUrl ?? '',
+    banners: banners.map((b, idx) => ({
+      id: b.id,
+      kind: b.kind,
+      imagePath: b.imagePath,
+      youtubeId: b.youtubeId,
+      title: b.title,
+      linkUrl: b.linkUrl ?? '',
+      sort: idx,
+      isActive: b.isActive,
+    })),
+  };
+}
+
+export function homePatch(form: HomeForm): ShopSettingsPatch {
+  const announcementText = form.announcementText.trim();
+  const aboutText = form.aboutText.trim();
+  const googleReviewUrl = form.googleReviewUrl?.trim();
+
+  return {
+    announcementText: announcementText === '' ? null : announcementText,
+    announcementTone: form.announcementTone,
+    announcementEndsAt: form.announcementEndsAt && form.announcementEndsAt !== '' ? new Date(form.announcementEndsAt).toISOString() : null,
+    aboutText: aboutText === '' ? null : aboutText,
+    googleReviewUrl: googleReviewUrl && googleReviewUrl !== '' ? googleReviewUrl : null,
   };
 }

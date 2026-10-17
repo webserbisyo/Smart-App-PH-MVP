@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { WORDS } from '@smartapp/core';
 import { buttonVariants } from '@smartapp/ui/components/button';
 import { Card, CardContent } from '@smartapp/ui/components/card';
 import { IconChevronLeft, IconMail, IconMapPin, IconPhone, IconShieldCheck } from '@smartapp/ui/icons';
@@ -82,6 +83,7 @@ export default async function ShopPrivacyPage({ params }: PrivacyPageProps) {
             <li><strong>Full Name:</strong> To address and identify your order.</li>
             <li><strong>Mobile Phone Number:</strong> To contact you about order confirmation, preparation, or delivery coordination.</li>
             <li><strong>Delivery Address and Landmarks (for delivery orders):</strong> To ensure your rider reaches the exact drop-off spot.</li>
+            <li>{WORDS.storefront.privacy.pinNotice}</li>
             <li><strong>Optional Email Address:</strong> If provided for digital receipts or account login.</li>
             <li><strong>Payment Proofs:</strong> Screenshots or reference numbers uploaded during manual GCash/Maya transfers.</li>
             <li><strong>Order History:</strong> Record of items ordered, totals, fulfillment choice, and order status.</li>

@@ -63,7 +63,7 @@ function StepDrawing({ step }: { step: number }) {
 }
 
 /** iPhone: Share → Add to Home Screen → Add, drawn. */
-function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChange: (open: boolean) => void; shopName: string }) {
+export function IosSteps({ open, onOpenChange, shopName }: { open: boolean; onOpenChange: (open: boolean) => void; shopName: string }) {
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange} breakpoint={1024}>
       <ResponsiveDialogContent className="gap-4 px-4 pb-4 sm:max-w-md">

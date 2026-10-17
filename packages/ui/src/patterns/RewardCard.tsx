@@ -15,6 +15,10 @@ export interface RewardCardProps {
   goal?: number;
   /** Reward description (e.g. "₱100 off your order", "Free Latte"). */
   reward?: string;
+  /** Image URL of the reward prize or free item. */
+  rewardImageUrl?: string | null | undefined;
+  /** Kind of reward. */
+  rewardKind?: 'discount' | 'free_item' | 'custom' | undefined;
   /** Shop logo URL (if available). */
   logoUrl?: string | null | undefined;
   /** Shop name. */
@@ -50,6 +54,7 @@ export function RewardCard({
   stamps,
   goal = 10,
   reward = '₱100 off',
+  rewardImageUrl,
   logoUrl,
   shopName,
   signedIn = true,
@@ -119,9 +124,18 @@ export function RewardCard({
 
         <div className="relative z-10 flex flex-col gap-1.5 my-auto">
           <p className="text-lg font-bold leading-tight sm:text-xl">Join and get 1 free stamp</p>
-          <p className="text-xs opacity-90 leading-relaxed max-w-[280px]">
-            Earn stamps on every order and unlock {reward}.
-          </p>
+          <div className="flex items-center gap-2">
+            {rewardImageUrl && (
+              <img
+                src={rewardImageUrl}
+                alt=""
+                className="size-7 shrink-0 rounded-md object-cover border border-white/20 shadow-xs"
+              />
+            )}
+            <p className="text-xs opacity-90 leading-relaxed max-w-[280px]">
+              Earn stamps on every order and unlock {reward}.
+            </p>
+          </div>
         </div>
 
         <div className="relative z-10 flex items-center justify-between pt-1">
@@ -239,17 +253,26 @@ export function RewardCard({
       </div>
 
       {/* Bottom Footer Line */}
-      <div className="relative z-10 flex items-center justify-between text-xs sm:text-sm font-semibold">
-        {ready ? (
-          <p className="flex items-center gap-1.5 text-white drop-shadow-xs">
-            <IconSparkles className="size-4 shrink-0" />
-            <span>Reward Ready: <strong>{reward}</strong></span>
-          </p>
-        ) : (
-          <p className="opacity-95">
-            {left === 1 ? `1 more stamp to ${reward}` : `${String(left)} more stamps to ${reward}`}
-          </p>
-        )}
+      <div className="relative z-10 flex items-center justify-between gap-2 text-xs sm:text-sm font-semibold">
+        <div className="flex items-center gap-2 min-w-0">
+          {rewardImageUrl ? (
+            <img
+              src={rewardImageUrl}
+              alt=""
+              className="size-7 sm:size-8 shrink-0 rounded-md object-cover border border-white/20 shadow-xs"
+            />
+          ) : null}
+          {ready ? (
+            <p className="flex items-center gap-1.5 text-white drop-shadow-xs truncate">
+              <IconSparkles className="size-4 shrink-0" />
+              <span className="truncate">Reward Ready: <strong>{reward}</strong></span>
+            </p>
+          ) : (
+            <p className="opacity-95 truncate">
+              {left === 1 ? `1 more stamp to ${reward}` : `${String(left)} more stamps to ${reward}`}
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );

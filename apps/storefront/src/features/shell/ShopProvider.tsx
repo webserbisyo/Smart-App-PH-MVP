@@ -4,7 +4,7 @@ import { createContext, use, useCallback, useEffect, useMemo, useState } from 'r
 import type { ReactNode } from 'react';
 
 import { addCartLine, canQuickAdd, priceCart, removeCartLine, setCartLineQty, WORDS } from '@smartapp/core';
-import type { CartLine, OrderingBlock, PricedCart, Storefront, StorefrontItem } from '@smartapp/core';
+import type { CartLine, OrderingBlock, Pin, PricedCart, Storefront, StorefrontItem } from '@smartapp/core';
 import { toast, Toaster } from '@smartapp/ui/components/sonner';
 
 import { CartSheet } from '../cart/CartSheet';
@@ -45,6 +45,9 @@ interface ShopContextValue {
   reward: { on: boolean; rejected: boolean };
   setRewardOn: (on: boolean) => void;
   rejectReward: () => void;
+  /** Geolocation pin detected during AreaPill selection, kept in memory for checkout. */
+  detectedPin: Pin | null;
+  setDetectedPin: (pin: Pin | null) => void;
 }
 
 const ShopContext = createContext<ShopContextValue | null>(null);
@@ -83,6 +86,7 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
   const [joinOpen, setJoinOpen] = useState(false);
   const [joinFrom, setJoinFrom] = useState<JoinFrom | null>(null);
   const [reward, setReward] = useState({ on: false, rejected: false });
+  const [detectedPin, setDetectedPin] = useState<Pin | null>(null);
   const cart = useMemo(() => priceCart(storefront.items, lines), [storefront.items, lines]);
 
   const addLine = useCallback(
@@ -180,8 +184,10 @@ export function ShopProvider({ storefront, media, block, catalogLabel, children 
       rejectReward: () => {
         setReward({ on: false, rejected: true });
       },
+      detectedPin,
+      setDetectedPin,
     }),
-    [storefront, media, block, catalogLabel, cart, added, addLine, updateLines, openItem, quickAdd, reward],
+    [storefront, media, block, catalogLabel, cart, added, addLine, updateLines, openItem, quickAdd, reward, detectedPin],
   );
 
   const item = storefront.items.find((candidate) => candidate.id === itemId) ?? null;

@@ -14,14 +14,22 @@ interface ShopParams {
   params: Promise<{ shop: string }>;
 }
 
-// Read on every request for now, so an owner's changes show after a refresh (caching is P6).
-export const dynamic = 'force-dynamic';
-
 export async function generateMetadata({ params }: ShopParams): Promise<Metadata> {
   const { shop } = await storefrontOrNotFound((await params).shop);
   return {
     title: shop.name,
-    description: shop.settings.tagline,
+    description: shop.settings.tagline ?? undefined,
+    alternates: {
+      canonical: `/${shop.slug}`,
+    },
+    openGraph: {
+      title: shop.name,
+      description: shop.settings.tagline ?? undefined,
+      url: `/${shop.slug}`,
+      siteName: shop.name,
+      locale: 'en_PH',
+      type: 'website',
+    },
     manifest: `/${shop.slug}/manifest.webmanifest`,
     appleWebApp: { capable: true, title: shop.name, statusBarStyle: 'default' },
     icons: {
@@ -49,8 +57,47 @@ export default async function ShopLayout({ params, children }: ShopParams & { ch
   const media = shopMedia(storefront);
   const logoUrl = shop.settings.logoPath ? media[shop.settings.logoPath]?.thumb : undefined;
   const catalogLabel = VOCAB[shop.businessType].catalog;
+  const schemaType = VOCAB[shop.businessType].schemaType;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': schemaType,
+    name: shop.name,
+    description: shop.settings.tagline || storefront.about || undefined,
+    url: `/${shop.slug}`,
+    image: logoUrl,
+    telephone: shop.settings.phone || undefined,
+    address: shop.settings.address
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: shop.settings.address,
+          addressCountry: 'PH',
+        }
+      : undefined,
+    geo: storefront.pin
+      ? {
+          '@type': 'GeoCoordinates',
+          latitude: storefront.pin.lat,
+          longitude: storefront.pin.lng,
+        }
+      : undefined,
+    openingHoursSpecification: storefront.hours.map((h) => {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: days[h.weekday] ?? 'Monday',
+        opens: h.opensAt,
+        closes: h.closesAt,
+      };
+    }),
+  };
+
   return (
     <ShopTheme colors={shopColors(storefront)} root>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <DataProvider>
         <ShopProvider storefront={storefront} media={media} block={orderingBlock(storefront, new Date())} catalogLabel={catalogLabel}>
           <ShopSplash name={shop.name} logoUrl={logoUrl} />

@@ -128,6 +128,17 @@ describe('messengerOrderText', () => {
     expect(lines[3]).toBe('Total: ₱410 · GCash (proof uploaded)');
   });
 
+  it('adds the Pin line when delivery order has a pin', () => {
+    const deliveryWithPin = {
+      ...order,
+      fulfillment: 'delivery' as const,
+      pickupAt: null,
+      deliveryPin: { lat: 14.5995, lng: 120.9842 },
+    };
+    const lines = messengerOrderText(deliveryWithPin, [orderLine], 'https://x.test/o/t', now).split('\n');
+    expect(lines).toContain('Pin: https://www.google.com/maps?q=14.5995,120.9842');
+  });
+
   it('says pay on delivery for unpaid cash on delivery', () => {
     const cod = { ...order, fulfillment: 'delivery' as const, pickupAt: null, paymentMethod: 'cod' as const, paymentStatus: 'unpaid' as const };
     expect(messengerOrderText(cod, [orderLine], 'https://x.test/o/t', now)).toContain('Total: ₱360 · Cash on delivery (pay on delivery)');

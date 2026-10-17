@@ -6,7 +6,8 @@ import type { CatalogItem, Category, CategoryDraft, ItemDraft, ItemStatus, Optio
 
 import { qk } from '../keys';
 import { useApiClient } from '../provider';
-import { useShopId } from '../shops/hooks';
+import { useShopId, useShopSlug } from '../shops/hooks';
+import { revalidateStorefront } from '../storefront/revalidate';
 
 import {
   deleteItem,
@@ -26,12 +27,17 @@ import {
 
 // Queries take the shop id; mutations work on the signed-in owner's shop and refresh what they change.
 
-/** Refreshes the catalog (items carry category and option group ids, so those changes refresh it too). */
+/** Refreshes the catalog and triggers on-demand storefront revalidation. */
 function useRefresh() {
   const queryClient = useQueryClient();
+  const client = useApiClient();
   const shopId = useShopId();
-  return (...keys: ('catalog' | 'categories' | 'optionGroups' | 'paymentAccounts' | 'deliveryZones')[]) =>
-    Promise.all(keys.map((key) => queryClient.invalidateQueries({ queryKey: qk[key](shopId()) })));
+  const shopSlug = useShopSlug();
+  return (...keys: ('catalog' | 'categories' | 'optionGroups' | 'paymentAccounts' | 'deliveryZones')[]) => {
+    const slug = shopSlug();
+    if (slug) void revalidateStorefront(client, slug);
+    return Promise.all(keys.map((key) => queryClient.invalidateQueries({ queryKey: qk[key](shopId()) })));
+  };
 }
 
 export function useCategories(tenantId: string) {

@@ -9,6 +9,7 @@ import { Money } from './Money';
 
 export type OrderLinesLine = Pick<OrderLine, 'itemName' | 'variantName' | 'qty' | 'lineTotal' | 'note'> & {
   options: readonly Pick<OrderLine['options'][number], 'name'>[];
+  isReward?: boolean | undefined;
 };
 
 export interface OrderLinesTotals {
@@ -52,11 +53,25 @@ export function OrderLines({ lines, totals, words, renderLineActions, className 
               <div className="flex items-start gap-3">
                 <span className="tabular w-8 shrink-0 font-semibold text-muted-foreground">{words.lineQty(line.qty)}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium break-words">{line.itemName}</p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="font-medium break-words">{line.itemName}</p>
+                    {line.isReward && (
+                      <span className="inline-flex items-center rounded-sm bg-member/15 px-1.5 py-0.5 text-[11px] font-semibold text-member">
+                        Reward
+                      </span>
+                    )}
+                  </div>
                   {details.length > 0 && <p className="text-sm text-muted-foreground">{details.join(', ')}</p>}
                   {line.note && <p className="text-sm text-muted-foreground italic">{words.note(line.note)}</p>}
                 </div>
-                <Money amount={line.lineTotal} className="font-semibold" />
+                {line.isReward ? (
+                  <div className="flex flex-col items-end shrink-0">
+                    <span className="text-xs text-muted-foreground line-through tabular"><Money amount={line.lineTotal} /></span>
+                    <span className="font-semibold text-member">Free</span>
+                  </div>
+                ) : (
+                  <Money amount={line.lineTotal} className="font-semibold" />
+                )}
               </div>
               {renderLineActions && <div className="flex items-center justify-end gap-2 pl-11">{renderLineActions(index)}</div>}
             </li>

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useId } from 'react';
 
 import { errorWords, formatPeso, stampLine, WORDS } from '@smartapp/core';
@@ -20,7 +21,7 @@ const BOX = 'flex flex-col gap-2 rounded-xl border border-member/20 bg-member-so
  * "Use ₱100 off" switch when the reward is ready. Guests (cart only): Join. Nothing when the stamp card is off.
  */
 export function RewardSwitch({ showJoin = false }: { showJoin?: boolean }) {
-  const { openJoin } = useShop();
+  const { storefront, openJoin } = useShop();
   const { signedIn, account, progress } = useMember();
   const reward = useReward();
   const id = useId();
@@ -44,6 +45,23 @@ export function RewardSwitch({ showJoin = false }: { showJoin?: boolean }) {
   }
   if (progress === null) return null;
 
+  const rewardKind = 'rewardKind' in rule ? rule.rewardKind : 'discount';
+  if (rewardKind === 'custom') {
+    return (
+      <div className={`${BOX} flex-row items-center justify-between text-sm font-medium`}>
+        <div className="flex items-center gap-2">
+          <IconGift aria-hidden="true" className="size-5 shrink-0" />
+          <span>{progress.rewardReady ? `Reward ready: ${rule.rewardLabel}` : stampLine(progress, rule.rewardLabel)}</span>
+        </div>
+        {progress.rewardReady && (
+          <Link href={`/${storefront.shop.slug}/rewards`} className="text-xs font-bold underline underline-offset-2">
+            {words.claimPrize}
+          </Link>
+        )}
+      </div>
+    );
+  }
+
   if (!reward.ready) {
     return (
       <p className={`${BOX} flex-row items-center text-sm font-medium`}>
@@ -58,7 +76,7 @@ export function RewardSwitch({ showJoin = false }: { showJoin?: boolean }) {
       <Field orientation="horizontal" className="justify-between gap-3">
         <div className="flex flex-col gap-0.5">
           <FieldLabel htmlFor={id} className="font-semibold">
-            {words.use(formatPeso(rule.rewardAmount))}
+            {rewardKind === 'free_item' ? words.useFreeItem(rule.rewardLabel) : words.use(formatPeso(rule.rewardAmount))}
           </FieldLabel>
           <FieldDescription className="text-member-soft-foreground/80">{reward.on ? words.useHint : stampLine(progress, rule.rewardLabel)}</FieldDescription>
         </div>

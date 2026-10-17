@@ -19,7 +19,8 @@ import type {
 
 import { qk } from '../keys';
 import { useApiClient } from '../provider';
-import { useShopId } from '../shops/hooks';
+import { useShopId, useShopSlug } from '../shops/hooks';
+import { revalidateStorefront } from '../storefront/revalidate';
 
 import {
   addClosure,
@@ -52,10 +53,13 @@ export function useUpdateShopSettings() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   const shopId = useShopId();
+  const shopSlug = useShopSlug();
   return useMutation({
     mutationFn: (patch: ShopSettingsPatch) => updateShopSettings(client, shopId(), patch),
     onSuccess: (settings) => {
       queryClient.setQueryData(qk.shopSettings(settings.tenantId), settings);
+      const slug = shopSlug();
+      if (slug) void revalidateStorefront(client, slug);
     },
   });
 }
@@ -68,6 +72,7 @@ export function useUpdateShopName() {
     mutationFn: (input: { name: string }) => updateShopName(client, shopId(), input.name),
     onSuccess: (tenant: Tenant) => {
       queryClient.setQueryData(qk.myShop, tenant);
+      void revalidateStorefront(client, tenant.slug);
     },
   });
 }
@@ -82,10 +87,13 @@ export function useSaveBusinessHours() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   const shopId = useShopId();
+  const shopSlug = useShopSlug();
   return useMutation({
     mutationFn: (week: readonly DayHours[]) => saveBusinessHours(client, shopId(), week),
     onSuccess: (hours) => {
       queryClient.setQueryData(qk.businessHours(shopId()), hours);
+      const slug = shopSlug();
+      if (slug) void revalidateStorefront(client, slug);
     },
   });
 }
@@ -174,12 +182,15 @@ export function useSaveShopBanners() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   const shopId = useShopId();
+  const shopSlug = useShopSlug();
   return useMutation({
     mutationFn: (banners: readonly ShopBannerDraft[]) => saveShopBanners(client, shopId(), banners),
     onSuccess: (banners) => {
       const id = shopId();
       queryClient.setQueryData(qk.shopBanners(id), banners);
       void queryClient.invalidateQueries({ queryKey: qk.shopBanners(id) });
+      const slug = shopSlug();
+      if (slug) void revalidateStorefront(client, slug);
     },
   });
 }

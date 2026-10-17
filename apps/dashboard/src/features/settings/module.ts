@@ -9,6 +9,7 @@ export const settingsModule = defineAppModule({
   nav: { label: WORDS.dashboard.nav.settings, icon: 'settings', order: 60, placement: 'more' },
   routes: [
     { path: 'settings', screen: () => import('./screens/SettingsScreen') },
+    { path: 'settings/home', crumb: sections.home, screen: () => import('./screens/HomePageScreen') },
     { path: 'settings/look', crumb: sections.look, screen: () => import('./screens/LookScreen') },
     { path: 'settings/info', crumb: sections.info, screen: () => import('./screens/InfoScreen') },
     { path: 'settings/hours', crumb: sections.hours, screen: () => import('./screens/HoursScreen') },

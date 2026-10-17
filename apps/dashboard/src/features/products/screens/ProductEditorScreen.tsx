@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import { ApiError, useCatalog, useCategories, useDeleteItem, useOptionGroups, useSaveItem, useSaveOptionGroup, useSetItemStatus, useSetStock } from '@smartapp/api';
+import { ApiError, mediaUrl, useCatalog, useCategories, useDeleteItem, useOptionGroups, useSaveItem, useSaveOptionGroup, useSetItemStatus, useSetStock } from '@smartapp/api';
 import { errorWords, matchModulePath, WORDS } from '@smartapp/core';
 import type { ApiErrorCode, CatalogItem, Category, OptionGroup } from '@smartapp/core';
 import {
@@ -31,15 +31,16 @@ import { useFormFactor } from '@smartapp/ui/hooks/use-form-factor';
 import { useOnline } from '@smartapp/ui/hooks/use-online';
 import { IconChevronDown, IconTrash } from '@smartapp/ui/icons';
 import { PageBody } from '@smartapp/ui/patterns/PageBody';
+import { PhotoGallery } from '@smartapp/ui/patterns/PhotoGallery';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
 import { LeaveGuard } from '../../../app/LeaveGuard';
+import { usePrecompressedUpload } from '../../../app/media';
 import { useShop, useVocab } from '../../../app/shop';
 import { CategoryDialog } from '../components/CategoryDialog';
 import { CountInput } from '../components/CountInput';
 import { EditorAddOns } from '../components/EditorAddOns';
-import { EditorPhotos } from '../components/EditorPhotos';
 import { EditorVariants } from '../components/EditorVariants';
 import { emptyProduct, groupDrafts, itemDraft, ProductForm, productFromItem, stockChanges } from '../form';
 import { useCategoryDialog } from '../hooks/useCategoryDialog';
@@ -108,7 +109,11 @@ function Editor({ item, categories, shopGroups, catalog }: EditorProps) {
   const trackStock = useWatch({ control: form.control, name: 'trackStock' });
   const groupCount = useWatch({ control: form.control, name: 'groups' }).length;
   const name = useWatch({ control: form.control, name: 'name' });
-  const busy = saving || deleteItem.isPending || setStatus.isPending;
+  const shop = useShop();
+  const uploadPhoto = usePrecompressedUpload('item');
+  const [photosBusy, setPhotosBusy] = useState(false);
+  const aspectRatio = shop.businessType === 'food' ? 1 : 4 / 5;
+  const busy = saving || deleteItem.isPending || setStatus.isPending || photosBusy;
   const disabled = busy || !online;
 
   const leaveTo = (path: string) => {
@@ -185,7 +190,17 @@ function Editor({ item, categories, shopGroups, catalog }: EditorProps) {
           <Controller
             control={form.control}
             name="photos"
-            render={({ field }) => <EditorPhotos value={field.value} onChange={field.onChange} disabled={disabled} />}
+            render={({ field }) => (
+              <PhotoGallery
+                value={field.value}
+                onChange={field.onChange}
+                resolveUrl={(path) => mediaUrl(path, 'thumb')}
+                upload={uploadPhoto}
+                aspectRatio={aspectRatio}
+                disabled={disabled}
+                onBusyChange={setPhotosBusy}
+              />
+            )}
           />
         </Section>
 

@@ -2,9 +2,10 @@
 
 import { useState, useSyncExternalStore } from 'react';
 
-import { toApiError, useOrder, useOrderLive } from '@smartapp/api';
+import { toApiError, useOrder, useOrderLive, useOrderMessages, useRateOrder } from '@smartapp/api';
 import {
   formatManilaTime,
+  mapsLink,
   messengerLink,
   messengerOrderText,
   ticketNo,
@@ -17,12 +18,24 @@ import { Alert, AlertDescription, AlertTitle } from '@smartapp/ui/components/ale
 import { Button, buttonVariants } from '@smartapp/ui/components/button';
 import { QRCode, QRCodeImage, QRCodeSkeleton } from '@smartapp/ui/components/qr-code';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconBrandMessenger, IconCircleCheckFilled, IconDownload, IconReceiptOff } from '@smartapp/ui/icons';
+import {
+  IconBrandMessenger,
+  IconCircleCheckFilled,
+  IconDownload,
+  IconExternalLink,
+  IconMapPin,
+  IconPhone,
+  IconReceiptOff,
+  IconStar,
+  IconTruckDelivery,
+} from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { CopyButton } from '@smartapp/ui/patterns/CopyButton';
 import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
+import { OrderThread } from '@smartapp/ui/patterns/OrderThread';
 import { OrderTimeline } from '@smartapp/ui/patterns/OrderTimeline';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
+import { RatingField } from '@smartapp/ui/patterns/RatingField';
 import { StatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 
 import { InstallCard } from '../install/InstallCard';
@@ -30,6 +43,7 @@ import { ReceiptStamps } from '../members/ReceiptStamps';
 import { useShop } from '../shell/ShopProvider';
 import { subscribeNothing } from '../shell/use-hydrated';
 import { customerOrderLook, customerPaymentLook } from './order-look';
+import { OrderPush } from './OrderPush';
 import { ProofUpload } from './ProofUpload';
 
 const words = WORDS.storefront.receipt;
@@ -93,18 +107,33 @@ function PaymentPart({ receipt }: { receipt: OrderReceipt }) {
   );
 }
 
-function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlaced: boolean }) {
+function ReceiptView({
+  receipt,
+  justPlaced,
+  vapidPublicKey,
+}: {
+  receipt: OrderReceipt;
+  justPlaced: boolean;
+  vapidPublicKey?: string | null;
+}) {
   const { storefront } = useShop();
   const { shop } = storefront;
   const { order, lines, events } = receipt;
   const origin = useOrigin();
   const [now] = useState(() => new Date());
+  const messages = useOrderMessages(order.token);
+  const rate = useRateOrder();
   const ticket = ticketNo(order.orderNo);
   const url = `${origin}/${shop.slug}/o/${order.token}`;
   const text = messengerOrderText(order, lines, url, now);
   const messenger = shop.settings.messengerUsername;
   const isTransfer = TransferMethod.safeParse(order.paymentMethod).success;
   const isProofActive = isTransfer && order.paymentStatus === 'unpaid' && order.status !== 'cancelled' && order.status !== 'expired';
+  const orderPin =
+    order.deliveryPin ??
+    (order.deliveryLat !== null && order.deliveryLat !== undefined && order.deliveryLng !== null && order.deliveryLng !== undefined
+      ? { lat: order.deliveryLat, lng: order.deliveryLng }
+      : null);
 
   const save = () => {
     if ('share' in navigator) {
@@ -163,6 +192,71 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         <PaymentPart receipt={receipt} />
       </section>
 
+      <OrderThread
+        messages={messages.data ?? []}
+        payments={receipt.payments}
+        isOwnerView={false}
+      />
+
+      {order.fulfillment === 'delivery' && (order.addressLine || order.trackingUrl || order.riderName) && (
+        <section aria-labelledby="receipt-delivery" className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
+          <h2 id="receipt-delivery" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            {words.deliveryInfo}
+          </h2>
+          {order.addressLine && (
+            <div>
+              <p className="text-base font-medium">{order.addressLine}</p>
+              {order.landmark && <p className="text-sm text-muted-foreground">{order.landmark}</p>}
+              {orderPin && (
+                <div className="pt-1">
+                  <a
+                    href={mapsLink(orderPin)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-shop-10 hover:underline"
+                  >
+                    <IconMapPin className="size-4" aria-hidden="true" />
+                    <span>{words.openInMaps}</span>
+                    <IconExternalLink className="size-3.5 opacity-70" aria-hidden="true" />
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+          {(order.riderName || order.riderPhone || order.trackingUrl) && (
+            <div className="flex flex-col gap-2 rounded-xl border border-border/40 bg-background/50 p-3 mt-1">
+              {order.riderName && (
+                <p className="text-sm font-semibold">{words.riderName(order.riderName)}</p>
+              )}
+              {order.riderPhone && (
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">{words.riderPhone(order.riderPhone)}</p>
+                  <a
+                    href={`tel:${order.riderPhone}`}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  >
+                    <IconPhone className="size-3.5" aria-hidden="true" />
+                    <span>{words.callRider}</span>
+                  </a>
+                </div>
+              )}
+              {order.trackingUrl && (
+                <a
+                  href={order.trackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonVariants({ variant: 'shop', size: 'sm' }), 'mt-1 w-full sm:w-auto self-start font-bold gap-1.5')}
+                >
+                  <IconTruckDelivery className="size-4" aria-hidden="true" />
+                  <span>{words.trackDelivery}</span>
+                  <IconExternalLink className="size-3.5 opacity-80" aria-hidden="true" />
+                </a>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
       <div className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <OrderLines
           lines={lines}
@@ -171,9 +265,36 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         />
       </div>
 
+      {order.status === 'completed' && (
+        <RatingField
+          readOnly={Boolean(order.rating)}
+          stars={order.rating?.stars ?? null}
+          comment={order.rating?.comment ?? null}
+          onSubmit={(stars, comment) => {
+            rate.mutate({ token: order.token, stars, comment });
+          }}
+          submitting={rate.isPending}
+          words={words.rating}
+        />
+      )}
+
+      <OrderPush order={order} shopName={shop.name} vapidPublicKey={vapidPublicKey ?? null} />
+
       <ReceiptStamps order={order} />
 
       <div className="flex flex-col gap-2 print:hidden">
+        {order.status === 'completed' && shop.settings.googleReviewUrl && (
+          <a
+            href={shop.settings.googleReviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: 'outline', size: 'lg', className: 'border-warning/30 bg-warning/5 text-foreground hover:bg-warning/10' })}
+          >
+            <IconStar aria-hidden="true" className="size-5 text-warning fill-warning" />
+            <span className="font-semibold">{words.reviewOnGoogle}</span>
+            <IconExternalLink aria-hidden="true" className="size-4 ml-auto text-muted-foreground" />
+          </a>
+        )}
         {messenger !== null && (
           <a
             href={messengerLink(messenger, text)}
@@ -202,7 +323,15 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
 }
 
 /** The receipt (P4.4): the order, its live status and the payment step, for anyone with the link. */
-export function Receipt({ token, justPlaced }: { token: string; justPlaced: boolean }) {
+export function Receipt({
+  token,
+  justPlaced,
+  vapidPublicKey,
+}: {
+  token: string;
+  justPlaced: boolean;
+  vapidPublicKey?: string | null;
+}) {
   const order = useOrder(token);
   useOrderLive(token);
   const offline = order.error ? toApiError(order.error).code === 'network' : false;
@@ -221,7 +350,13 @@ export function Receipt({ token, justPlaced }: { token: string; justPlaced: bool
       }}
       offline={offline ? { title: WORDS.shared.offlineShort } : null}
     >
-      {order.data && <ReceiptView receipt={order.data} justPlaced={justPlaced} />}
+      {order.data && (
+        <ReceiptView
+          receipt={order.data}
+          justPlaced={justPlaced}
+          vapidPublicKey={vapidPublicKey ?? null}
+        />
+      )}
     </QueryState>
   );
 }

@@ -1,9 +1,11 @@
 import type { Storefront } from './contracts/db-functions';
+import { mapsLink } from './geo';
 import { formatPeso } from './money';
 import type { Fulfillment, PaymentMethod } from './schemas/enums';
 import { FULFILLMENTS } from './schemas/enums';
 import type { OrderLine } from './schemas/order-line';
 import type { Order } from './schemas/order';
+import type { Pin } from './schemas/pin';
 import { addDays, formatManilaTime, manilaDate, manilaInstant, manilaParts, minutesToTime, openState, ticketNo } from './time';
 import type { WeekdayHours } from './time';
 import { WORDS } from './words';
@@ -104,7 +106,11 @@ export function fulfillmentText(order: Pick<Order, 'fulfillment' | 'pickupAt'>, 
   return words.pickupAt(tomorrow ? WORDS.shared.shop.tomorrow(time) : time);
 }
 
-type MessageOrder = Pick<Order, 'orderNo' | 'fulfillment' | 'pickupAt' | 'total' | 'deliveryFee' | 'paymentMethod' | 'paymentStatus'>;
+type MessageOrder = Pick<Order, 'orderNo' | 'fulfillment' | 'pickupAt' | 'total' | 'deliveryFee' | 'paymentMethod' | 'paymentStatus'> & {
+  deliveryPin?: Pin | null | undefined;
+  deliveryLat?: number | null | undefined;
+  deliveryLng?: number | null | undefined;
+};
 type MessageLine = Pick<OrderLine, 'qty' | 'itemName' | 'variantName' | 'lineTotal' | 'options'>;
 
 /**
@@ -114,6 +120,7 @@ type MessageLine = Pick<OrderLine, 'qty' | 'itemName' | 'variantName' | 'lineTot
  *     2x Iced Latte (Large) - ₱300
  *     1x Ensaymada - ₱45
  *     Total: ₱345 · GCash (proof uploaded)
+ *     Pin: https://www.google.com/maps?q=14.5995,120.9842
  *     Track: https://shop.webserbisyo.com/juans-cafe/o/abc123
  */
 export function messengerOrderText(order: MessageOrder, lines: readonly MessageLine[], trackUrl: string, now: Date): string {
@@ -128,11 +135,18 @@ export function messengerOrderText(order: MessageOrder, lines: readonly MessageL
   });
   const fee = order.deliveryFee > 0 ? [`${WORDS.order.deliveryFee} - ${formatPeso(order.deliveryFee)}`] : [];
   const paid = order.paymentMethod === 'cod' && order.paymentStatus === 'unpaid' ? words.paid.cod : words.paid[order.paymentStatus];
+  const pin =
+    order.deliveryPin ??
+    (order.deliveryLat !== null && order.deliveryLat !== undefined && order.deliveryLng !== null && order.deliveryLng !== undefined
+      ? { lat: order.deliveryLat, lng: order.deliveryLng }
+      : null);
+  const pinLine = pin ? [`Pin: ${mapsLink(pin)}`] : [];
   return [
     words.greeting(ticketNo(order.orderNo), fulfillmentText(order, now)),
     ...lineText,
     ...fee,
     words.total(formatPeso(order.total), WORDS.order.method[order.paymentMethod], paid),
+    ...pinLine,
     words.track(trackUrl),
   ].join('\n');
 }

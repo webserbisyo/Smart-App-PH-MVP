@@ -75,6 +75,7 @@ export const QuoteLine = z.object({
   qty: z.int().positive(),
   lineTotal: Centavos,
   note: z.string().nullable(),
+  isReward: z.boolean().default(false).optional(),
 });
 export type QuoteLine = z.infer<typeof QuoteLine>;
 
@@ -172,6 +173,8 @@ export const SalesReport = z.object({
     ratingCount: z.int().nonnegative().optional(),
   }),
   bestSellers: z.array(z.object({ itemName: z.string().min(1), qty: z.int().positive(), sales: Centavos })),
+  ratingAverage: z.number().nullable().optional(),
+  ratingCount: z.int().nonnegative().optional(),
 });
 export type SalesReport = z.infer<typeof SalesReport>;
 

@@ -5,7 +5,6 @@ import { shopPalette } from '@smartapp/core';
 import { loadStorefront } from '../../../features/shell/shop';
 
 // Per-shop install: "Add to home screen" names the app after the shop and opens its storefront.
-export const dynamic = 'force-dynamic';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ shop: string }> }): Promise<Response> {
   const storefront = await loadStorefront((await params).shop);

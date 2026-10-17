@@ -118,6 +118,7 @@ export function useSubmitPaymentProof() {
     mutationFn: (input: PaymentProofInput): Promise<Payment> => submitPaymentProof(client, input),
     onSuccess: (_payment, input) => {
       void queryClient.invalidateQueries({ queryKey: qk.order(input.token) });
+      void queryClient.invalidateQueries({ queryKey: qk.orderMessages(input.token) });
     },
   });
 }

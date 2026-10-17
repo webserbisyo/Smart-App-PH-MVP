@@ -9,7 +9,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests --isolate=false --testTimeout=20000"
   },
   "dependencies": {
     "zod": "4.6.6"

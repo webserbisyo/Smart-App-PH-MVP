@@ -5,7 +5,6 @@ import { readableTextOn, shopPalette } from '@smartapp/core';
 
 import { loadStorefront } from '../../../features/shell/shop';
 
-export const dynamic = 'force-dynamic';
 
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/);

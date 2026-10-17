@@ -18,7 +18,7 @@ function buzz(): void {
  * (optimistic) and come back with the reason when the database refuses; Out for delivery asks for a tracking link
  * first.
  */
-export function useOrderSteps(openOrder: (orderId: string) => void) {
+export function useOrderSteps(openOrder: (orderId: string) => void, askTracking = true) {
   const vocab = useVocab();
   const advance = useAdvanceOrder();
   const record = useRecordPayment();
@@ -34,7 +34,7 @@ export function useOrderSteps(openOrder: (orderId: string) => void) {
       openOrder(order.id);
       return;
     }
-    if (call.kind === 'advance' && call.askTracking) {
+    if (call.kind === 'advance' && call.askTracking && askTracking) {
       setTrackingFor(order.id);
       return;
     }

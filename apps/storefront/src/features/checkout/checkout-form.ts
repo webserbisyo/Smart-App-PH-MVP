@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { OrderInput } from '@smartapp/api';
-import { Fulfillment, PaymentMethod, WORDS } from '@smartapp/core';
+import { Fulfillment, PaymentMethod, Pin, WORDS } from '@smartapp/core';
 import type { CartLine, QuotePayload } from '@smartapp/core';
 
 // The checkout form (P4.4): what the customer fills in, checked with the words they read, and turned into the
@@ -29,6 +29,7 @@ export function checkoutSchema(rules: CheckoutRules) {
       landmark: z.string().max(200),
       /** `''` is no area (fee confirmed on Messenger). */
       deliveryZoneId: z.string(),
+      pin: Pin.nullable().optional(),
       name: z.string().trim().min(1, words.required.name).max(80),
       /** `+639…`, or null while it is not a mobile number. */
       phone: z.string().nullable(),
@@ -90,7 +91,12 @@ export function toOrderInput(values: CheckoutValues, lines: readonly CartLine[],
     delivery:
       quote.delivery === null
         ? null
-        : { addressLine: values.addressLine.trim(), landmark: landmark === '' ? null : landmark, deliveryZoneId: quote.delivery.deliveryZoneId },
+        : {
+            addressLine: values.addressLine.trim(),
+            landmark: landmark === '' ? null : landmark,
+            deliveryZoneId: quote.delivery.deliveryZoneId,
+            pin: values.pin ?? null,
+          },
     customer: { name: values.name.trim(), phone: values.phone, email: email === '' ? null : email },
     notes: null,
     privacyConsent: true,
