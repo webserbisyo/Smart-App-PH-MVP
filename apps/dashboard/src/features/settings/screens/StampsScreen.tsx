@@ -85,7 +85,6 @@ function StampsEditor({
     rewardItemId,
     rewardVariantId,
     rewardTitle,
-    _rewardDescription,
     rewardImagePath,
   ] = useWatch({
     control: form.control,
@@ -96,7 +95,6 @@ function StampsEditor({
       'rewardItemId',
       'rewardVariantId',
       'rewardTitle',
-      'rewardDescription',
       'rewardImagePath',
     ],
   });
@@ -128,7 +126,7 @@ function StampsEditor({
     if (photo) {
       previewImageUrl = mediaUrl(photo, 'thumb');
     }
-  } else if (rewardKind === 'custom') {
+  } else {
     previewLabel = rewardTitle.trim() || 'Prize';
     if (rewardImagePath) {
       previewImageUrl = mediaUrl(rewardImagePath, 'thumb');

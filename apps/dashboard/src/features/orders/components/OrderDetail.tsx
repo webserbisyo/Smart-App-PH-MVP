@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { toApiError, useOrderDetail, useShopSettings } from '@smartapp/api';
+import { toApiError, useOrderDetail, useOrderMessages, useProofUrl, useShopSettings } from '@smartapp/api';
 import {
   ageLabel,
   canCancel,
@@ -25,8 +25,10 @@ import { useOnline } from '@smartapp/ui/hooks/use-online';
 import { IconDots, IconExternalLink, IconMessage, IconPhone, IconPrinter, IconReceiptOff } from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
+import { OrderThread } from '@smartapp/ui/patterns/OrderThread';
 import { OrderTimeline } from '@smartapp/ui/patterns/OrderTimeline';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
+import { RatingField } from '@smartapp/ui/patterns/RatingField';
 import { OrderStatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 import { StickyActionBar } from '@smartapp/ui/patterns/StickyActionBar';
 
@@ -36,9 +38,9 @@ import { useOrderSteps } from '../../../app/orders/useOrderSteps';
 import { useRuleSettings } from '../../../app/orders/useRuleSettings';
 
 import { CancelDialog } from '../../../app/orders/CancelDialog';
+import { DeliveryCard } from './DeliveryCard';
 import { PaymentCard } from './PaymentCard';
 import { PrintSlip } from './PrintSlip';
-import { TrackingDialog } from '../../../app/orders/TrackingDialog';
 
 const words = WORDS.dashboard.orders;
 const detail = words.detail;
@@ -66,7 +68,10 @@ function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean 
   const ticket = ticketNo(order.orderNo);
   const steps = useOrderSteps(() => {
     document.getElementById(PAYMENT_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+  }, false);
+  const messages = useOrderMessages(order.token);
+  const latestProof = receipt.payments.find((p) => p.proofPath)?.proofPath ?? null;
+  const proofUrl = useProofUrl(latestProof);
   const [main, ...moreSteps] = nextActions(order, settings);
   const late = isLate(order, now);
   const waiting = order.pickupAt ? WORDS.order.pickupAt(formatManilaTime(order.pickupAt)) : ageLabel(minutesSince(order.placedAt, now));
@@ -157,15 +162,16 @@ function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean 
                 ) : null}
               </div>
             ) : null}
-            {order.trackingUrl !== null ? (
-              <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
-                <IconExternalLink aria-hidden="true" className="size-4" />
-                {detail.tracking}
-              </a>
-            ) : null}
             {order.notes !== null ? <p className="break-words text-sm">{detail.notes(order.notes)}</p> : null}
           </CardContent>
         </Card>
+
+        {order.fulfillment === 'delivery' && (
+          <DeliveryCard
+            key={`${order.id}-${order.deliveryProvider ?? ''}-${order.trackingUrl ?? ''}-${order.riderName ?? ''}-${order.riderPhone ?? ''}`}
+            order={order}
+          />
+        )}
 
         <Card size="sm">
           <CardHeader>
@@ -181,6 +187,27 @@ function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean 
         </Card>
 
         <PaymentCard receipt={receipt} id={PAYMENT_ID} />
+
+        <OrderThread
+          messages={messages.data ?? []}
+          payments={receipt.payments}
+          isOwnerView={true}
+          resolveProofUrl={(path) => (path === latestProof && proofUrl.data ? proofUrl.data : undefined)}
+        />
+
+        <Card size="sm">
+          <CardHeader>
+            <CardTitle>{detail.ratingCard.title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RatingField
+              readOnly
+              stars={order.rating?.stars ?? null}
+              comment={order.rating?.comment ?? null}
+              words={{ hint: detail.ratingCard.noRating }}
+            />
+          </CardContent>
+        </Card>
 
         <Card size="sm">
           <CardHeader>
@@ -248,7 +275,6 @@ function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean 
       </div>
 
       <PrintSlip receipt={receipt} shopName={shop.name} />
-      <TrackingDialog open={steps.trackingFor !== null} onClose={steps.closeTracking} onSend={steps.sendOut} />
       <CancelDialog
         order={cancelling ? order : null}
         onClose={() => {

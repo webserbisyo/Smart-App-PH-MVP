@@ -55,7 +55,6 @@ export function RewardCard({
   goal = 10,
   reward = '₱100 off',
   rewardImageUrl,
-  rewardKind: _rewardKind,
   logoUrl,
   shopName,
   signedIn = true,

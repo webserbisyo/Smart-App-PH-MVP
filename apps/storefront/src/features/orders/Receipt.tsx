@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from 'react';
 
-import { toApiError, useOrder, useOrderLive } from '@smartapp/api';
+import { toApiError, useOrder, useOrderLive, useOrderMessages, useRateOrder } from '@smartapp/api';
 import {
   formatManilaTime,
   mapsLink,
@@ -18,12 +18,24 @@ import { Alert, AlertDescription, AlertTitle } from '@smartapp/ui/components/ale
 import { Button, buttonVariants } from '@smartapp/ui/components/button';
 import { QRCode, QRCodeImage, QRCodeSkeleton } from '@smartapp/ui/components/qr-code';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconBrandMessenger, IconCircleCheckFilled, IconDownload, IconExternalLink, IconMapPin, IconReceiptOff, IconStar } from '@smartapp/ui/icons';
+import {
+  IconBrandMessenger,
+  IconCircleCheckFilled,
+  IconDownload,
+  IconExternalLink,
+  IconMapPin,
+  IconPhone,
+  IconReceiptOff,
+  IconStar,
+  IconTruckDelivery,
+} from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { CopyButton } from '@smartapp/ui/patterns/CopyButton';
 import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
+import { OrderThread } from '@smartapp/ui/patterns/OrderThread';
 import { OrderTimeline } from '@smartapp/ui/patterns/OrderTimeline';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
+import { RatingField } from '@smartapp/ui/patterns/RatingField';
 import { StatusBadge } from '@smartapp/ui/patterns/StatusBadge';
 
 import { InstallCard } from '../install/InstallCard';
@@ -100,6 +112,8 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
   const { order, lines, events } = receipt;
   const origin = useOrigin();
   const [now] = useState(() => new Date());
+  const messages = useOrderMessages(order.token);
+  const rate = useRateOrder();
   const ticket = ticketNo(order.orderNo);
   const url = `${origin}/${shop.slug}/o/${order.token}`;
   const text = messengerOrderText(order, lines, url, now);
@@ -168,26 +182,67 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         </div>
         <PaymentPart receipt={receipt} />
       </section>
- 
-      {order.fulfillment === 'delivery' && order.addressLine && (
-        <section aria-labelledby="receipt-delivery" className="flex flex-col gap-2 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
+
+      <OrderThread
+        messages={messages.data ?? []}
+        payments={receipt.payments}
+        isOwnerView={false}
+      />
+
+      {order.fulfillment === 'delivery' && (order.addressLine || order.trackingUrl || order.riderName) && (
+        <section aria-labelledby="receipt-delivery" className="flex flex-col gap-3 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
           <h2 id="receipt-delivery" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            {WORDS.storefront.checkout.address}
+            {words.deliveryInfo}
           </h2>
-          <p className="text-base font-medium">{order.addressLine}</p>
-          {order.landmark && <p className="text-sm text-muted-foreground">{order.landmark}</p>}
-          {orderPin && (
-            <div className="pt-1">
-              <a
-                href={mapsLink(orderPin)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-shop-10 hover:underline"
-              >
-                <IconMapPin className="size-4" aria-hidden="true" />
-                <span>{words.openInMaps}</span>
-                <IconExternalLink className="size-3.5 opacity-70" aria-hidden="true" />
-              </a>
+          {order.addressLine && (
+            <div>
+              <p className="text-base font-medium">{order.addressLine}</p>
+              {order.landmark && <p className="text-sm text-muted-foreground">{order.landmark}</p>}
+              {orderPin && (
+                <div className="pt-1">
+                  <a
+                    href={mapsLink(orderPin)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-shop-10 hover:underline"
+                  >
+                    <IconMapPin className="size-4" aria-hidden="true" />
+                    <span>{words.openInMaps}</span>
+                    <IconExternalLink className="size-3.5 opacity-70" aria-hidden="true" />
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+          {(order.riderName || order.riderPhone || order.trackingUrl) && (
+            <div className="flex flex-col gap-2 rounded-xl border border-border/40 bg-background/50 p-3 mt-1">
+              {order.riderName && (
+                <p className="text-sm font-semibold">{words.riderName(order.riderName)}</p>
+              )}
+              {order.riderPhone && (
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">{words.riderPhone(order.riderPhone)}</p>
+                  <a
+                    href={`tel:${order.riderPhone}`}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  >
+                    <IconPhone className="size-3.5" aria-hidden="true" />
+                    <span>{words.callRider}</span>
+                  </a>
+                </div>
+              )}
+              {order.trackingUrl && (
+                <a
+                  href={order.trackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonVariants({ variant: 'shop', size: 'sm' }), 'mt-1 w-full sm:w-auto self-start font-bold gap-1.5')}
+                >
+                  <IconTruckDelivery className="size-4" aria-hidden="true" />
+                  <span>{words.trackDelivery}</span>
+                  <IconExternalLink className="size-3.5 opacity-80" aria-hidden="true" />
+                </a>
+              )}
             </div>
           )}
         </section>
@@ -200,6 +255,19 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
           words={WORDS.order}
         />
       </div>
+
+      {order.status === 'completed' && (
+        <RatingField
+          readOnly={Boolean(order.rating)}
+          stars={order.rating?.stars ?? null}
+          comment={order.rating?.comment ?? null}
+          onSubmit={(stars, comment) => {
+            rate.mutate({ token: order.token, stars, comment });
+          }}
+          submitting={rate.isPending}
+          words={words.rating}
+        />
+      )}
 
       <ReceiptStamps order={order} />
 

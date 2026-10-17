@@ -16,11 +16,11 @@ import type { ReportRange, SalesReport } from '@smartapp/core';
 import { Button } from '@smartapp/ui/components/button';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
 import { Spinner } from '@smartapp/ui/components/spinner';
-import { Stat, StatIndicator, StatLabel, StatValue } from '@smartapp/ui/components/stat';
+import { Stat, StatDescription, StatIndicator, StatLabel, StatValue } from '@smartapp/ui/components/stat';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@smartapp/ui/components/table';
 import { ToggleGroup, ToggleGroupItem } from '@smartapp/ui/components/toggle-group';
 import { useOnline } from '@smartapp/ui/hooks/use-online';
-import { IconCash, IconChartBar, IconDownload, IconReceipt, IconShoppingBag } from '@smartapp/ui/icons';
+import { IconCash, IconChartBar, IconDownload, IconReceipt, IconShoppingBag, IconStar } from '@smartapp/ui/icons';
 import { Money } from '@smartapp/ui/patterns/Money';
 import { PageBody } from '@smartapp/ui/patterns/PageBody';
 import { QueryState } from '@smartapp/ui/patterns/QueryState';
@@ -58,9 +58,12 @@ function SalesChart({ range, report, today }: { range: ReportRange; report: Sale
 }
 
 function ReportBody({ range, report, today }: { range: ReportRange; report: SalesReport; today: string }) {
+  const ratingAverage = report.ratingAverage ?? report.totals.ratingAverage;
+  const ratingCount = report.ratingCount ?? report.totals.ratingCount ?? 0;
+
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat>
           <StatLabel>{words.sales}</StatLabel>
           <StatIndicator color="success">
@@ -81,6 +84,14 @@ function ReportBody({ range, report, today }: { range: ReportRange; report: Sale
             <IconReceipt />
           </StatIndicator>
           <StatValue>{formatPeso(averageOrder(report.totals.sales, report.totals.paidOrders))}</StatValue>
+        </Stat>
+        <Stat>
+          <StatLabel>{words.rating}</StatLabel>
+          <StatIndicator color="warning">
+            <IconStar />
+          </StatIndicator>
+          <StatValue>{ratingAverage != null ? words.ratingValue(ratingAverage) : '—'}</StatValue>
+          <StatDescription>{ratingCount > 0 ? words.reviews(ratingCount) : words.noRatings}</StatDescription>
         </Stat>
       </div>
 
@@ -178,7 +189,8 @@ export default function ReportsScreen() {
         state={state}
         skeleton={
           <div className="flex flex-col gap-4">
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Skeleton className="h-20 rounded-xl" />
               <Skeleton className="h-20 rounded-xl" />
               <Skeleton className="h-20 rounded-xl" />
               <Skeleton className="h-20 rounded-xl" />

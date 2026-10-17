@@ -173,6 +173,8 @@ export const SalesReport = z.object({
     ratingCount: z.int().nonnegative().optional(),
   }),
   bestSellers: z.array(z.object({ itemName: z.string().min(1), qty: z.int().positive(), sales: Centavos })),
+  ratingAverage: z.number().nullable().optional(),
+  ratingCount: z.int().nonnegative().optional(),
 });
 export type SalesReport = z.infer<typeof SalesReport>;
 

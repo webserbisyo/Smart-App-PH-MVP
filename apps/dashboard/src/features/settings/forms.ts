@@ -364,7 +364,7 @@ export const StampsForm = z
       if (!form.rewardVariantId) {
         ctx.addIssue({ code: 'custom', path: ['rewardVariantId'], message: words.stamps.rewardItemNeeded });
       }
-    } else if (form.rewardKind === 'custom') {
+    } else {
       if (!form.rewardTitle || form.rewardTitle.trim() === '') {
         ctx.addIssue({ code: 'custom', path: ['rewardTitle'], message: words.stamps.rewardTitleNeeded });
       }
@@ -373,7 +373,7 @@ export const StampsForm = z
 export type StampsForm = z.infer<typeof StampsForm>;
 
 export function stampsFromData(rule: RewardRule | StampRule, settings: ShopSettings): StampsForm {
-  const kind = 'rewardKind' in rule && rule.rewardKind ? rule.rewardKind : 'discount';
+  const kind = 'rewardKind' in rule ? rule.rewardKind : 'discount';
   return {
     isActive: rule.isActive,
     stampsNeeded: String(rule.stampsNeeded),
@@ -382,8 +382,8 @@ export function stampsFromData(rule: RewardRule | StampRule, settings: ShopSetti
     rewardAmount: rule.rewardAmount,
     rewardItemId: ('rewardItemId' in rule ? rule.rewardItemId : null) ?? null,
     rewardVariantId: ('rewardVariantId' in rule ? rule.rewardVariantId : null) ?? null,
-    rewardTitle: ('rewardTitle' in rule && rule.rewardTitle ? rule.rewardTitle : '') ?? '',
-    rewardDescription: ('rewardDescription' in rule && rule.rewardDescription ? rule.rewardDescription : '') ?? '',
+    rewardTitle: 'rewardTitle' in rule && rule.rewardTitle ? rule.rewardTitle : '',
+    rewardDescription: 'rewardDescription' in rule && rule.rewardDescription ? rule.rewardDescription : '',
     rewardImagePath: ('rewardImagePath' in rule ? rule.rewardImagePath : null) ?? null,
     showMemberCount: settings.showMemberCount,
   };
@@ -409,7 +409,7 @@ export function stampRuleFromForm(tenantId: string, form: StampsForm, items?: re
       rewardAmount = form.rewardAmount ?? 0;
       rewardLabelText = 'Free item';
     }
-  } else if (kind === 'custom') {
+  } else {
     rewardAmount = 0;
     rewardLabelText = form.rewardTitle.trim();
   }
