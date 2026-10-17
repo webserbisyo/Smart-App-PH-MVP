@@ -2,7 +2,7 @@
 
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CustomerAddress, MemberAccount, RewardRule, StampRule } from '@smartapp/core';
+import type { CustomerAddress, MemberAccount, RewardClaim, RewardRule, StampRule } from '@smartapp/core';
 
 import { useSession } from '../auth/hooks';
 import { qk } from '../keys';
@@ -11,7 +11,9 @@ import { useApiClient } from '../provider';
 
 import {
   claimReward,
+  getCustomerClaims,
   getMyAccount,
+  getMyClaims,
   getStampRule,
   joinAsMember,
   removeMyAddress,
@@ -102,6 +104,7 @@ export function useClaimReward(slug: string) {
     mutationFn: () => claimReward(client, slug),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: qk.myAccount(slug) });
+      void queryClient.invalidateQueries({ queryKey: ['my-claims'] });
     },
   });
 }
@@ -114,9 +117,33 @@ export function useSettleRewardClaim() {
     mutationFn: ({ claimId, given }: { claimId: string; given: boolean }) =>
       settleRewardClaim(client, claimId, given),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.allCustomerClaims });
       void queryClient.invalidateQueries({ queryKey: qk.allCustomers });
       void queryClient.invalidateQueries({ queryKey: qk.allOrders });
+      void queryClient.invalidateQueries({ queryKey: ['my-claims'] });
     },
+  });
+}
+
+/** Owner: returns pending reward claims for a customer. */
+export function useCustomerClaims(customerId: string | null) {
+  const client = useApiClient();
+  return useQuery<RewardClaim[]>({
+    queryKey: customerId ? qk.customerClaims(customerId) : ['customer-claims', null],
+    queryFn: customerId ? () => getCustomerClaims(client, customerId) : skipToken,
+    enabled: customerId !== null,
+  });
+}
+
+/** Signed-in member: returns their claims in the shop. */
+export function useMyClaims(tenantId: string | null) {
+  const client = useApiClient();
+  const session = useSession();
+  const signedIn = session.data !== null && session.data !== undefined;
+  return useQuery<RewardClaim[]>({
+    queryKey: tenantId ? qk.myClaims(tenantId) : ['my-claims', null],
+    queryFn: signedIn && tenantId ? () => getMyClaims(client, tenantId) : skipToken,
+    enabled: signedIn && tenantId !== null,
   });
 }
 

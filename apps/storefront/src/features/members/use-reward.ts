@@ -1,7 +1,7 @@
 'use client';
 
 import { rewardDiscount } from '@smartapp/core';
-import type { StampRule } from '@smartapp/core';
+import type { RewardRule, StampRule } from '@smartapp/core';
 
 import { useShop } from '../shell/ShopProvider';
 import { useMember } from './use-member';
@@ -13,7 +13,7 @@ export interface RewardChoice {
   on: boolean;
   /** The database said the reward is not ready; the switch went off. */
   rejected: boolean;
-  rule: StampRule | null;
+  rule: StampRule | RewardRule | null;
   setOn: (on: boolean) => void;
   /** The cart's estimate of what the reward takes off (checkout shows the database's quote). */
   discount: (subtotal: number) => number;
@@ -23,7 +23,8 @@ export interface RewardChoice {
 export function useReward(): RewardChoice {
   const { reward, setRewardOn } = useShop();
   const { rule, progress } = useMember();
-  const ready = rule !== null && progress?.rewardReady === true;
+  const canUseInOrder = rule !== null && ('rewardKind' in rule ? rule.rewardKind !== 'custom' : true);
+  const ready = canUseInOrder && progress?.rewardReady === true;
   const on = ready && reward.on;
   return {
     ready,

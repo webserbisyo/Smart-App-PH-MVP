@@ -1,4 +1,4 @@
-import { CustomerAddress, dbFunctions, RewardRule } from '@smartapp/core';
+import { CustomerAddress, dbFunctions, RewardClaim, RewardRule } from '@smartapp/core';
 import type { DbFunctionInput, MemberAccount, StampRule } from '@smartapp/core';
 
 import type { ApiClient } from '../client';
@@ -147,5 +147,42 @@ export async function settleRewardClaim(
   const { data, error } = await client.rpc('settle_reward_claim', { p_claim_id: claimId, p_given: given });
   throwIfError(error);
   return fromJson(dbFunctions.settle_reward_claim.output, data);
+}
+
+export function rewardClaimFromRow(row: Tables['reward_claims']['Row']): RewardClaim {
+  return RewardClaim.parse({
+    id: row.id,
+    tenantId: row.tenant_id,
+    customerId: row.customer_id,
+    code: row.code,
+    status: row.status,
+    createdAt: row.created_at,
+    givenAt: row.given_at,
+    cancelledAt: row.cancelled_at,
+  });
+}
+
+/** Owner: returns pending reward claims for a customer in the shop. */
+export async function getCustomerClaims(client: ApiClient, customerId: string): Promise<RewardClaim[]> {
+  const { data, error } = await client
+    .from('reward_claims')
+    .select('*')
+    .eq('customer_id', customerId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  throwIfError(error);
+  return (data ?? []).map(rewardClaimFromRow);
+}
+
+/** Signed-in member: returns their claims in the shop (up to 5 most recent). */
+export async function getMyClaims(client: ApiClient, tenantId: string): Promise<RewardClaim[]> {
+  const { data, error } = await client
+    .from('reward_claims')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false })
+    .limit(5);
+  throwIfError(error);
+  return (data ?? []).map(rewardClaimFromRow);
 }
 

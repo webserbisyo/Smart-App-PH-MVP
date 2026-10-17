@@ -46,6 +46,7 @@ export function shopMedia(storefront: Storefront): Record<string, MediaUrls> {
     ...storefront.categories.flatMap((category) => (category.icon?.kind === 'image' ? [category.icon.path] : [])),
     ...(settings.logoPath ? [settings.logoPath] : []),
     ...(settings.coverPath ? [settings.coverPath] : []),
+    ...(storefront.stampRule?.rewardImagePath ? [storefront.stampRule.rewardImagePath] : []),
     ...storefront.paymentAccounts.flatMap((account) => (account.qrPath && account.isActive ? [account.qrPath] : [])),
   ];
   return Object.fromEntries(paths.map((path) => [path, { thumb: mediaUrl(path, 'thumb'), full: mediaUrl(path, 'full') }]));

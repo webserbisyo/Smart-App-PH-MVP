@@ -38,5 +38,8 @@ export const qk = {
   stampRule: (tenantId: string) => ['stamp-rule', tenantId] as const,
   shopBanners: (tenantId: string) => ['shop-banners', tenantId] as const,
   orderMessages: (token: string) => ['order-messages', token] as const,
+  customerClaims: (customerId: string) => ['customer-claims', customerId] as const,
+  allCustomerClaims: ['customer-claims'] as const,
+  myClaims: (tenantId: string) => ['my-claims', tenantId] as const,
 };
 

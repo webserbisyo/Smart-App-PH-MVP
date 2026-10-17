@@ -182,7 +182,13 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
   const transfer = paymentMethod === null ? null : TransferMethod.safeParse(paymentMethod);
 
   // The database says the reward is not ready (used on another phone, or a stamp was taken back): switch it off.
-  const quoteRefusedReward = quotePayload?.useReward === true && quote.error !== null && toApiError(quote.error).code === 'reward_unavailable';
+  const quoteErrorCode = quote.error ? toApiError(quote.error).code : null;
+  const quoteRefusedReward =
+    quotePayload?.useReward === true &&
+    quoteErrorCode !== null &&
+    (quoteErrorCode === 'reward_unavailable' ||
+      quoteErrorCode === 'reward_item_sold_out' ||
+      quoteErrorCode === 'reward_not_for_orders');
   useEffect(() => {
     if (quoteRefusedReward) rejectReward();
   }, [quoteRefusedReward, rejectReward]);
@@ -476,14 +482,27 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
         </h2>
         <RewardSwitch />
         <OrderLines
-          lines={cart.lines.map((priced) => ({
-            itemName: priced.itemName,
-            variantName: priced.variantName,
-            qty: priced.line.qty,
-            lineTotal: priced.lineTotal,
-            note: priced.line.note,
-            options: priced.options,
-          }))}
+          lines={
+            priced && priced.lines.length > 0
+              ? priced.lines.map((p) => ({
+                  itemName: p.itemName,
+                  variantName: p.variantName,
+                  qty: p.qty,
+                  lineTotal: p.lineTotal,
+                  note: p.note,
+                  options: p.options,
+                  isReward: p.isReward ?? false,
+                }))
+              : cart.lines.map((p) => ({
+                  itemName: p.itemName,
+                  variantName: p.variantName,
+                  qty: p.line.qty,
+                  lineTotal: p.lineTotal,
+                  note: p.line.note,
+                  options: p.options,
+                  isReward: false,
+                }))
+          }
           totals={
             priced
               ? { subtotal: priced.subtotal, deliveryFee: priced.deliveryFee, discount: priced.discountTotal, total: priced.total }
@@ -491,6 +510,8 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
           }
           words={WORDS.order}
           renderLineActions={(index) => {
+            const isRewardLine = priced && priced.lines.length > 0 && priced.lines[index]?.isReward;
+            if (isRewardLine) return null;
             const code = problems.get(index);
             if (code === undefined) return null;
             return (

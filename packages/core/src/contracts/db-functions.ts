@@ -75,6 +75,7 @@ export const QuoteLine = z.object({
   qty: z.int().positive(),
   lineTotal: Centavos,
   note: z.string().nullable(),
+  isReward: z.boolean().default(false).optional(),
 });
 export type QuoteLine = z.infer<typeof QuoteLine>;
 

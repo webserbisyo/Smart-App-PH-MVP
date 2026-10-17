@@ -154,11 +154,36 @@ describe('payment accounts', () => {
 });
 
 describe('stamp card', () => {
-  const rule = { tenantId: TENANT, isActive: false, minOrderTotal: 0, stampsNeeded: 10, rewardLabel: '₱100 off your order', rewardAmount: 10000 };
+  const rule = {
+    tenantId: TENANT,
+    isActive: false,
+    minOrderTotal: 0,
+    stampsNeeded: 10,
+    rewardKind: 'discount' as const,
+    rewardLabel: '₱100 off your order',
+    rewardAmount: 10000,
+    rewardItemId: null,
+    rewardVariantId: null,
+    rewardTitle: null,
+    rewardDescription: null,
+    rewardImagePath: null,
+  };
 
   it('round-trips the card and names the reward from its amount', () => {
     const form = stampsFromData(rule, settings);
-    expect(form).toEqual({ isActive: false, stampsNeeded: '10', minOrderTotal: 0, rewardAmount: 10000, showMemberCount: true });
+    expect(form).toEqual({
+      isActive: false,
+      stampsNeeded: '10',
+      minOrderTotal: 0,
+      rewardKind: 'discount',
+      rewardAmount: 10000,
+      rewardItemId: null,
+      rewardVariantId: null,
+      rewardTitle: '',
+      rewardDescription: '',
+      rewardImagePath: null,
+      showMemberCount: true,
+    });
     expect(stampRuleFromForm(TENANT, { ...form, isActive: true, stampsNeeded: '8', rewardAmount: 5000, minOrderTotal: null })).toEqual({
       ...rule,
       isActive: true,
@@ -168,7 +193,7 @@ describe('stamp card', () => {
     });
   });
 
-  it('needs 1 to 50 stamps and a reward of at least ₱1', () => {
+  it('needs 1 to 50 stamps and a reward of at least ₱1 for discount', () => {
     const form = stampsFromData(rule, settings);
     expect(paths(StampsForm.safeParse(form))).toEqual([]);
     expect(paths(StampsForm.safeParse({ ...form, stampsNeeded: '0' }))).toEqual(['stampsNeeded']);
@@ -177,4 +202,14 @@ describe('stamp card', () => {
     expect(paths(StampsForm.safeParse({ ...form, rewardAmount: null }))).toEqual(['rewardAmount']);
     expect(paths(StampsForm.safeParse({ ...form, rewardAmount: 50 }))).toEqual(['rewardAmount']);
   });
+
+  it('validates free_item and custom rewards', () => {
+    const form = stampsFromData(rule, settings);
+    const freeItem = StampsForm.safeParse({ ...form, rewardKind: 'free_item', rewardItemId: null, rewardVariantId: null });
+    expect(paths(freeItem)).toEqual(['rewardItemId', 'rewardVariantId']);
+
+    const custom = StampsForm.safeParse({ ...form, rewardKind: 'custom', rewardTitle: '' });
+    expect(paths(custom)).toEqual(['rewardTitle']);
+  });
 });
+
