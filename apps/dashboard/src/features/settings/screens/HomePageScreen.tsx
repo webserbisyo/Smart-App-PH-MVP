@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
@@ -108,9 +109,7 @@ function BannerSlideEditor({
         return;
       }
 
-      const storefrontUrl =
-        (import.meta as unknown as { env?: { VITE_STOREFRONT_URL?: string } }).env
-          ?.VITE_STOREFRONT_URL ?? 'http://localhost:3000';
+      const storefrontUrl = import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:3000';
       const response = await fetch(`${storefrontUrl}/api/media/import`, {
         method: 'POST',
         headers: {
@@ -120,13 +119,21 @@ function BannerSlideEditor({
         body: JSON.stringify({ url, tenantId }),
       });
 
+      const body: unknown = await response.json().catch(() => null);
+
       if (!response.ok) {
-        const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-        throw new Error(errorData.error ?? `Import failed (${String(response.status)})`);
+        const errorSchema = z.object({ error: z.string().optional() });
+        const parsedError = errorSchema.safeParse(body);
+        const errorMsg = parsedError.success && parsedError.data.error ? parsedError.data.error : `Import failed (${String(response.status)})`;
+        throw new Error(errorMsg);
       }
 
-      const result = (await response.json()) as { path: string };
-      onImageImported(result.path);
+      const resultSchema = z.object({ path: z.string() });
+      const parsedResult = resultSchema.safeParse(body);
+      if (!parsedResult.success) {
+        throw new Error('Import response was invalid.');
+      }
+      onImageImported(parsedResult.data.path);
       setPasteLinkInput('');
       toast.success(words.importSuccess);
     } catch (err: unknown) {

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { IconBike, IconBuildingStore, IconChevronDown, IconWalk } from '@tabler/icons-react';
+import { IconBike, IconBuildingStore, IconChevronDown, IconMapPin, IconWalk } from '@tabler/icons-react';
 
-import { formatPeso, WORDS } from '@smartapp/core';
-import type { Fulfillment } from '@smartapp/core';
+import { findNearestZone, formatPeso, WORDS } from '@smartapp/core';
+import type { Fulfillment, Pin } from '@smartapp/core';
 import { Button } from '#components/button';
 import {
   ResponsiveDialog,
@@ -13,6 +13,7 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '#components/responsive-dialog';
+import { Spinner } from '#components/spinner';
 import { cn } from '#lib/utils';
 
 export interface DeliveryZoneChoice {
@@ -21,6 +22,10 @@ export interface DeliveryZoneChoice {
   fee: number;
   minOrderTotal?: number | null | undefined;
   etaMinutes?: number | null | undefined;
+  centerLat?: number | null | undefined;
+  centerLng?: number | null | undefined;
+  center?: Pin | null | undefined;
+  isActive?: boolean | undefined;
 }
 
 export interface AreaChoice {
@@ -34,6 +39,7 @@ export interface AreaPillProps {
   zones?: readonly DeliveryZoneChoice[] | undefined;
   selectedZoneId?: string | null | undefined;
   onChoiceChange: (choice: AreaChoice) => void;
+  onLocationPin?: ((pin: Pin) => void) | undefined;
   className?: string | undefined;
 }
 
@@ -53,11 +59,15 @@ export function AreaPill({
   zones = [],
   selectedZoneId,
   onChoiceChange,
+  onLocationPin,
   className,
 }: AreaPillProps) {
   const [open, setOpen] = useState(false);
   const [draftType, setDraftType] = useState<Fulfillment>(fulfillment);
   const [draftZoneId, setDraftZoneId] = useState<string | null>(selectedZoneId ?? null);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+  const [suggestedZoneId, setSuggestedZoneId] = useState<string | null>(null);
 
   const selectedZone = zones.find((z) => z.id === (selectedZoneId ?? undefined));
   const TypeIcon = TYPE_ICONS[fulfillment];
@@ -67,9 +77,41 @@ export function AreaPill({
     pillLabel = `${WORDS.order.fulfillment.delivery} · ${selectedZone.name}`;
   }
 
+  const handleUseLocation = () => {
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+      setLocError(WORDS.storefront.area.locationError);
+      return;
+    }
+    setLocating(true);
+    setLocError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        const userPin: Pin = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracyMeters: pos.coords.accuracy,
+        };
+        onLocationPin?.(userPin);
+        const nearest = findNearestZone(zones, userPin);
+        if (nearest) {
+          setDraftZoneId(nearest.zone.id);
+          setSuggestedZoneId(nearest.zone.id);
+        }
+      },
+      () => {
+        setLocating(false);
+        setLocError(WORDS.storefront.area.locationError);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
   const handleOpen = () => {
     setDraftType(fulfillment);
     setDraftZoneId(selectedZoneId ?? null);
+    setLocError(null);
+    setSuggestedZoneId(null);
     setOpen(true);
   };
 
@@ -139,15 +181,30 @@ export function AreaPill({
           {/* Delivery zones list when delivery is chosen */}
           {draftType === 'delivery' && (
             <div className="flex flex-col gap-2 pt-2 border-t">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Delivery Zones
-              </span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Delivery Zones
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={locating}
+                  onClick={handleUseLocation}
+                  className="h-7 gap-1 px-2 text-xs font-semibold text-shop-10 hover:text-shop-10 hover:bg-shop-10-soft"
+                >
+                  {locating ? <Spinner className="size-3" /> : <IconMapPin className="size-3.5" aria-hidden="true" />}
+                  <span>{WORDS.storefront.area.useCurrentLocation}</span>
+                </Button>
+              </div>
+              {locError && <p className="text-xs text-destructive-text">{locError}</p>}
               {zones.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No specific delivery zones configured.</p>
               ) : (
                 <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto">
                   {zones.map((zone) => {
                     const isSelected = draftZoneId === zone.id;
+                    const isSuggested = suggestedZoneId === zone.id;
                     return (
                       <button
                         key={zone.id}
@@ -163,7 +220,14 @@ export function AreaPill({
                         )}
                       >
                         <div className="flex min-w-0 flex-col">
-                          <span className="truncate">{zone.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate">{zone.name}</span>
+                            {isSuggested && (
+                              <span className="rounded-full bg-shop-10/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-shop-10">
+                                Suggested
+                              </span>
+                            )}
+                          </div>
                           {zone.etaMinutes && (
                             <span className="text-xs text-muted-foreground">
                               ~{String(zone.etaMinutes)} mins

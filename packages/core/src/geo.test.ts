@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { distanceKm, mapsLink, pinFromMapsLink, trackingHostOk } from './geo';
+import { distanceKm, findNearestZone, mapsLink, pinFromMapsLink, trackingHostOk } from './geo';
 import { Pin } from './schemas/pin';
 
 describe('Pin schema', () => {
@@ -103,3 +103,31 @@ describe('trackingHostOk', () => {
     expect(trackingHostOk('lalamove', 'https://user@lalamove.com')).toBe(false);
   });
 });
+
+describe('findNearestZone', () => {
+  const zones = [
+    { id: 'z1', name: 'Zone 1 (Poblacion)', centerLat: 14.5995, centerLng: 120.9842, isActive: true },
+    { id: 'z2', name: 'Zone 2 (Quezon City)', centerLat: 14.6488, centerLng: 121.0509, isActive: true },
+    { id: 'z3', name: 'Zone 3 (Inactive)', centerLat: 14.5996, centerLng: 120.9843, isActive: false },
+    { id: 'z4', name: 'Zone 4 (No center)', isActive: true },
+  ];
+
+  it('finds the nearest active zone with coordinates', () => {
+    const nearManila: Pin = { lat: 14.6000, lng: 120.9850 };
+    const nearest = findNearestZone(zones, nearManila);
+    expect(nearest).not.toBeNull();
+    expect(nearest?.zone.id).toBe('z1');
+  });
+
+  it('ignores inactive zones and zones without coordinates', () => {
+    const nearInactive: Pin = { lat: 14.5996, lng: 120.9843 };
+    const nearest = findNearestZone(zones, nearInactive);
+    expect(nearest?.zone.id).toBe('z1');
+  });
+
+  it('returns null if no zones have coordinates', () => {
+    const result = findNearestZone([{ id: 'z4', name: 'Zone 4', isActive: true }], { lat: 14.6, lng: 121.0 });
+    expect(result).toBeNull();
+  });
+});
+

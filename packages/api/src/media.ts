@@ -91,7 +91,7 @@ export async function uploadImportedMedia(
   });
 
   const { data: auth, error: authError } = await client.auth.getUser(token);
-  if (authError || !auth.user) {
+  if (authError !== null) {
     throw new ApiError('not_signed_in');
   }
 

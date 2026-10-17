@@ -1,7 +1,10 @@
-import { ageLabel, canCancel, formatManilaTime, isLate, minutesSince, nextActions, WORDS } from '@smartapp/core';
+import { useShopSettings } from '@smartapp/api';
+import { ageLabel, canCancel, distanceKm, formatManilaTime, isLate, mapsLink, minutesSince, nextActions, WORDS } from '@smartapp/core';
 import type { BoardOrder, OrderAction, RuleSettings } from '@smartapp/core';
 import { OrderCard } from '@smartapp/ui/patterns/OrderCard';
 import type { OrderCardAction } from '@smartapp/ui/patterns/OrderCard';
+
+import { useShop } from '../shop';
 
 const words = WORDS.order;
 const boardWords = WORDS.dashboard.orders;
@@ -42,6 +45,38 @@ export function BoardCard({ card, settings, now, pending, onStep, onOpen, onCanc
     ...(canCancel(order) ? [{ key: 'cancel', label: boardWords.cancel, onSelect: onCancel }] : []),
   ];
   const timeText = order.pickupAt ? words.pickupAt(formatManilaTime(order.pickupAt)) : ageLabel(minutesSince(order.placedAt, now));
+  const shop = useShop();
+  const shopSettings = useShopSettings(shop.id);
+  const settingsData = shopSettings.data;
+  const shopPin =
+    settingsData?.pin ??
+    (settingsData !== undefined &&
+    settingsData.shopLat !== null &&
+    settingsData.shopLat !== undefined &&
+    settingsData.shopLng !== null &&
+    settingsData.shopLng !== undefined
+      ? { lat: settingsData.shopLat, lng: settingsData.shopLng }
+      : null);
+  const orderPin =
+    order.deliveryPin ??
+    (order.deliveryLat !== null &&
+    order.deliveryLat !== undefined &&
+    order.deliveryLng !== null &&
+    order.deliveryLng !== undefined
+      ? { lat: order.deliveryLat, lng: order.deliveryLng }
+      : null);
+
+  const deliveryInfo = orderPin
+    ? {
+        mapUrl: mapsLink(orderPin),
+        mapLabel: boardWords.detail.openInMaps,
+        distance:
+          shopPin !== null
+            ? boardWords.detail.straightLineDistance(distanceKm(shopPin, orderPin).toFixed(1))
+            : null,
+      }
+    : null;
+
   return (
     <OrderCard
       order={{ ...order, lines: card.lines }}
@@ -51,6 +86,7 @@ export function BoardCard({ card, settings, now, pending, onStep, onOpen, onCanc
       words={{ fulfillment: words.fulfillment, more: words.more, moreItems: words.moreItems }}
       onOpen={onOpen}
       variant={variant}
+      deliveryInfo={deliveryInfo}
       {...(selected ? { className: 'ring-2 ring-primary' } : {})}
     />
   );

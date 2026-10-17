@@ -39,14 +39,29 @@ export interface OrderCardProps {
   late?: boolean;
   words: { fulfillment: Readonly<Record<Fulfillment, string>>; more: string; moreItems: (count: number) => string };
   /** Compact: Home's "In progress" list and a customer's orders (no item lines; the steps show when given). */
-  variant?: 'normal' | 'compact';
+  variant?: 'normal' | 'compact' | undefined;
   /** Tapping the card (not a button) opens the order. */
-  onOpen?: () => void;
-  className?: string;
+  onOpen?: (() => void) | undefined;
+  className?: string | undefined;
+  deliveryInfo?: {
+    mapUrl: string;
+    mapLabel: string;
+    distance?: string | null | undefined;
+  } | null | undefined;
 }
 
 /** One order wherever an order appears: the board, Home, a customer's orders. */
-export function OrderCard({ order, actions, timeText, late = false, words, variant = 'normal', onOpen, className }: OrderCardProps) {
+export function OrderCard({
+  order,
+  actions,
+  timeText,
+  late = false,
+  words,
+  variant = 'normal',
+  onOpen,
+  className,
+  deliveryInfo,
+}: OrderCardProps) {
   const [main, ...more] = actions;
   const busy = actions.some((action) => action.pending);
   const summary = itemsSummary(order.lines);
@@ -86,6 +101,25 @@ export function OrderCard({ order, actions, timeText, late = false, words, varia
           <PaymentBadge status={order.paymentStatus} method={order.paymentMethod} />
         </div>
       </button>
+
+      {deliveryInfo ? (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+          <a
+            href={deliveryInfo.mapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {deliveryInfo.mapLabel}
+          </a>
+          {deliveryInfo.distance ? (
+            <span className="text-muted-foreground">{deliveryInfo.distance}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       {main && (
         <div className="flex items-center gap-2">

@@ -87,6 +87,12 @@ export const WORDS = {
       addressPlaceholder: 'House no., street, barangay',
       landmark: 'Landmark (optional)',
       landmarkPlaceholder: 'Near the blue gate',
+      useCurrentLocation: 'Use my current location',
+      locationConsent: "We'll send your pin to the shop with this order so the rider can find you.",
+      pinAdded: 'Pin added',
+      pinAccuracy: (m: number) => (m > 100 ? `about ${String(Math.round(m))} m · add a landmark` : `about ${String(Math.round(m))} m`),
+      removePin: 'Remove pin',
+      locationError: 'Could not get your location. Type your address below.',
       zone: 'Delivery area',
       chooseZone: 'Choose your area',
       /** "Poblacion · ₱50". */
@@ -176,6 +182,7 @@ export const WORDS = {
       save: 'Save receipt',
       shareTitle: (shop: string, ticket: string) => `${shop} order ${ticket}`,
       reviewOnGoogle: 'Review us on Google',
+      openInMaps: 'Open in Google Maps',
       slip: 'ORDER SLIP · NOT AN OFFICIAL RECEIPT',
       /** The Messenger and "Copy order details" text (paper 6.6). */
       message: {
@@ -189,6 +196,11 @@ export const WORDS = {
         },
         track: (url: string) => `Track: ${url}`,
       },
+    },
+    area: {
+      useCurrentLocation: 'Use my location',
+      suggestedZone: (name: string) => `Suggested: ${name}`,
+      locationError: 'Could not get your location. Choose your area from the list.',
     },
     /** My orders (P4.4, guest): the orders placed on this phone. */
     orders: {
@@ -223,6 +235,12 @@ export const WORDS = {
       addressLabelPlaceholder: 'Home',
       addressLine: 'Address',
       landmark: 'Landmark (optional)',
+      useCurrentLocation: 'Use my current location',
+      locationConsent: "We'll save your pin with this address so riders can find you faster.",
+      pinAdded: 'Pin added',
+      pinAccuracy: (m: number) => (m > 100 ? `about ${String(Math.round(m))} m · add a landmark` : `about ${String(Math.round(m))} m`),
+      removePin: 'Remove pin',
+      locationError: 'Could not get your location. Type your address below.',
       save: 'Save',
       saved: 'Address saved.',
       removed: 'Address removed.',
@@ -285,6 +303,9 @@ export const WORDS = {
       /** The words inside the step drawings. */
       drawing: { menuRow: 'Add to Home Screen', add: 'Add' },
       gotIt: 'Got it',
+    },
+    privacy: {
+      pinNotice: 'Delivery location pins: Used only to help the rider find your drop-off spot for that order or saved address, and can be removed anytime.',
     },
   },
   dashboard: {
@@ -485,6 +506,8 @@ export const WORDS = {
         customer: 'Customer',
         address: 'Delivery address',
         landmark: (landmark: string) => `Landmark: ${landmark}`,
+        openInMaps: 'Open in Google Maps',
+        straightLineDistance: (km: string) => `~${km} km from the shop (straight line)`,
         notes: (notes: string) => `Customer note: ${notes}`,
         tracking: 'Tracking link',
         items: 'Items',
@@ -672,6 +695,7 @@ export const WORDS = {
         useCurrentLocation: 'Use my current location here',
         pasteMapsLink: 'Paste a Google Maps link',
         pasteMapsLinkHint: 'Open Google Maps, tap Share, then copy the link.',
+        shortLinkHint: 'Open the link, then copy the long address from the browser.',
         checkOnMaps: 'Check on Google Maps',
         removePin: 'Remove pin',
         straightLineDistance: (km: string) => `~${km} km from the shop (straight line)`,
@@ -709,6 +733,8 @@ export const WORDS = {
         zoneName: 'Area',
         zonePlaceholder: 'Within Poblacion',
         zoneFee: 'Fee',
+        zoneCenter: 'Area center (optional)',
+        zoneCenterHint: 'Drop a pin or paste a Google Maps link to suggest this area to nearby customers.',
         addZone: 'Add area',
         moveZone: (name: string) => `Move ${name}`,
         removeZone: (name: string) => `Remove ${name}`,

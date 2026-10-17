@@ -13,13 +13,14 @@ import {
   errorWords,
   formatPeso,
   Fulfillment,
+  mapsLink,
   PaymentMethod,
   pickupSlots,
   TransferMethod,
   VOCAB,
   WORDS,
 } from '@smartapp/core';
-import type { Fulfillment as FulfillmentValue } from '@smartapp/core';
+import type { Fulfillment as FulfillmentValue, Pin } from '@smartapp/core';
 import { FLUENT_ICONS } from '@smartapp/ui/assets/fluent';
 import { Alert, AlertDescription } from '@smartapp/ui/components/alert';
 import { Button, buttonVariants } from '@smartapp/ui/components/button';
@@ -33,6 +34,7 @@ import { Skeleton } from '@smartapp/ui/components/skeleton';
 import { Spinner } from '@smartapp/ui/components/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@smartapp/ui/components/toggle-group';
 import { useOnline } from '@smartapp/ui/hooks/use-online';
+import { IconCheck, IconExternalLink, IconMapPin } from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
 import { PhoneField } from '@smartapp/ui/patterns/PhoneField';
@@ -73,7 +75,7 @@ function methodHint(method: PaymentMethod, fulfillment: FulfillmentValue): strin
 }
 
 function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
-  const { storefront, cart, block, removeLine, clearCart, rejectReward } = useShop();
+  const { storefront, cart, block, removeLine, clearCart, rejectReward, detectedPin, setDetectedPin } = useShop();
   const { account } = useMember();
   const reward = useReward();
   const router = useRouter();
@@ -108,6 +110,7 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
       addressLine: '',
       landmark: '',
       deliveryZoneId: '',
+      pin: detectedPin,
       name: remembered?.name ?? '',
       phone: remembered?.phone ?? null,
       email: remembered?.email ?? '',
@@ -123,6 +126,40 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
     name: ['fulfillment', 'pickupAt', 'deliveryZoneId', 'paymentMethod'],
   });
   const methods = allowedPaymentMethods(fulfillment, settings, paymentAccounts);
+  const pin = useWatch({ control: form.control, name: 'pin' });
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+
+  const handleUseLocation = () => {
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+      setLocError(words.locationError);
+      return;
+    }
+    setLocating(true);
+    setLocError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        const userPin: Pin = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracyMeters: pos.coords.accuracy,
+        };
+        form.setValue('pin', userPin, { shouldDirty: true });
+        setDetectedPin(userPin);
+      },
+      () => {
+        setLocating(false);
+        setLocError(words.locationError);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
+  const handleRemovePin = () => {
+    form.setValue('pin', null, { shouldDirty: true });
+    setDetectedPin(null);
+  };
 
   // A pickup time that has passed falls back to as soon as possible.
   useEffect(() => {
@@ -164,6 +201,14 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
       if (value !== '' && !form.getFieldState(field).isDirty) form.setValue(field, value);
     }
     if (!form.getFieldState('phone').isDirty) form.setValue('phone', account.customer.phone);
+    if (address && !form.getFieldState('pin').isDirty) {
+      const addressPin =
+        address.pin ??
+        (address.lat !== null && address.lat !== undefined && address.lng !== null && address.lng !== undefined
+          ? { lat: address.lat, lng: address.lng }
+          : null);
+      if (addressPin) form.setValue('pin', addressPin);
+    }
   }, [account, form]);
 
   const changeFulfillment = (next: FulfillmentValue) => {
@@ -271,6 +316,61 @@ function CheckoutForm({ onPlaced }: { onPlaced: () => void }) {
                 />
                 <FieldError>{errors.addressLine?.message}</FieldError>
               </Field>
+
+              <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-shop-10-soft/20 p-3">
+                <p className="text-xs text-muted-foreground">{words.locationConsent}</p>
+                {pin ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                        <IconCheck className="size-3.5" aria-hidden="true" />
+                        {words.pinAdded}
+                      </span>
+                      {pin.accuracyMeters != null && (
+                        <span className="text-xs text-muted-foreground">
+                          · {words.pinAccuracy(pin.accuracyMeters)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={mapsLink(pin)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-shop-10 hover:underline"
+                      >
+                        <IconExternalLink className="size-3" aria-hidden="true" />
+                        <span>{WORDS.storefront.receipt.openInMaps}</span>
+                      </a>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemovePin}
+                        className="h-6 px-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        {words.removePin}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={locating}
+                      onClick={handleUseLocation}
+                      className="self-start gap-1.5 text-xs"
+                    >
+                      {locating ? <Spinner className="size-3" /> : <IconMapPin className="size-3.5 text-shop-10" aria-hidden="true" />}
+                      <span>{words.useCurrentLocation}</span>
+                    </Button>
+                    {locError && <p className="text-xs text-destructive-text">{locError}</p>}
+                  </div>
+                )}
+              </div>
+
               <Field>
                 <FieldLabel htmlFor="landmark">{words.landmark}</FieldLabel>
                 <Input id="landmark" placeholder={words.landmarkPlaceholder} {...form.register('landmark')} />

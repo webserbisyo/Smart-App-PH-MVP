@@ -33,7 +33,7 @@ function parseIpv4Octets(ip: string): [number, number, number, number] | null {
   return [o0, o1, o2, o3];
 }
 
-function isPrivateIpv4Octets(o1: number, o2: number, o3: number, _o4: number): boolean {
+function isPrivateIpv4Octets(o1: number, o2: number, o3: number): boolean {
   // 0.0.0.0/8 (Current network / "this" network)
   if (o1 === 0) return true;
 
@@ -101,7 +101,7 @@ export function isBlockedIp(rawIp: string): boolean {
   if (mappedDottedMatch && mappedDottedMatch[1]) {
     const octets = parseIpv4Octets(mappedDottedMatch[1]);
     if (!octets) return true;
-    return isPrivateIpv4Octets(octets[0], octets[1], octets[2], octets[3]);
+    return isPrivateIpv4Octets(octets[0], octets[1], octets[2]);
   }
 
   // Check for IPv4-mapped IPv6 in hexadecimal: ::ffff:7f00:1 or ::ffff:7f00:0001
@@ -112,8 +112,7 @@ export function isBlockedIp(rawIp: string): boolean {
     const o1 = (hi >> 8) & 0xff;
     const o2 = hi & 0xff;
     const o3 = (lo >> 8) & 0xff;
-    const o4 = lo & 0xff;
-    return isPrivateIpv4Octets(o1, o2, o3, o4);
+    return isPrivateIpv4Octets(o1, o2, o3);
   }
 
   // Refuse all other IPv6 addresses (pure IPv6, link-local, loopback, unique local, etc.)
@@ -128,5 +127,5 @@ export function isBlockedIp(rawIp: string): boolean {
     return true;
   }
 
-  return isPrivateIpv4Octets(octets[0], octets[1], octets[2], octets[3]);
+  return isPrivateIpv4Octets(octets[0], octets[1], octets[2]);
 }

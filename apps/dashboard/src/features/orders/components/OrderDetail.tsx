@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
-import { toApiError, useOrderDetail } from '@smartapp/api';
+import { toApiError, useOrderDetail, useShopSettings } from '@smartapp/api';
 import {
   ageLabel,
   canCancel,
+  distanceKm,
   formatManilaTime,
   formatPhPhone,
   isLate,
+  mapsLink,
   minutesSince,
   nextActions,
   ticketNo,
@@ -55,6 +57,7 @@ function DetailSkeleton() {
 
 function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean }) {
   const shop = useShop();
+  const shopSettings = useShopSettings(shop.id);
   const online = useOnline();
   const settings = useRuleSettings();
   const now = useNow();
@@ -67,6 +70,26 @@ function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean 
   const [main, ...moreSteps] = nextActions(order, settings);
   const late = isLate(order, now);
   const waiting = order.pickupAt ? WORDS.order.pickupAt(formatManilaTime(order.pickupAt)) : ageLabel(minutesSince(order.placedAt, now));
+
+  const settingsData = shopSettings.data;
+  const shopPin =
+    settingsData?.pin ??
+    (settingsData !== undefined &&
+    settingsData.shopLat !== null &&
+    settingsData.shopLat !== undefined &&
+    settingsData.shopLng !== null &&
+    settingsData.shopLng !== undefined
+      ? { lat: settingsData.shopLat, lng: settingsData.shopLng }
+      : null);
+  const orderPin =
+    order.deliveryPin ??
+    (order.deliveryLat !== null &&
+    order.deliveryLat !== undefined &&
+    order.deliveryLng !== null &&
+    order.deliveryLng !== undefined
+      ? { lat: order.deliveryLat, lng: order.deliveryLng }
+      : null);
+  const straightDistance = shopPin !== null && orderPin !== null ? distanceKm(shopPin, orderPin) : null;
 
   return (
     <div className="flex min-h-full flex-col gap-4">
@@ -108,10 +131,30 @@ function DetailView({ receipt, panel }: { receipt: OrderReceipt; panel: boolean 
               </div>
             </div>
             {order.addressLine !== null ? (
-              <div className="text-sm">
-                <p className="text-xs text-muted-foreground">{detail.address}</p>
-                <p className="break-words">{order.addressLine}</p>
-                {order.landmark !== null ? <p className="break-words text-muted-foreground">{detail.landmark(order.landmark)}</p> : null}
+              <div className="flex flex-col gap-1.5 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">{detail.address}</p>
+                  <p className="break-words">{order.addressLine}</p>
+                  {order.landmark !== null ? <p className="break-words text-muted-foreground">{detail.landmark(order.landmark)}</p> : null}
+                </div>
+                {orderPin ? (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <a
+                      href={mapsLink(orderPin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      <IconExternalLink aria-hidden="true" className="size-4" />
+                      {detail.openInMaps}
+                    </a>
+                    {straightDistance !== null ? (
+                      <span className="text-xs text-muted-foreground">
+                        {detail.straightLineDistance(straightDistance.toFixed(1))}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ) : null}
             {order.trackingUrl !== null ? (

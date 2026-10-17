@@ -63,9 +63,16 @@ describe('checkout form', () => {
       rules,
     );
     expect(OrderPayload.safeParse({ ...input, clientKey: '0d6e4f7a-3b2c-4d1e-9f8a-7b6c5d4e3f2a' }).success).toBe(true);
-    expect(input?.delivery).toEqual({ addressLine: '12 Rizal St.', landmark: null, deliveryZoneId: zone });
+    expect(input?.delivery).toEqual({ addressLine: '12 Rizal St.', landmark: null, deliveryZoneId: zone, pin: null });
     expect(input?.customer).toEqual({ name: 'Maria Santos', phone: '+639171234567', email: 'maria@gmail.com' });
     expect(toOrderInput({ ...values, privacy: false }, [line], rules)).toBeNull();
+
+    const withPin = toOrderInput(
+      { ...values, fulfillment: 'delivery', addressLine: '12 Rizal St.', deliveryZoneId: zone, paymentMethod: 'cash', pin: { lat: 14.5995, lng: 120.9842 } },
+      [line],
+      rules,
+    );
+    expect(withPin?.delivery?.pin).toEqual({ lat: 14.5995, lng: 120.9842 });
   });
 
   it('asks for the reward only when the member switched it on', () => {

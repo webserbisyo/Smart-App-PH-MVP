@@ -75,7 +75,7 @@ export interface StoreNavProps {
  */
 export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
   const pathname = usePathname();
-  const { storefront, media, block, cart, added, openCart } = useShop();
+  const { storefront, media, block, cart, added, openCart, setDetectedPin } = useShop();
   const keyboardOpen = useKeyboardOpen();
   const [updatesOpen, setUpdatesOpen] = useState(false);
   const deviceTokens = useMyOrderTokens(slug);
@@ -132,6 +132,7 @@ export function StoreNav({ slug, shopName, catalogLabel }: StoreNavProps) {
       zones={storefront.deliveryZones}
       selectedZoneId={areaChoice.zoneId}
       onChoiceChange={handleAreaChoice}
+      onLocationPin={setDetectedPin}
     />
   );
 

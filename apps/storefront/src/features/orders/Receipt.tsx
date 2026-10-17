@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from 'react';
 import { toApiError, useOrder, useOrderLive } from '@smartapp/api';
 import {
   formatManilaTime,
+  mapsLink,
   messengerLink,
   messengerOrderText,
   ticketNo,
@@ -17,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@smartapp/ui/components/ale
 import { Button, buttonVariants } from '@smartapp/ui/components/button';
 import { QRCode, QRCodeImage, QRCodeSkeleton } from '@smartapp/ui/components/qr-code';
 import { Skeleton } from '@smartapp/ui/components/skeleton';
-import { IconBrandMessenger, IconCircleCheckFilled, IconDownload, IconExternalLink, IconReceiptOff, IconStar } from '@smartapp/ui/icons';
+import { IconBrandMessenger, IconCircleCheckFilled, IconDownload, IconExternalLink, IconMapPin, IconReceiptOff, IconStar } from '@smartapp/ui/icons';
 import { cn } from '@smartapp/ui/lib/utils';
 import { CopyButton } from '@smartapp/ui/patterns/CopyButton';
 import { OrderLines } from '@smartapp/ui/patterns/OrderLines';
@@ -105,6 +106,11 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
   const messenger = shop.settings.messengerUsername;
   const isTransfer = TransferMethod.safeParse(order.paymentMethod).success;
   const isProofActive = isTransfer && order.paymentStatus === 'unpaid' && order.status !== 'cancelled' && order.status !== 'expired';
+  const orderPin =
+    order.deliveryPin ??
+    (order.deliveryLat !== null && order.deliveryLat !== undefined && order.deliveryLng !== null && order.deliveryLng !== undefined
+      ? { lat: order.deliveryLat, lng: order.deliveryLng }
+      : null);
 
   const save = () => {
     if ('share' in navigator) {
@@ -162,6 +168,30 @@ function ReceiptView({ receipt, justPlaced }: { receipt: OrderReceipt; justPlace
         </div>
         <PaymentPart receipt={receipt} />
       </section>
+ 
+      {order.fulfillment === 'delivery' && order.addressLine && (
+        <section aria-labelledby="receipt-delivery" className="flex flex-col gap-2 rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
+          <h2 id="receipt-delivery" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            {WORDS.storefront.checkout.address}
+          </h2>
+          <p className="text-base font-medium">{order.addressLine}</p>
+          {order.landmark && <p className="text-sm text-muted-foreground">{order.landmark}</p>}
+          {orderPin && (
+            <div className="pt-1">
+              <a
+                href={mapsLink(orderPin)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-shop-10 hover:underline"
+              >
+                <IconMapPin className="size-4" aria-hidden="true" />
+                <span>{words.openInMaps}</span>
+                <IconExternalLink className="size-3.5 opacity-70" aria-hidden="true" />
+              </a>
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="rounded-[var(--radius-card,1.25rem)] border border-border/60 bg-shop-30 p-5 shadow-xs">
         <OrderLines

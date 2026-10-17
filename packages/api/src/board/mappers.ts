@@ -1,4 +1,4 @@
-import { Order, OrderEvent, OrderLine, Payment } from '@smartapp/core';
+import { DeliveryProvider, Order, OrderEvent, OrderLine, Payment } from '@smartapp/core';
 import type { BoardOrder, OrderReceipt } from '@smartapp/core';
 
 import type { Database } from '../database.types';
@@ -33,6 +33,15 @@ export function orderFromRow(row: OrderRow): Order {
     discountTotal: row.discount_total,
     total: row.total,
     trackingUrl: row.tracking_url,
+    deliveryLat: row.delivery_lat,
+    deliveryLng: row.delivery_lng,
+    deliveryPin:
+      row.delivery_lat !== null && row.delivery_lng !== null
+        ? { lat: row.delivery_lat, lng: row.delivery_lng }
+        : null,
+    deliveryProvider: row.delivery_provider ? DeliveryProvider.safeParse(row.delivery_provider).data ?? null : null,
+    riderName: row.rider_name,
+    riderPhone: row.rider_phone,
     cancelReason: row.cancel_reason,
     clientKey: row.client_key,
     expiresAt: row.expires_at,

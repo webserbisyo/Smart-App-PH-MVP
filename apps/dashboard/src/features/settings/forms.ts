@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Centavos, HexColor, rewardLabel, TimeOfDay, TransferMethod, Uuid, WORDS } from '@smartapp/core';
+import { Centavos, HexColor, Pin, rewardLabel, TimeOfDay, TransferMethod, Uuid, WORDS } from '@smartapp/core';
 import type {
   BusinessHours,
   DayHours,
@@ -83,6 +83,7 @@ export const InfoForm = z
     address: z.string().max(200),
     facebook: z.string().max(200),
     messenger: z.string().max(80),
+    pin: Pin.nullable().optional(),
   })
   .superRefine((form, ctx) => {
     if (facebookUrl(form.facebook) === undefined) ctx.addIssue({ code: 'custom', path: ['facebook'], message: words.info.facebookInvalid });
@@ -96,6 +97,14 @@ export function infoFromSettings(settings: ShopSettings): InfoForm {
     address: settings.address ?? '',
     facebook: settings.facebookUrl ?? '',
     messenger: settings.messengerUsername ?? '',
+    pin:
+      settings.pin ??
+      (settings.shopLat !== null &&
+      settings.shopLat !== undefined &&
+      settings.shopLng !== null &&
+      settings.shopLng !== undefined
+        ? { lat: settings.shopLat, lng: settings.shopLng }
+        : null),
   };
 }
 
@@ -106,6 +115,7 @@ export function infoPatch(form: InfoForm): ShopSettingsPatch {
     address: address === '' ? null : address,
     facebookUrl: facebookUrl(form.facebook) ?? null,
     messengerUsername: messengerUsername(form.messenger) ?? null,
+    ...(form.pin !== undefined ? { pin: form.pin } : {}),
   };
 }
 
@@ -176,6 +186,7 @@ const ZoneForm = z.object({
   fee: Centavos.nullable(),
   etaText: z.string().nullable(),
   isActive: z.boolean(),
+  center: Pin.nullable().optional(),
 });
 export type ZoneForm = z.infer<typeof ZoneForm>;
 
@@ -200,7 +211,7 @@ export const OrderTypesForm = z
 export type OrderTypesForm = z.infer<typeof OrderTypesForm>;
 
 export function emptyZone(): ZoneForm {
-  return { id: null, name: '', fee: null, etaText: null, isActive: true };
+  return { id: null, name: '', fee: null, etaText: null, isActive: true, center: null };
 }
 
 export function orderTypesFromData(settings: ShopSettings, zones: readonly DeliveryZone[]): OrderTypesForm {
@@ -211,7 +222,21 @@ export function orderTypesFromData(settings: ShopSettings, zones: readonly Deliv
     payLaterPickup: settings.payLaterPickup,
     cod: settings.codEnabled,
     viaMessenger: settings.deliveryFeeViaMessenger,
-    zones: zones.map((zone) => ({ id: zone.id, name: zone.name, fee: zone.fee, etaText: zone.etaText, isActive: zone.isActive })),
+    zones: zones.map((zone) => ({
+      id: zone.id,
+      name: zone.name,
+      fee: zone.fee,
+      etaText: zone.etaText,
+      isActive: zone.isActive,
+      center:
+        zone.center ??
+        (zone.centerLat !== null &&
+        zone.centerLat !== undefined &&
+        zone.centerLng !== null &&
+        zone.centerLng !== undefined
+          ? { lat: zone.centerLat, lng: zone.centerLng }
+          : null),
+    })),
   };
 }
 
@@ -231,9 +256,28 @@ export function orderTypesPatch(form: OrderTypesForm): ShopSettingsPatch {
 export function zoneChanges(before: readonly DeliveryZone[], zones: readonly ZoneForm[]): { remove: string[]; save: { index: number; draft: DeliveryZoneDraft }[] } {
   const kept = new Set(zones.flatMap((zone) => (zone.id === null ? [] : [zone.id])));
   const save = zones.flatMap((zone, index) => {
-    const draft: DeliveryZoneDraft = { id: zone.id, name: zone.name.trim(), fee: zone.fee ?? 0, etaText: zone.etaText, isActive: zone.isActive };
+    const draft: DeliveryZoneDraft = {
+      id: zone.id,
+      name: zone.name.trim(),
+      fee: zone.fee ?? 0,
+      etaText: zone.etaText,
+      isActive: zone.isActive,
+      center: zone.center ?? null,
+    };
     const old = zone.id === null ? undefined : before.find((candidate) => candidate.id === zone.id);
-    const changed = !old || old.name !== draft.name || old.fee !== draft.fee || old.etaText !== draft.etaText || old.isActive !== draft.isActive;
+    const oldCenter =
+      old !== undefined
+        ? old.center ??
+          (old.centerLat !== null &&
+          old.centerLat !== undefined &&
+          old.centerLng !== null &&
+          old.centerLng !== undefined
+            ? { lat: old.centerLat, lng: old.centerLng }
+            : null)
+        : null;
+    const newCenter = draft.center ?? null;
+    const centerChanged = oldCenter?.lat !== newCenter?.lat || oldCenter?.lng !== newCenter?.lng;
+    const changed = !old || old.name !== draft.name || old.fee !== draft.fee || old.etaText !== draft.etaText || old.isActive !== draft.isActive || centerChanged;
     return changed ? [{ index, draft }] : [];
   });
   return { remove: before.filter((zone) => !kept.has(zone.id)).map((zone) => zone.id), save };
