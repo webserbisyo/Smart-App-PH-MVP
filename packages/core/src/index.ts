@@ -43,3 +43,5 @@ export * from './install';
 export * from './csv';
 export * from './reports';
 export * from './setup';
+export * from './schemas/pin';
+export * from './geo';
