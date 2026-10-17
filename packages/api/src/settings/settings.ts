@@ -1,5 +1,5 @@
-import { DayHours, DeliveryZoneDraft, ManilaDate, PaymentAccountDraft, ShopSettingsPatch } from '@smartapp/core';
-import type { BusinessHours, Closure, DeliveryZone, PaymentAccount, ShopSettings, Tenant } from '@smartapp/core';
+import { DayHours, DeliveryZoneDraft, ManilaDate, PaymentAccountDraft, ShopBannerDraft, ShopSettingsPatch } from '@smartapp/core';
+import type { BusinessHours, Closure, DeliveryZone, PaymentAccount, ShopBanner, ShopSettings, Tenant } from '@smartapp/core';
 
 import type { ApiClient } from '../client';
 import { ApiError, throwIfError } from '../errors';
@@ -15,9 +15,13 @@ import {
   deliveryZoneToRow,
   paymentAccountFromRow,
   paymentAccountToRow,
+  shopBannerFromRow,
+  shopBannerToRow,
+  shopBannerToUpdate,
   shopSettingsFromRow,
   shopSettingsToUpdate,
 } from './mappers';
+
 
 // --- shop settings and name ------------------------------------------------------------------------
 
@@ -168,3 +172,93 @@ export async function removeDeliveryZone(client: ApiClient, zoneId: string): Pro
   const { error } = await client.from('delivery_zones').delete().eq('id', zoneId);
   throwIfError(error);
 }
+
+// --- shop banners ----------------------------------------------------------------------------------
+
+export async function getShopBanners(client: ApiClient, tenantId: string): Promise<ShopBanner[]> {
+  const { data, error } = await client
+    .from('shop_banners')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('sort')
+    .order('created_at');
+  throwIfError(error);
+  return (data ?? []).map(shopBannerFromRow);
+}
+
+/** Saves all banners for a shop in order (up to 3 active slides; removes deleted slides). */
+export async function saveShopBanners(
+  client: ApiClient,
+  tenantId: string,
+  drafts: readonly ShopBannerDraft[],
+): Promise<ShopBanner[]> {
+  const parsedDrafts = drafts.map((d, index) => ({
+    ...parsed(ShopBannerDraft.safeParse(d)),
+    sort: index,
+  }));
+
+  const existing = await client.from('shop_banners').select('id, image_path').eq('tenant_id', tenantId);
+  throwIfError(existing.error);
+  const existingRows = existing.data ?? [];
+  const keepIds = new Set(parsedDrafts.flatMap((d) => (d.id ? [d.id] : [])));
+  const toDelete = existingRows.filter((r) => !keepIds.has(r.id));
+
+  // Delete removed banners and their media
+  if (toDelete.length > 0) {
+    const deleteIds = toDelete.map((r) => r.id);
+    const { error } = await client.from('shop_banners').delete().in('id', deleteIds);
+    throwIfError(error);
+    const imagesToRemove = toDelete.flatMap((r) => (r.image_path ? [r.image_path] : []));
+    if (imagesToRemove.length > 0) await removeShopMedia(client, imagesToRemove);
+  }
+
+  // Update existing or insert new
+  for (const draft of parsedDrafts) {
+    if (draft.id) {
+      const { error } = await client
+        .from('shop_banners')
+        .update(shopBannerToUpdate(draft))
+        .eq('id', draft.id);
+      throwIfError(error);
+    } else {
+      const row = shopBannerToRow(tenantId, draft);
+      const { error } = await client.from('shop_banners').insert({ ...row, sort: draft.sort });
+      throwIfError(error);
+    }
+  }
+
+  return getShopBanners(client, tenantId);
+}
+
+export async function saveShopBanner(
+  client: ApiClient,
+  tenantId: string,
+  draft: ShopBannerDraft,
+): Promise<ShopBanner> {
+  const banner = parsed(ShopBannerDraft.safeParse(draft));
+  if (!banner.id) {
+    const row = shopBannerToRow(tenantId, banner);
+    const sort = await nextSort(client, 'shop_banners', tenantId);
+    return shopBannerFromRow(must(await client.from('shop_banners').insert({ ...row, sort }).select('*').single()));
+  }
+  const before = must(await client.from('shop_banners').select('image_path').eq('id', banner.id).single());
+  const data = must(
+    await client
+      .from('shop_banners')
+      .update(shopBannerToUpdate(banner))
+      .eq('id', banner.id)
+      .select('*')
+      .single(),
+  );
+  if (before.image_path !== null && before.image_path !== data.image_path) {
+    await removeShopMedia(client, [before.image_path]);
+  }
+  return shopBannerFromRow(data);
+}
+
+export async function removeShopBanner(client: ApiClient, bannerId: string): Promise<void> {
+  const { data, error } = await client.from('shop_banners').delete().eq('id', bannerId).select('image_path');
+  throwIfError(error);
+  await removeShopMedia(client, (data ?? []).flatMap((row) => (row.image_path === null ? [] : [row.image_path])));
+}
+

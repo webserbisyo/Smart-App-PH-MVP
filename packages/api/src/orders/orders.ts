@@ -1,5 +1,20 @@
-import { dbFunctions, OrderPayload, OrderReceipt, Payment, Quote, QuotePayload } from '@smartapp/core';
-import type { DbFunctionInput, DbFunctionOutput } from '@smartapp/core';
+import {
+  dbFunctions,
+  OrderPayload,
+  OrderReceipt,
+  Payment,
+  Quote,
+  QuotePayload,
+} from '@smartapp/core';
+import type {
+  DbFunctionInput,
+  DbFunctionOutput,
+  DeliveryProvider,
+  Order,
+  OrderMessage,
+  OrderRating,
+  PushSubscription,
+} from '@smartapp/core';
 
 import type { ApiClient } from '../client';
 import type { Json } from '../database.types';
@@ -36,10 +51,16 @@ function choicesToJson(payload: QuotePayload): JsonObject {
     delivery:
       delivery === null
         ? null
-        : { addressLine: delivery.addressLine, landmark: delivery.landmark, deliveryZoneId: delivery.deliveryZoneId },
+        : {
+            addressLine: delivery.addressLine,
+            landmark: delivery.landmark,
+            deliveryZoneId: delivery.deliveryZoneId,
+            ...(delivery.pin ? { pin: { lat: delivery.pin.lat, lng: delivery.pin.lng } } : {}),
+          },
     useReward: payload.useReward,
   };
 }
+
 
 /** The quote_order payload: the choices only. */
 export function quotePayloadToJson(payload: QuotePayload): Json {
@@ -132,3 +153,61 @@ export async function submitPaymentProof(client: ApiClient, input: PaymentProofI
   throwIfError(error);
   return fromJson(Payment, data);
 }
+
+/** Messages and timeline events for an order. */
+export async function getOrderMessages(client: ApiClient, token: string): Promise<OrderMessage[]> {
+  const { data, error } = await client.rpc('get_order_messages', { p_token: token });
+  throwIfError(error);
+  return fromJson(dbFunctions.get_order_messages.output, data);
+}
+
+/** Rates a completed order (1-5 stars) with an optional private note. */
+export async function rateOrder(
+  client: ApiClient,
+  token: string,
+  stars: number,
+  comment?: string | null,
+): Promise<OrderRating> {
+  const { data, error } = await client.rpc('rate_order', {
+    p_token: token,
+    p_stars: stars,
+    ...(comment ? { p_comment: comment } : {}),
+  });
+  throwIfError(error);
+  return fromJson(dbFunctions.rate_order.output, data);
+}
+
+/** Owner sets delivery provider, tracking URL and rider details. */
+export async function setDeliveryInfo(
+  client: ApiClient,
+  orderId: string,
+  provider: DeliveryProvider,
+  trackingUrl?: string | null,
+  riderName?: string | null,
+  riderPhone?: string | null,
+): Promise<Order> {
+  const { data, error } = await client.rpc('set_delivery_info', {
+    p_order_id: orderId,
+    p_provider: provider,
+    ...(trackingUrl ? { p_tracking_url: trackingUrl } : {}),
+    ...(riderName ? { p_rider_name: riderName } : {}),
+    ...(riderPhone ? { p_rider_phone: riderPhone } : {}),
+  });
+  throwIfError(error);
+  return fromJson(dbFunctions.set_delivery_info.output, data);
+}
+
+/** Registers a Web Push subscription on an order link and grants transactional consent. */
+export async function subscribeOrderPush(
+  client: ApiClient,
+  token: string,
+  subscription: PushSubscription,
+): Promise<{ ok: boolean; subscriptionId: string }> {
+  const { data, error } = await client.rpc('subscribe_order_push', {
+    p_token: token,
+    p_subscription: subscription,
+  });
+  throwIfError(error);
+  return fromJson(dbFunctions.subscribe_order_push.output, data);
+}
+

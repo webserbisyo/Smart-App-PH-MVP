@@ -1,5 +1,5 @@
-import { BusinessHours, Closure, DeliveryZone, PaymentAccount, ShopSettings } from '@smartapp/core';
-import type { DayHours, DeliveryZoneDraft, PaymentAccountDraft, ShopSettingsPatch } from '@smartapp/core';
+import { BusinessHours, Closure, DeliveryZone, PaymentAccount, ShopBanner, ShopSettings } from '@smartapp/core';
+import type { DayHours, DeliveryZoneDraft, PaymentAccountDraft, ShopBannerDraft, ShopSettingsPatch } from '@smartapp/core';
 
 import type { Database } from '../database.types';
 
@@ -12,6 +12,9 @@ export type PaymentAccountRow = Tables['payment_accounts']['Row'];
 export type PaymentAccountInsert = Tables['payment_accounts']['Insert'];
 export type DeliveryZoneRow = Tables['delivery_zones']['Row'];
 export type DeliveryZoneInsert = Tables['delivery_zones']['Insert'];
+export type ShopBannerRow = Tables['shop_banners']['Row'];
+export type ShopBannerInsert = Tables['shop_banners']['Insert'];
+export type ShopBannerUpdate = Tables['shop_banners']['Update'];
 
 /** `08:00:00` (Postgres time) → `08:00`. */
 function hhmm(time: string): string {
@@ -44,6 +47,14 @@ export function shopSettingsFromRow(row: ShopSettingsRow): ShopSettings {
     deliveryFeeViaMessenger: row.delivery_fee_via_messenger,
     unpaidExpiryMinutes: row.unpaid_expiry_minutes,
     showMemberCount: row.show_member_count,
+    announcementText: row.announcement_text,
+    announcementTone: row.announcement_tone,
+    announcementEndsAt: row.announcement_ends_at,
+    aboutText: row.about_text,
+    googleReviewUrl: row.google_review_url,
+    shopLat: row.shop_lat,
+    shopLng: row.shop_lng,
+    pin: row.shop_lat !== null && row.shop_lng !== null ? { lat: row.shop_lat, lng: row.shop_lng } : null,
   });
 }
 
@@ -73,8 +84,20 @@ export function shopSettingsToUpdate(patch: ShopSettingsPatch): ShopSettingsUpda
   if (patch.deliveryFeeViaMessenger !== undefined) update.delivery_fee_via_messenger = patch.deliveryFeeViaMessenger;
   if (patch.unpaidExpiryMinutes !== undefined) update.unpaid_expiry_minutes = patch.unpaidExpiryMinutes;
   if (patch.showMemberCount !== undefined) update.show_member_count = patch.showMemberCount;
+  if (patch.announcementText !== undefined) update.announcement_text = patch.announcementText;
+  if (patch.announcementTone !== undefined) update.announcement_tone = patch.announcementTone;
+  if (patch.announcementEndsAt !== undefined) update.announcement_ends_at = patch.announcementEndsAt;
+  if (patch.aboutText !== undefined) update.about_text = patch.aboutText;
+  if (patch.googleReviewUrl !== undefined) update.google_review_url = patch.googleReviewUrl;
+  if (patch.shopLat !== undefined) update.shop_lat = patch.shopLat;
+  if (patch.shopLng !== undefined) update.shop_lng = patch.shopLng;
+  if (patch.pin !== undefined) {
+    update.shop_lat = patch.pin?.lat ?? null;
+    update.shop_lng = patch.pin?.lng ?? null;
+  }
   return update;
 }
+
 
 export function businessHoursFromRow(row: BusinessHoursRow): BusinessHours {
   return BusinessHours.parse({
@@ -130,6 +153,9 @@ export function deliveryZoneFromRow(row: DeliveryZoneRow): DeliveryZone {
     etaText: row.eta_text,
     isActive: row.is_active,
     sort: row.sort,
+    centerLat: row.center_lat,
+    centerLng: row.center_lng,
+    center: row.center_lat !== null && row.center_lng !== null ? { lat: row.center_lat, lng: row.center_lng } : null,
   });
 }
 
@@ -141,5 +167,49 @@ export function deliveryZoneToRow(tenantId: string, draft: DeliveryZoneDraft): D
     fee: draft.fee,
     eta_text: draft.etaText,
     is_active: draft.isActive,
+    center_lat: draft.centerLat ?? draft.center?.lat ?? null,
+    center_lng: draft.centerLng ?? draft.center?.lng ?? null,
   };
 }
+
+export function shopBannerFromRow(row: ShopBannerRow): ShopBanner {
+  return ShopBanner.parse({
+    id: row.id,
+    tenantId: row.tenant_id,
+    kind: row.kind,
+    imagePath: row.image_path,
+    youtubeId: row.youtube_id,
+    title: row.title,
+    linkUrl: row.link_url,
+    sort: row.sort,
+    isActive: row.is_active,
+    createdAt: row.created_at,
+  });
+}
+
+export function shopBannerToRow(tenantId: string, draft: ShopBannerDraft): ShopBannerInsert {
+  return {
+    ...(draft.id === null ? {} : { id: draft.id }),
+    tenant_id: tenantId,
+    kind: draft.kind,
+    image_path: draft.imagePath,
+    youtube_id: draft.youtubeId,
+    title: draft.title.trim(),
+    link_url: draft.linkUrl,
+    sort: draft.sort,
+    is_active: draft.isActive,
+  };
+}
+
+export function shopBannerToUpdate(draft: ShopBannerDraft): ShopBannerUpdate {
+  return {
+    kind: draft.kind,
+    image_path: draft.imagePath,
+    youtube_id: draft.youtubeId,
+    title: draft.title.trim(),
+    link_url: draft.linkUrl,
+    sort: draft.sort,
+    is_active: draft.isActive,
+  };
+}
+

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { CartLine } from './cart-line';
 import { Fulfillment, PaymentMethod } from './enums';
+import { Pin } from './pin';
 import { IsoDateTime, PhPhone, Uuid } from './primitives';
 
 /** The customer's choices: what quote_order prices and place_order places. Never prices. */
@@ -18,11 +19,13 @@ const choices = {
       landmark: z.string().max(200).nullable(),
       /** Null when the shop confirms the fee on Messenger. */
       deliveryZoneId: Uuid.nullable(),
+      pin: Pin.nullable().optional(),
     })
     .nullable(),
   /** Members only: apply the stamp card reward if it is ready. */
   useReward: z.boolean(),
 };
+
 
 type Choices = z.infer<z.ZodObject<typeof choices>>;
 

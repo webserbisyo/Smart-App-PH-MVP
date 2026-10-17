@@ -98,3 +98,36 @@ export type AuditAction = z.infer<typeof AuditAction>;
 export const AUDIT_TARGET_TYPES = ['order', 'payment', 'variant'] as const;
 export const AuditTargetType = z.enum(AUDIT_TARGET_TYPES);
 export type AuditTargetType = z.infer<typeof AuditTargetType>;
+
+export const BANNER_KINDS = ['image', 'youtube'] as const;
+export const BannerKind = z.enum(BANNER_KINDS);
+export type BannerKind = z.infer<typeof BannerKind>;
+
+export const ANNOUNCEMENT_TONES = ['info', 'promo', 'warning'] as const;
+export const AnnouncementTone = z.enum(ANNOUNCEMENT_TONES);
+export type AnnouncementTone = z.infer<typeof AnnouncementTone>;
+
+export const REWARD_KINDS = ['discount', 'free_item', 'custom'] as const;
+export const RewardKind = z.enum(REWARD_KINDS);
+export type RewardKind = z.infer<typeof RewardKind>;
+
+export const REWARD_CLAIM_STATUSES = ['pending', 'given', 'cancelled'] as const;
+export const RewardClaimStatus = z.enum(REWARD_CLAIM_STATUSES);
+export type RewardClaimStatus = z.infer<typeof RewardClaimStatus>;
+
+export const ORDER_MESSAGE_SENDERS = ['customer', 'owner', 'system'] as const;
+export const OrderMessageSender = z.enum(ORDER_MESSAGE_SENDERS);
+export type OrderMessageSender = z.infer<typeof OrderMessageSender>;
+
+export const ORDER_MESSAGE_KINDS = ['text', 'image', 'payment_proof', 'status'] as const;
+export const OrderMessageKind = z.enum(ORDER_MESSAGE_KINDS);
+export type OrderMessageKind = z.infer<typeof OrderMessageKind>;
+
+export const DELIVERY_PROVIDERS = ['own', 'lalamove', 'grab', 'other'] as const;
+export const DeliveryProvider = z.enum(DELIVERY_PROVIDERS);
+export type DeliveryProvider = z.infer<typeof DeliveryProvider>;
+
+export const OUTBOX_STATUSES = ['queued', 'sent', 'failed'] as const;
+export const OutboxStatus = z.enum(OUTBOX_STATUSES);
+export type OutboxStatus = z.infer<typeof OutboxStatus>;
+

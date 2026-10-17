@@ -27,7 +27,7 @@ export function blankToNull(value: string | null | undefined): string | null {
 /** The `sort` for a new row: after every row the shop already has. */
 export async function nextSort(
   client: ApiClient,
-  table: 'payment_accounts' | 'delivery_zones' | 'categories',
+  table: 'payment_accounts' | 'delivery_zones' | 'categories' | 'shop_banners',
   tenantId: string,
 ): Promise<number> {
   const { data, error } = await client

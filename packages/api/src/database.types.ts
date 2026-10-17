@@ -113,14 +113,14 @@ isOneToOne: false
                   ]
                 },"customer_addresses": {
                   Row: {
-                    "address_line": string,"created_at": string,"customer_id": string,"id": string,"is_default": boolean,"label": string,"landmark": string | null,"tenant_id": string
+                    "address_line": string,"created_at": string,"customer_id": string,"id": string,"is_default": boolean,"label": string,"landmark": string | null,"lat": number | null,"lng": number | null,"tenant_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address_line": string,"created_at"?: string,"customer_id": string,"id"?: string,"is_default"?: boolean,"label"?: string,"landmark"?: string | null,"tenant_id": string
+                    "address_line": string,"created_at"?: string,"customer_id": string,"id"?: string,"is_default"?: boolean,"label"?: string,"landmark"?: string | null,"lat"?: number | null,"lng"?: number | null,"tenant_id": string
                   }
                   Update: {
-                    "address_line"?: string,"created_at"?: string,"customer_id"?: string,"id"?: string,"is_default"?: boolean,"label"?: string,"landmark"?: string | null,"tenant_id"?: string
+                    "address_line"?: string,"created_at"?: string,"customer_id"?: string,"id"?: string,"is_default"?: boolean,"label"?: string,"landmark"?: string | null,"lat"?: number | null,"lng"?: number | null,"tenant_id"?: string
                   }
                   Relationships: [
                     {
@@ -159,14 +159,14 @@ isOneToOne: false
                   ]
                 },"delivery_zones": {
                   Row: {
-                    "created_at": string,"eta_text": string | null,"fee": number,"id": string,"is_active": boolean,"name": string,"sort": number,"tenant_id": string
+                    "center_lat": number | null,"center_lng": number | null,"created_at": string,"eta_text": string | null,"fee": number,"id": string,"is_active": boolean,"name": string,"sort": number,"tenant_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"eta_text"?: string | null,"fee": number,"id"?: string,"is_active"?: boolean,"name": string,"sort"?: number,"tenant_id": string
+                    "center_lat"?: number | null,"center_lng"?: number | null,"created_at"?: string,"eta_text"?: string | null,"fee": number,"id"?: string,"is_active"?: boolean,"name": string,"sort"?: number,"tenant_id": string
                   }
                   Update: {
-                    "created_at"?: string,"eta_text"?: string | null,"fee"?: number,"id"?: string,"is_active"?: boolean,"name"?: string,"sort"?: number,"tenant_id"?: string
+                    "center_lat"?: number | null,"center_lng"?: number | null,"created_at"?: string,"eta_text"?: string | null,"fee"?: number,"id"?: string,"is_active"?: boolean,"name"?: string,"sort"?: number,"tenant_id"?: string
                   }
                   Relationships: [
                     {
@@ -289,17 +289,23 @@ isOneToOne: false
                   ]
                 },"loyalty_ledger": {
                   Row: {
-                    "created_at": string,"customer_id": string,"delta": number,"id": string,"order_id": string | null,"reason": string,"tenant_id": string
+                    "claim_id": string | null,"created_at": string,"customer_id": string,"delta": number,"id": string,"order_id": string | null,"reason": string,"tenant_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"customer_id": string,"delta": number,"id"?: string,"order_id"?: string | null,"reason": string,"tenant_id": string
+                    "claim_id"?: string | null,"created_at"?: string,"customer_id": string,"delta": number,"id"?: string,"order_id"?: string | null,"reason": string,"tenant_id": string
                   }
                   Update: {
-                    "created_at"?: string,"customer_id"?: string,"delta"?: number,"id"?: string,"order_id"?: string | null,"reason"?: string,"tenant_id"?: string
+                    "claim_id"?: string | null,"created_at"?: string,"customer_id"?: string,"delta"?: number,"id"?: string,"order_id"?: string | null,"reason"?: string,"tenant_id"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "loyalty_ledger_claim_fk"
+      columns: ["claim_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "reward_claims"
+      referencedColumns: ["id","tenant_id"]
+    },{
       foreignKeyName: "loyalty_ledger_customer_id_tenant_id_fkey"
       columns: ["customer_id","tenant_id"]
 isOneToOne: false
@@ -321,20 +327,58 @@ isOneToOne: false
                   ]
                 },"loyalty_rules": {
                   Row: {
-                    "is_active": boolean,"min_order_total": number,"reward_amount": number,"reward_label": string,"stamps_needed": number,"tenant_id": string,"updated_at": string
+                    "is_active": boolean,"min_order_total": number,"reward_amount": number,"reward_description": string | null,"reward_image_path": string | null,"reward_item_id": string | null,"reward_kind": string,"reward_label": string,"reward_title": string | null,"reward_variant_id": string | null,"stamps_needed": number,"tenant_id": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "is_active"?: boolean,"min_order_total"?: number,"reward_amount"?: number,"reward_label"?: string,"stamps_needed"?: number,"tenant_id": string,"updated_at"?: string
+                    "is_active"?: boolean,"min_order_total"?: number,"reward_amount"?: number,"reward_description"?: string | null,"reward_image_path"?: string | null,"reward_item_id"?: string | null,"reward_kind"?: string,"reward_label"?: string,"reward_title"?: string | null,"reward_variant_id"?: string | null,"stamps_needed"?: number,"tenant_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "is_active"?: boolean,"min_order_total"?: number,"reward_amount"?: number,"reward_label"?: string,"stamps_needed"?: number,"tenant_id"?: string,"updated_at"?: string
+                    "is_active"?: boolean,"min_order_total"?: number,"reward_amount"?: number,"reward_description"?: string | null,"reward_image_path"?: string | null,"reward_item_id"?: string | null,"reward_kind"?: string,"reward_label"?: string,"reward_title"?: string | null,"reward_variant_id"?: string | null,"stamps_needed"?: number,"tenant_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "loyalty_rules_item_fk"
+      columns: ["reward_item_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","tenant_id"]
+    },{
       foreignKeyName: "loyalty_rules_tenant_id_fkey"
       columns: ["tenant_id"]
 isOneToOne: true
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "loyalty_rules_variant_fk"
+      columns: ["reward_variant_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "item_variants"
+      referencedColumns: ["id","tenant_id"]
+    }
+                  ]
+                },"notification_outbox": {
+                  Row: {
+                    "attempts": number,"created_at": string,"id": string,"payload": NonNullable<Json>,"sent_at": string | null,"status": string,"subscription_id": string | null,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"created_at"?: string,"id"?: string,"payload": NonNullable<Json>,"sent_at"?: string | null,"status"?: string,"subscription_id"?: string | null,"tenant_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"created_at"?: string,"id"?: string,"payload"?: NonNullable<Json>,"sent_at"?: string | null,"status"?: string,"subscription_id"?: string | null,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_outbox_subscription_id_fkey"
+      columns: ["subscription_id"]
+isOneToOne: false
+      referencedRelation: "push_subscriptions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notification_outbox_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
       referencedRelation: "tenants"
       referencedColumns: ["id"]
     }
@@ -433,14 +477,14 @@ isOneToOne: false
                   ]
                 },"order_items": {
                   Row: {
-                    "id": string,"item_id": string | null,"item_name": string,"line_total": number,"note": string | null,"options": NonNullable<Json>,"options_total": number,"order_id": string,"qty": number,"sort": number,"tenant_id": string,"unit_price": number,"variant_id": string | null,"variant_name": string
+                    "id": string,"is_reward": boolean,"item_id": string | null,"item_name": string,"line_total": number,"note": string | null,"options": NonNullable<Json>,"options_total": number,"order_id": string,"qty": number,"sort": number,"tenant_id": string,"unit_price": number,"variant_id": string | null,"variant_name": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"item_id"?: string | null,"item_name": string,"line_total": number,"note"?: string | null,"options"?: NonNullable<Json>,"options_total"?: number,"order_id": string,"qty": number,"sort"?: number,"tenant_id": string,"unit_price": number,"variant_id"?: string | null,"variant_name": string
+                    "id"?: string,"is_reward"?: boolean,"item_id"?: string | null,"item_name": string,"line_total": number,"note"?: string | null,"options"?: NonNullable<Json>,"options_total"?: number,"order_id": string,"qty": number,"sort"?: number,"tenant_id": string,"unit_price": number,"variant_id"?: string | null,"variant_name": string
                   }
                   Update: {
-                    "id"?: string,"item_id"?: string | null,"item_name"?: string,"line_total"?: number,"note"?: string | null,"options"?: NonNullable<Json>,"options_total"?: number,"order_id"?: string,"qty"?: number,"sort"?: number,"tenant_id"?: string,"unit_price"?: number,"variant_id"?: string | null,"variant_name"?: string
+                    "id"?: string,"is_reward"?: boolean,"item_id"?: string | null,"item_name"?: string,"line_total"?: number,"note"?: string | null,"options"?: NonNullable<Json>,"options_total"?: number,"order_id"?: string,"qty"?: number,"sort"?: number,"tenant_id"?: string,"unit_price"?: number,"variant_id"?: string | null,"variant_name"?: string
                   }
                   Relationships: [
                     {
@@ -469,16 +513,112 @@ isOneToOne: false
       referencedColumns: ["id","tenant_id"]
     }
                   ]
-                },"orders": {
+                },"order_messages": {
                   Row: {
-                    "address_line": string | null,"business_date": string,"cancel_reason": string | null,"cancelled_at": string | null,"client_key": string,"completed_at": string | null,"customer_id": string | null,"customer_name": string,"customer_phone": string,"delivery_fee": number,"delivery_zone_id": string | null,"discount_total": number,"expires_at": string | null,"fulfillment": string,"id": string,"landmark": string | null,"notes": string | null,"order_no": number,"paid_at": string | null,"payment_method": string,"payment_status": string,"pickup_at": string | null,"placed_at": string,"ready_at": string | null,"status": string,"subtotal": number,"tenant_id": string,"token": string,"total": number,"tracking_url": string | null
+                    "attachment_path": string | null,"body": string | null,"created_at": string,"id": string,"kind": string,"order_id": string,"payment_id": string | null,"sender": string,"tenant_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address_line"?: string | null,"business_date": string,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"client_key": string,"completed_at"?: string | null,"customer_id"?: string | null,"customer_name": string,"customer_phone": string,"delivery_fee"?: number,"delivery_zone_id"?: string | null,"discount_total"?: number,"expires_at"?: string | null,"fulfillment": string,"id"?: string,"landmark"?: string | null,"notes"?: string | null,"order_no": number,"paid_at"?: string | null,"payment_method": string,"payment_status"?: string,"pickup_at"?: string | null,"placed_at"?: string,"ready_at"?: string | null,"status"?: string,"subtotal": number,"tenant_id": string,"token": string,"total": number,"tracking_url"?: string | null
+                    "attachment_path"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"kind": string,"order_id": string,"payment_id"?: string | null,"sender": string,"tenant_id": string
                   }
                   Update: {
-                    "address_line"?: string | null,"business_date"?: string,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"client_key"?: string,"completed_at"?: string | null,"customer_id"?: string | null,"customer_name"?: string,"customer_phone"?: string,"delivery_fee"?: number,"delivery_zone_id"?: string | null,"discount_total"?: number,"expires_at"?: string | null,"fulfillment"?: string,"id"?: string,"landmark"?: string | null,"notes"?: string | null,"order_no"?: number,"paid_at"?: string | null,"payment_method"?: string,"payment_status"?: string,"pickup_at"?: string | null,"placed_at"?: string,"ready_at"?: string | null,"status"?: string,"subtotal"?: number,"tenant_id"?: string,"token"?: string,"total"?: number,"tracking_url"?: string | null
+                    "attachment_path"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"kind"?: string,"order_id"?: string,"payment_id"?: string | null,"sender"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_messages_order_id_tenant_id_fkey"
+      columns: ["order_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "order_messages_payment_id_fkey"
+      columns: ["payment_id"]
+isOneToOne: false
+      referencedRelation: "payments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "order_messages_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"order_push_subscriptions": {
+                  Row: {
+                    "order_id": string,"subscription_id": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "order_id": string,"subscription_id": string,"tenant_id": string
+                  }
+                  Update: {
+                    "order_id"?: string,"subscription_id"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_push_subscriptions_order_fk"
+      columns: ["tenant_id","order_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "order_push_subscriptions_subscription_id_fkey"
+      columns: ["subscription_id"]
+isOneToOne: false
+      referencedRelation: "push_subscriptions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "order_push_subscriptions_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"order_ratings": {
+                  Row: {
+                    "comment": string | null,"created_at": string,"order_id": string,"stars": number,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "comment"?: string | null,"created_at"?: string,"order_id": string,"stars": number,"tenant_id": string
+                  }
+                  Update: {
+                    "comment"?: string | null,"created_at"?: string,"order_id"?: string,"stars"?: number,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_ratings_order_id_fkey"
+      columns: ["order_id"]
+isOneToOne: true
+      referencedRelation: "orders"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "order_ratings_order_id_tenant_id_fkey"
+      columns: ["order_id","tenant_id"]
+isOneToOne: true
+      referencedRelation: "orders"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "order_ratings_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"orders": {
+                  Row: {
+                    "address_line": string | null,"business_date": string,"cancel_reason": string | null,"cancelled_at": string | null,"client_key": string,"completed_at": string | null,"customer_id": string | null,"customer_name": string,"customer_phone": string,"delivery_fee": number,"delivery_lat": number | null,"delivery_lng": number | null,"delivery_provider": string | null,"delivery_zone_id": string | null,"discount_total": number,"expires_at": string | null,"fulfillment": string,"id": string,"landmark": string | null,"notes": string | null,"order_no": number,"paid_at": string | null,"payment_method": string,"payment_status": string,"pickup_at": string | null,"placed_at": string,"ready_at": string | null,"rider_name": string | null,"rider_phone": string | null,"status": string,"subtotal": number,"tenant_id": string,"token": string,"total": number,"tracking_url": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_line"?: string | null,"business_date": string,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"client_key": string,"completed_at"?: string | null,"customer_id"?: string | null,"customer_name": string,"customer_phone": string,"delivery_fee"?: number,"delivery_lat"?: number | null,"delivery_lng"?: number | null,"delivery_provider"?: string | null,"delivery_zone_id"?: string | null,"discount_total"?: number,"expires_at"?: string | null,"fulfillment": string,"id"?: string,"landmark"?: string | null,"notes"?: string | null,"order_no": number,"paid_at"?: string | null,"payment_method": string,"payment_status"?: string,"pickup_at"?: string | null,"placed_at"?: string,"ready_at"?: string | null,"rider_name"?: string | null,"rider_phone"?: string | null,"status"?: string,"subtotal": number,"tenant_id": string,"token": string,"total": number,"tracking_url"?: string | null
+                  }
+                  Update: {
+                    "address_line"?: string | null,"business_date"?: string,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"client_key"?: string,"completed_at"?: string | null,"customer_id"?: string | null,"customer_name"?: string,"customer_phone"?: string,"delivery_fee"?: number,"delivery_lat"?: number | null,"delivery_lng"?: number | null,"delivery_provider"?: string | null,"delivery_zone_id"?: string | null,"discount_total"?: number,"expires_at"?: string | null,"fulfillment"?: string,"id"?: string,"landmark"?: string | null,"notes"?: string | null,"order_no"?: number,"paid_at"?: string | null,"payment_method"?: string,"payment_status"?: string,"pickup_at"?: string | null,"placed_at"?: string,"ready_at"?: string | null,"rider_name"?: string | null,"rider_phone"?: string | null,"status"?: string,"subtotal"?: number,"tenant_id"?: string,"token"?: string,"total"?: number,"tracking_url"?: string | null
                   }
                   Relationships: [
                     {
@@ -561,16 +701,82 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"shop_settings": {
+                },"push_subscriptions": {
                   Row: {
-                    "accepting_orders": boolean,"address": string | null,"busy_until": string | null,"city": string | null,"cod_enabled": boolean,"color_accent": string,"color_primary": string,"color_secondary": string,"cover_path": string | null,"delivery_enabled": boolean,"delivery_fee_via_messenger": boolean,"email": string | null,"facebook_url": string | null,"logo_path": string | null,"maps_url": string | null,"messenger_username": string | null,"pay_later_pickup": boolean,"phone": string | null,"pickup_enabled": boolean,"show_member_count": boolean,"tagline": string | null,"tenant_id": string,"unpaid_expiry_minutes": number,"walk_in_enabled": boolean
+                    "auth": string,"created_at": string,"customer_id": string | null,"endpoint": string,"id": string,"last_used_at": string,"p256dh": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "accepting_orders"?: boolean,"address"?: string | null,"busy_until"?: string | null,"city"?: string | null,"cod_enabled"?: boolean,"color_accent"?: string,"color_primary"?: string,"color_secondary"?: string,"cover_path"?: string | null,"delivery_enabled"?: boolean,"delivery_fee_via_messenger"?: boolean,"email"?: string | null,"facebook_url"?: string | null,"logo_path"?: string | null,"maps_url"?: string | null,"messenger_username"?: string | null,"pay_later_pickup"?: boolean,"phone"?: string | null,"pickup_enabled"?: boolean,"show_member_count"?: boolean,"tagline"?: string | null,"tenant_id": string,"unpaid_expiry_minutes"?: number,"walk_in_enabled"?: boolean
+                    "auth": string,"created_at"?: string,"customer_id"?: string | null,"endpoint": string,"id"?: string,"last_used_at"?: string,"p256dh": string
                   }
                   Update: {
-                    "accepting_orders"?: boolean,"address"?: string | null,"busy_until"?: string | null,"city"?: string | null,"cod_enabled"?: boolean,"color_accent"?: string,"color_primary"?: string,"color_secondary"?: string,"cover_path"?: string | null,"delivery_enabled"?: boolean,"delivery_fee_via_messenger"?: boolean,"email"?: string | null,"facebook_url"?: string | null,"logo_path"?: string | null,"maps_url"?: string | null,"messenger_username"?: string | null,"pay_later_pickup"?: boolean,"phone"?: string | null,"pickup_enabled"?: boolean,"show_member_count"?: boolean,"tagline"?: string | null,"tenant_id"?: string,"unpaid_expiry_minutes"?: number,"walk_in_enabled"?: boolean
+                    "auth"?: string,"created_at"?: string,"customer_id"?: string | null,"endpoint"?: string,"id"?: string,"last_used_at"?: string,"p256dh"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_subscriptions_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"reward_claims": {
+                  Row: {
+                    "cancelled_at": string | null,"code": string,"created_at": string,"customer_id": string,"given_at": string | null,"id": string,"status": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancelled_at"?: string | null,"code": string,"created_at"?: string,"customer_id": string,"given_at"?: string | null,"id"?: string,"status"?: string,"tenant_id": string
+                  }
+                  Update: {
+                    "cancelled_at"?: string | null,"code"?: string,"created_at"?: string,"customer_id"?: string,"given_at"?: string | null,"id"?: string,"status"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reward_claims_customer_id_tenant_id_fkey"
+      columns: ["customer_id","tenant_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id","tenant_id"]
+    },{
+      foreignKeyName: "reward_claims_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shop_banners": {
+                  Row: {
+                    "created_at": string,"id": string,"image_path": string | null,"is_active": boolean,"kind": string,"link_url": string | null,"sort": number,"tenant_id": string,"title": string,"youtube_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"image_path"?: string | null,"is_active"?: boolean,"kind": string,"link_url"?: string | null,"sort"?: number,"tenant_id": string,"title": string,"youtube_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"image_path"?: string | null,"is_active"?: boolean,"kind"?: string,"link_url"?: string | null,"sort"?: number,"tenant_id"?: string,"title"?: string,"youtube_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shop_banners_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shop_settings": {
+                  Row: {
+                    "about_text": string | null,"accepting_orders": boolean,"address": string | null,"announcement_ends_at": string | null,"announcement_text": string | null,"announcement_tone": string,"busy_until": string | null,"city": string | null,"cod_enabled": boolean,"color_accent": string,"color_primary": string,"color_secondary": string,"cover_path": string | null,"delivery_enabled": boolean,"delivery_fee_via_messenger": boolean,"email": string | null,"facebook_url": string | null,"google_review_url": string | null,"logo_path": string | null,"maps_url": string | null,"messenger_username": string | null,"pay_later_pickup": boolean,"phone": string | null,"pickup_enabled": boolean,"shop_lat": number | null,"shop_lng": number | null,"show_member_count": boolean,"tagline": string | null,"tenant_id": string,"unpaid_expiry_minutes": number,"walk_in_enabled": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "about_text"?: string | null,"accepting_orders"?: boolean,"address"?: string | null,"announcement_ends_at"?: string | null,"announcement_text"?: string | null,"announcement_tone"?: string,"busy_until"?: string | null,"city"?: string | null,"cod_enabled"?: boolean,"color_accent"?: string,"color_primary"?: string,"color_secondary"?: string,"cover_path"?: string | null,"delivery_enabled"?: boolean,"delivery_fee_via_messenger"?: boolean,"email"?: string | null,"facebook_url"?: string | null,"google_review_url"?: string | null,"logo_path"?: string | null,"maps_url"?: string | null,"messenger_username"?: string | null,"pay_later_pickup"?: boolean,"phone"?: string | null,"pickup_enabled"?: boolean,"shop_lat"?: number | null,"shop_lng"?: number | null,"show_member_count"?: boolean,"tagline"?: string | null,"tenant_id": string,"unpaid_expiry_minutes"?: number,"walk_in_enabled"?: boolean
+                  }
+                  Update: {
+                    "about_text"?: string | null,"accepting_orders"?: boolean,"address"?: string | null,"announcement_ends_at"?: string | null,"announcement_text"?: string | null,"announcement_tone"?: string,"busy_until"?: string | null,"city"?: string | null,"cod_enabled"?: boolean,"color_accent"?: string,"color_primary"?: string,"color_secondary"?: string,"cover_path"?: string | null,"delivery_enabled"?: boolean,"delivery_fee_via_messenger"?: boolean,"email"?: string | null,"facebook_url"?: string | null,"google_review_url"?: string | null,"logo_path"?: string | null,"maps_url"?: string | null,"messenger_username"?: string | null,"pay_later_pickup"?: boolean,"phone"?: string | null,"pickup_enabled"?: boolean,"shop_lat"?: number | null,"shop_lng"?: number | null,"show_member_count"?: boolean,"tagline"?: string | null,"tenant_id"?: string,"unpaid_expiry_minutes"?: number,"walk_in_enabled"?: boolean
                   }
                   Relationships: [
                     {
@@ -647,6 +853,12 @@ isOneToOne: false
 "cancel_order":
 { Args: { "p_order_id": string,"p_reason": string }; Returns: Json
                            },
+"claim_push_batch":
+{ Args: { "p_limit"?: number,"p_secret": string }; Returns: Json
+                           },
+"claim_reward":
+{ Args: { "p_slug": string }; Returns: Json
+                           },
 "create_my_shop":
 { Args: { "p_business_type": string,"p_name": string,"p_slug": string }; Returns: {
               "business_type": string,
@@ -665,6 +877,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"finish_push":
+{ Args: { "p_gone"?: boolean,"p_id": string,"p_ok": boolean,"p_secret": string }; Returns: Json
+                           },
 "get_dashboard_today":
 { Args: { "p_tenant_id": string }; Returns: Json
                            },
@@ -675,6 +890,9 @@ isOneToOne: false
 { Args: { "p_slug": string }; Returns: Json
                            },
 "get_order":
+{ Args: { "p_token": string }; Returns: Json
+                           },
+"get_order_messages":
 { Args: { "p_token": string }; Returns: Json
                            },
 "get_sales_report":
@@ -692,6 +910,9 @@ isOneToOne: false
 "quote_order":
 { Args: { "p_payload": Json,"p_slug": string }; Returns: Json
                            },
+"rate_order":
+{ Args: { "p_comment"?: string,"p_stars": number,"p_token": string }; Returns: Json
+                           },
 "record_payment":
 { Args: { "p_method": string,"p_order_id": string }; Returns: Json
                            },
@@ -703,6 +924,9 @@ isOneToOne: false
                            },
 "save_sort_order":
 { Args: { "p_ids": (string)[],"p_kind": string }; Returns: undefined
+                           },
+"set_delivery_info":
+{ Args: { "p_order_id": string,"p_provider": string,"p_rider_name"?: string,"p_rider_phone"?: string,"p_tracking_url"?: string }; Returns: Json
                            },
 "set_stock":
 { Args: { "p_stock_on_hand": number,"p_variant_id": string }; Returns: {
@@ -723,11 +947,17 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"settle_reward_claim":
+{ Args: { "p_claim_id": string,"p_given": boolean }; Returns: Json
+                           },
 "slug_available":
 { Args: { "p_slug": string }; Returns: boolean
                            },
 "submit_payment_proof":
 { Args: { "p_method": string,"p_proof_path": string,"p_reference_no": string,"p_token": string }; Returns: Json
+                           },
+"subscribe_order_push":
+{ Args: { "p_subscription": Json,"p_token": string }; Returns: Json
                            }
           }
           Enums: {

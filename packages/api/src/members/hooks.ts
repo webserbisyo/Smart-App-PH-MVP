@@ -2,14 +2,24 @@
 
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CustomerAddress, MemberAccount, StampRule } from '@smartapp/core';
+import type { CustomerAddress, MemberAccount, RewardRule, StampRule } from '@smartapp/core';
 
 import { useSession } from '../auth/hooks';
 import { qk } from '../keys';
 import { parseMyOrders, readMyOrdersRaw } from '../orders/my-orders';
 import { useApiClient } from '../provider';
 
-import { getMyAccount, getStampRule, joinAsMember, removeMyAddress, saveMyAddress, saveStampRule } from './members';
+import {
+  claimReward,
+  getMyAccount,
+  getStampRule,
+  joinAsMember,
+  removeMyAddress,
+  saveMyAddress,
+  saveStampRule,
+  settleRewardClaim,
+} from './members';
+
 import type { AddressInput, JoinAsMemberInput } from './members';
 
 /** What the join sheet sends; `orderToken` null uses the newest receipt this device holds for the shop. */
@@ -77,9 +87,36 @@ export function useSaveStampRule() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (rule: StampRule): Promise<StampRule> => saveStampRule(client, rule),
+    mutationFn: (rule: RewardRule | StampRule): Promise<RewardRule> => saveStampRule(client, rule),
     onSuccess: (rule) => {
       queryClient.setQueryData(qk.stampRule(rule.tenantId), rule);
     },
   });
 }
+
+/** Claims a custom reward code using stamps. */
+export function useClaimReward(slug: string) {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => claimReward(client, slug),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.myAccount(slug) });
+    },
+  });
+}
+
+/** Owner settles or cancels a custom reward claim. */
+export function useSettleRewardClaim() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ claimId, given }: { claimId: string; given: boolean }) =>
+      settleRewardClaim(client, claimId, given),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.allCustomers });
+      void queryClient.invalidateQueries({ queryKey: qk.allOrders });
+    },
+  });
+}
+

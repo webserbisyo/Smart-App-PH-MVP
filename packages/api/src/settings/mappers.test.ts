@@ -37,6 +37,13 @@ const settingsRow: ShopSettingsRow = {
   delivery_fee_via_messenger: false,
   unpaid_expiry_minutes: 30,
   show_member_count: true,
+  announcement_text: null,
+  announcement_tone: 'info',
+  announcement_ends_at: null,
+  about_text: null,
+  google_review_url: null,
+  shop_lat: null,
+  shop_lng: null,
 };
 
 describe('shop settings mappers', () => {

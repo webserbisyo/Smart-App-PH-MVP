@@ -10,6 +10,8 @@ import type {
   DeliveryZoneDraft,
   PaymentAccount,
   PaymentAccountDraft,
+  ShopBanner,
+  ShopBannerDraft,
   ShopSettings,
   ShopSettingsPatch,
   Tenant,
@@ -25,6 +27,7 @@ import {
   getClosures,
   getDeliveryZones,
   getPaymentAccounts,
+  getShopBanners,
   getShopSettings,
   removeClosure,
   removeDeliveryZone,
@@ -32,9 +35,11 @@ import {
   saveBusinessHours,
   saveDeliveryZone,
   savePaymentAccount,
+  saveShopBanners,
   updateShopName,
   updateShopSettings,
 } from './settings';
+
 
 // Queries take the shop id; mutations work on the signed-in owner's shop (useMyShop) and refresh what they change.
 
@@ -159,3 +164,23 @@ export function useRemoveDeliveryZone() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.deliveryZones(shopId()) }),
   });
 }
+
+export function useShopBanners(tenantId: string) {
+  const client = useApiClient();
+  return useQuery<ShopBanner[]>({ queryKey: qk.shopBanners(tenantId), queryFn: () => getShopBanners(client, tenantId) });
+}
+
+export function useSaveShopBanners() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  const shopId = useShopId();
+  return useMutation({
+    mutationFn: (banners: readonly ShopBannerDraft[]) => saveShopBanners(client, shopId(), banners),
+    onSuccess: (banners) => {
+      const id = shopId();
+      queryClient.setQueryData(qk.shopBanners(id), banners);
+      void queryClient.invalidateQueries({ queryKey: qk.shopBanners(id) });
+    },
+  });
+}
+

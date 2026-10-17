@@ -31,8 +31,12 @@ export const qk = {
   salesReports: (tenantId: string) => ['sales-report', tenantId] as const,
   salesReport: (tenantId: string, from: string, to: string) => ['sales-report', tenantId, from, to] as const,
   /** Every customer list of a shop; invalidate this to refresh them all. */
+  allCustomers: ['customers'] as const,
   customers: (tenantId: string) => ['customers', tenantId] as const,
   customerList: (tenantId: string, search: string, membersOnly: boolean) => ['customers', tenantId, search, membersOnly] as const,
   myAccount: (slug: string) => ['my-account', slug] as const,
   stampRule: (tenantId: string) => ['stamp-rule', tenantId] as const,
+  shopBanners: (tenantId: string) => ['shop-banners', tenantId] as const,
+  orderMessages: (token: string) => ['order-messages', token] as const,
 };
+

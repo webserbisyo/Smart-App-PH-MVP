@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
+import { ShopAnnouncement } from '../schemas/announcement';
+import { ShopBanner } from '../schemas/banner';
 import { BusinessHours, Closure } from '../schemas/business-hours';
 import { Category } from '../schemas/category';
 import { Customer } from '../schemas/customer';
 import { CustomerAddress } from '../schemas/customer-address';
 import { DeliveryZone } from '../schemas/delivery-zone';
 import { CatalogItem } from '../schemas/catalog-item';
-import { BusinessType, CashMethod, LineProblem, OrderStatus, PaymentStatus, SortKind, TransferMethod } from '../schemas/enums';
+import { BusinessType, CashMethod, DeliveryProvider, LineProblem, OrderStatus, PaymentStatus, SortKind, TransferMethod } from '../schemas/enums';
 import { ItemDraft } from '../schemas/item-draft';
 import { Item, ItemPhoto } from '../schemas/item';
 import { LoyaltyEntry } from '../schemas/loyalty-entry';
@@ -14,13 +16,19 @@ import { OptionGroup } from '../schemas/option-group';
 import { Order } from '../schemas/order';
 import { OrderEvent } from '../schemas/order-event';
 import { OrderLine, OrderLineOption } from '../schemas/order-line';
+import { OrderMessage } from '../schemas/order-message';
 import { OrderPayload, QuotePayload } from '../schemas/order-payload';
 import { Payment } from '../schemas/payment';
 import { PaymentAccount } from '../schemas/payment-account';
+import { Pin } from '../schemas/pin';
+import { ClaimedPushBatchItem, PushSubscription } from '../schemas/push-subscription';
+import { OrderRating } from '../schemas/rating';
+import { OpenRewardClaim } from '../schemas/reward-claim';
+import { RewardRule } from '../schemas/reward-rule';
 import { PublicShop, Tenant } from '../schemas/shop';
-import { StampRule } from '../schemas/stamp-rule';
 import { Variant } from '../schemas/variant';
 import { Centavos, IsoDateTime, ManilaDate, PhPhone, Slug, Uuid } from '../schemas/primitives';
+
 
 // Contracts for the database functions in system paper 7.4. Contracts only: the SQL comes in
 // Phase 3 and 5, the callers in packages/api. Inputs are strict so unknown fields fail.
@@ -42,11 +50,17 @@ export const Storefront = z.object({
   items: z.array(StorefrontItem),
   paymentAccounts: z.array(PaymentAccount),
   deliveryZones: z.array(DeliveryZone),
-  stampRule: StampRule.nullable(),
+  stampRule: RewardRule.nullable().optional(),
+  announcement: ShopAnnouncement.nullable().optional(),
+  about: z.string().nullable().optional(),
+  googleReviewUrl: z.url().nullable().optional(),
+  banners: z.array(ShopBanner).optional(),
+  pin: Pin.nullable().optional(),
   /** Null when the owner hides the members count. */
   memberCount: z.int().nonnegative().nullable(),
 });
 export type Storefront = z.infer<typeof Storefront>;
+
 
 /** A cart line priced by the database; `lineIndex` is its place in the payload's lines. */
 export const QuoteLine = z.object({
@@ -114,8 +128,9 @@ export type ShopOrderChange = z.infer<typeof ShopOrderChange>;
 export const MemberAccount = z.object({
   customer: Customer,
   stamps: z.int().nonnegative(),
-  stampRule: StampRule.nullable(),
+  stampRule: RewardRule.nullable().optional(),
   rewardReady: z.boolean(),
+  openClaim: OpenRewardClaim.nullable().optional(),
   orders: z.array(Order),
   history: z.array(LoyaltyEntry),
   addresses: z.array(CustomerAddress),
@@ -149,10 +164,17 @@ export const SalesReport = z.object({
   to: ManilaDate,
   days: z.array(z.object({ date: ManilaDate, orders: z.int().nonnegative(), sales: Centavos })),
   /** `paidOrders`: the orders counted in sales (the average order divides by it, decision P5-12). */
-  totals: z.object({ orders: z.int().nonnegative(), paidOrders: z.int().nonnegative(), sales: Centavos }),
+  totals: z.object({
+    orders: z.int().nonnegative(),
+    paidOrders: z.int().nonnegative(),
+    sales: Centavos,
+    ratingAverage: z.number().nullable().optional(),
+    ratingCount: z.int().nonnegative().optional(),
+  }),
   bestSellers: z.array(z.object({ itemName: z.string().min(1), qty: z.int().positive(), sales: Centavos })),
 });
 export type SalesReport = z.infer<typeof SalesReport>;
+
 
 const OwnerShop = { tenantId: Uuid };
 
@@ -289,7 +311,69 @@ export const dbFunctions = {
     input: z.strictObject({}),
     output: z.object({ expiredCount: z.int().nonnegative(), ranAt: IsoDateTime }),
   },
+  /** Signed-in customer: claims a custom reward code using stamps. */
+  claim_reward: {
+    input: z.strictObject({ slug: Slug }),
+    output: z.object({ claimId: Uuid, code: z.string().length(6) }),
+  },
+  /** Owner: marks a custom reward claim given or cancels and returns stamps. */
+  settle_reward_claim: {
+    input: z.strictObject({ claimId: Uuid, given: z.boolean() }),
+    output: z.object({ claimId: Uuid, status: z.enum(['given', 'cancelled']) }),
+  },
+  /** Anyone with order token: gets all messages and event logs for the order. */
+  get_order_messages: {
+    input: z.strictObject({ token: z.string().min(8) }),
+    output: z.array(OrderMessage),
+  },
+  /** Owner: sets delivery provider, rider and tracking info on a delivery order. */
+  set_delivery_info: {
+    input: z.strictObject({
+      orderId: Uuid,
+      provider: DeliveryProvider,
+      trackingUrl: z.url().nullable().optional(),
+      riderName: z.string().trim().max(60).nullable().optional(),
+      riderPhone: z.string().nullable().optional(),
+    }),
+    output: Order,
+  },
+  /** Customer with completed order: rates the order (1-5 stars) once with optional private comment. */
+  rate_order: {
+    input: z.strictObject({
+      token: z.string().min(8),
+      stars: z.int().min(1).max(5),
+      comment: z.string().trim().max(300).nullable().optional(),
+    }),
+    output: OrderRating,
+  },
+  /** Anyone with order token: registers web push subscription and records transactional consent. */
+  subscribe_order_push: {
+    input: z.strictObject({
+      token: z.string().min(8),
+      subscription: PushSubscription,
+    }),
+    output: z.object({ ok: z.boolean(), subscriptionId: Uuid }),
+  },
+  /** Dispatch worker: claims queued push notifications. */
+  claim_push_batch: {
+    input: z.strictObject({
+      secret: z.string(),
+      limit: z.int().optional(),
+    }),
+    output: z.array(ClaimedPushBatchItem),
+  },
+  /** Dispatch worker: marks a push notification sent or failed, and optionally removes dead subscriptions. */
+  finish_push: {
+    input: z.strictObject({
+      secret: z.string(),
+      id: Uuid,
+      ok: z.boolean(),
+      gone: z.boolean().optional(),
+    }),
+    output: z.object({ ok: z.boolean() }),
+  },
 } as const;
+
 
 export type DbFunctionName = keyof typeof dbFunctions;
 export const DB_FUNCTION_NAMES = Object.keys(dbFunctions).filter((name): name is DbFunctionName =>

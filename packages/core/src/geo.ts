@@ -1,4 +1,4 @@
-import { Pin } from './schemas/pin';
+import type { Pin } from './schemas/pin';
 
 /**
  * Calculates the great-circle distance between two pins using the Haversine formula,
@@ -26,7 +26,7 @@ export function distanceKm(a: Pin, b: Pin): number {
  * Returns a standard Google Maps link for a pin.
  */
 export function mapsLink(pin: Pin): string {
-  return `https://www.google.com/maps?q=${pin.lat},${pin.lng}`;
+  return `https://www.google.com/maps?q=${String(pin.lat)},${String(pin.lng)}`;
 }
 
 /**
@@ -55,38 +55,23 @@ export function pinFromMapsLink(url: string): Pin | null {
 
   // 1. Check data format: !3d<lat>!4d<lng>
   const dataMatch = url.match(/!3d(-?\d+(?:\.\d+)?).*?!4d(-?\d+(?:\.\d+)?)/);
-  if (dataMatch) {
+  if (dataMatch && dataMatch[1] && dataMatch[2]) {
     const pin = validPin(dataMatch[1], dataMatch[2]);
     if (pin) return pin;
   }
 
   // 2. Check path coordinates: /@<lat>,<lng>
   const pathMatch = url.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
-  if (pathMatch) {
+  if (pathMatch && pathMatch[1] && pathMatch[2]) {
     const pin = validPin(pathMatch[1], pathMatch[2]);
     if (pin) return pin;
   }
 
   // 3. Check query parameters: q=, query=, ll=
-  try {
-    const parsed = new URL(url);
-    for (const key of ['q', 'query', 'll']) {
-      const val = parsed.searchParams.get(key);
-      if (val) {
-        const coordMatch = val.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
-        if (coordMatch) {
-          const pin = validPin(coordMatch[1], coordMatch[2]);
-          if (pin) return pin;
-        }
-      }
-    }
-  } catch {
-    // If not a full URL, fallback regex for ?q=...
-    const qMatch = url.match(/[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
-    if (qMatch) {
-      const pin = validPin(qMatch[1], qMatch[2]);
-      if (pin) return pin;
-    }
+  const qMatch = url.match(/[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)(?:[&/?#]|$)/);
+  if (qMatch && qMatch[1] && qMatch[2]) {
+    const pin = validPin(qMatch[1], qMatch[2]);
+    if (pin) return pin;
   }
 
   return null;
@@ -102,16 +87,10 @@ export function pinFromMapsLink(url: string): Pin | null {
 export function trackingHostOk(provider: string, url: string): boolean {
   if (!url || typeof url !== 'string') return false;
 
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return false;
-  }
+  const match = url.match(/^https:\/\/([^/:?#]+)(?:[:/?#]|$)/i);
+  if (!match || !match[1]) return false;
 
-  if (parsed.protocol !== 'https:') return false;
-
-  const host = parsed.hostname.toLowerCase();
+  const host = match[1].toLowerCase();
 
   switch (provider) {
     case 'lalamove':
