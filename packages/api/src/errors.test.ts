@@ -30,6 +30,15 @@ describe('toApiError', () => {
     expect(toApiError({ message: 'violates foreign key constraint', code: '23503' }).code).toBe('invalid');
   });
 
+  it('maps loyalty_rules foreign key error to reward_item_in_use', () => {
+    const error = {
+      code: '23503',
+      message: 'update or delete on table "item_variants" violates foreign key constraint "loyalty_rules_variant_fk" on table "loyalty_rules"',
+      details: 'Key (id, tenant_id)=(...) is still referenced from table "loyalty_rules".',
+    };
+    expect(toApiError(error).code).toBe('reward_item_in_use');
+  });
+
   it('reads an expired code without a code field', () => {
     expect(toApiError({ message: 'Token has expired or is invalid' }).code).toBe('invalid_code');
   });

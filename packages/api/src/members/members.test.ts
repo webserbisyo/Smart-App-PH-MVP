@@ -15,8 +15,14 @@ describe('member rows', () => {
       is_active: true,
       min_order_total: 10000,
       stamps_needed: 8,
+      reward_kind: 'discount',
       reward_label: '₱100 off your order',
       reward_amount: 10000,
+      reward_item_id: null,
+      reward_variant_id: null,
+      reward_title: null,
+      reward_description: null,
+      reward_image_path: null,
       updated_at: '2026-10-12T08:00:00+00:00',
     };
     expect(stampRuleFromRow(row)).toEqual({
@@ -24,8 +30,14 @@ describe('member rows', () => {
       isActive: true,
       minOrderTotal: 10000,
       stampsNeeded: 8,
+      rewardKind: 'discount',
       rewardLabel: '₱100 off your order',
       rewardAmount: 10000,
+      rewardItemId: null,
+      rewardVariantId: null,
+      rewardTitle: null,
+      rewardDescription: null,
+      rewardImagePath: null,
     });
   });
 
@@ -38,6 +50,8 @@ describe('member rows', () => {
       address_line: '12 Rizal St.',
       landmark: null,
       is_default: true,
+      lat: null,
+      lng: null,
       created_at: '2026-10-12T08:00:00+00:00',
     };
     expect(addressFromRow(row)).toEqual({
@@ -48,6 +62,9 @@ describe('member rows', () => {
       addressLine: '12 Rizal St.',
       landmark: null,
       isDefault: true,
+      lat: null,
+      lng: null,
+      pin: null,
     });
   });
 

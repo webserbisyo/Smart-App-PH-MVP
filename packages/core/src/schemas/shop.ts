@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { BusinessType, ShopStatus } from './enums';
+import { AnnouncementTone, BusinessType, ShopStatus } from './enums';
+import { Pin } from './pin';
 import { HexColor, IsoDateTime, ManilaDate, Slug, Uuid } from './primitives';
 
 /** One business account (table `tenants`). Status and paidUntil are changed by the founder with SQL. */
@@ -46,8 +47,17 @@ export const ShopSettings = z.object({
   deliveryFeeViaMessenger: z.boolean(),
   unpaidExpiryMinutes: z.int().positive(),
   showMemberCount: z.boolean(),
+  announcementText: z.string().max(160).nullable().optional(),
+  announcementTone: AnnouncementTone.optional(),
+  announcementEndsAt: IsoDateTime.nullable().optional(),
+  aboutText: z.string().max(600).nullable().optional(),
+  googleReviewUrl: z.url().nullable().optional(),
+  shopLat: z.number().min(-90).max(90).nullable().optional(),
+  shopLng: z.number().min(-180).max(180).nullable().optional(),
+  pin: Pin.nullable().optional(),
 });
 export type ShopSettings = z.infer<typeof ShopSettings>;
+
 
 /** A shop as the apps see it: the tenant plus its settings. */
 export const Shop = Tenant.extend({

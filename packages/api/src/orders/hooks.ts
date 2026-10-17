@@ -4,14 +4,34 @@ import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
 import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
-import type { OrderReceipt, Payment, Quote, QuotePayload } from '@smartapp/core';
+import type {
+  DeliveryProvider,
+  Order,
+  OrderMessage,
+  OrderReceipt,
+  Payment,
+  PushSubscription,
+  Quote,
+  QuotePayload,
+} from '@smartapp/core';
 
 import { qk } from '../keys';
 import { useApiClient } from '../provider';
 
 import { parseMyOrders, readMyOrdersRaw, rememberMyOrder, subscribeMyOrders } from './my-orders';
-import { createOrderPlacer, getOrder, placeOrder, quoteOrder, submitPaymentProof } from './orders';
+import {
+  createOrderPlacer,
+  getOrder,
+  getOrderMessages,
+  placeOrder,
+  quoteOrder,
+  rateOrder,
+  setDeliveryInfo,
+  submitPaymentProof,
+  subscribeOrderPush,
+} from './orders';
 import type { OrderInput, PaymentProofInput, PlacedOrder } from './orders';
+
 
 /** While the live channel is not joined, the receipt refetches this often (paper 10). */
 export const ORDER_POLL_MS = 15_000;
@@ -64,6 +84,7 @@ export function useOrderLive(token: string): { live: boolean } {
     const channel = client
       .channel(`order:${token}`, { config: { private: false } })
       .on('broadcast', { event: 'order_changed' }, refresh)
+      .on('broadcast', { event: 'message_added' }, refresh)
       .subscribe((status) => {
         const joined = status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED;
         setLive(joined);
@@ -106,3 +127,80 @@ export function useMyOrderTokens(slug: string): string[] {
   const raw = useSyncExternalStore(subscribeMyOrders, () => readMyOrdersRaw(slug), () => '[]');
   return useMemo(() => parseMyOrders(raw), [raw]);
 }
+
+/**
+ * Messages and timeline events for an order, kept live via realtime broadcasts on `order:<token>`.
+ */
+export function useOrderMessages(token: string) {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const refresh = () => {
+      void queryClient.invalidateQueries({ queryKey: qk.orderMessages(token) });
+    };
+    const channel = client
+      .channel(`order:${token}`, { config: { private: false } })
+      .on('broadcast', { event: 'message_added' }, refresh)
+      .on('broadcast', { event: 'order_changed' }, refresh)
+      .subscribe((status) => {
+        if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) refresh();
+      });
+    return () => {
+      void client.removeChannel(channel);
+    };
+  }, [client, queryClient, token]);
+
+  return useQuery<OrderMessage[]>({
+    queryKey: qk.orderMessages(token),
+    queryFn: () => getOrderMessages(client, token),
+  });
+}
+
+/** Customer rates a completed order. */
+export function useRateOrder() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ token, stars, comment }: { token: string; stars: number; comment?: string | null }) =>
+      rateOrder(client, token, stars, comment),
+    onSuccess: (_rating, { token }) => {
+      void queryClient.invalidateQueries({ queryKey: qk.order(token) });
+    },
+  });
+}
+
+/** Owner sets delivery provider, rider and tracking link. */
+export function useSetDeliveryInfo() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      orderId,
+      provider,
+      trackingUrl,
+      riderName,
+      riderPhone,
+    }: {
+      orderId: string;
+      provider: DeliveryProvider;
+      trackingUrl?: string | null;
+      riderName?: string | null;
+      riderPhone?: string | null;
+    }): Promise<Order> => setDeliveryInfo(client, orderId, provider, trackingUrl, riderName, riderPhone),
+    onSuccess: (order) => {
+      void queryClient.invalidateQueries({ queryKey: qk.order(order.token) });
+      void queryClient.invalidateQueries({ queryKey: qk.allOrders });
+    },
+  });
+}
+
+/** Subscribes an order link to Web Push notifications. */
+export function useSubscribeOrderPush() {
+  const client = useApiClient();
+  return useMutation({
+    mutationFn: ({ token, subscription }: { token: string; subscription: PushSubscription }) =>
+      subscribeOrderPush(client, token, subscription),
+  });
+}
+

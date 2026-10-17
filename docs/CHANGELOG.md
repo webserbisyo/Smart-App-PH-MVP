@@ -5,6 +5,7 @@ under the new version and tags it on `main`.
 
 ## Unreleased
 
+- feat(sf2): storefront database schema, migrations and API (shop content, banners, 3 reward kinds, custom claims, order messages, delivery info, private ratings, pins, push subscriptions and outbox).
 - feat(sf1): storefront v2 foundation and redesign with shell, 60/30/10 palette, all pages restyled, privacy, icons, splash and brand editor.
 - docs(sf): storefront v2 spec (`docs/storefront-v2.md`), prompts SF1 to SF4, decisions SF-1 to SF-24, post-launch
   backlog in PROGRESS.

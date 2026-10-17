@@ -43,6 +43,11 @@ const orderRow: OrderRow = {
   ready_at: null,
   completed_at: null,
   cancelled_at: null,
+  delivery_provider: null,
+  rider_name: null,
+  rider_phone: null,
+  delivery_lat: null,
+  delivery_lng: null,
 };
 
 function line(sort: number, itemName: string): OrderItemRow {
@@ -60,6 +65,7 @@ function line(sort: number, itemName: string): OrderItemRow {
     qty: 1,
     line_total: 14900,
     note: null,
+    is_reward: false,
     sort,
   };
 }

@@ -29,7 +29,16 @@ const PAPER_FUNCTIONS = [
   'get_member_insights',
   'get_sales_report',
   'expire_unpaid_orders',
+  'claim_reward',
+  'settle_reward_claim',
+  'get_order_messages',
+  'set_delivery_info',
+  'rate_order',
+  'subscribe_order_push',
+  'claim_push_batch',
+  'finish_push',
 ];
+
 
 const memberAccount = {
   customer: sample.customer,
@@ -189,7 +198,73 @@ const valid: { [Name in DbFunctionName]: { input: DbFunctionInput<Name>; output:
     input: {},
     output: { expiredCount: 2, ranAt: '2026-10-11T07:05:00+00:00' },
   },
+  claim_reward: {
+    input: { slug: 'juans-cafe' },
+    output: { claimId: ids.order, code: 'ABC123' },
+  },
+  settle_reward_claim: {
+    input: { claimId: ids.order, given: true },
+    output: { claimId: ids.order, status: 'given' },
+  },
+  get_order_messages: {
+    input: { token: 'abc123def456' },
+    output: [
+      {
+        id: ids.order,
+        sender: 'customer',
+        kind: 'text',
+        body: 'Hello',
+        attachmentPath: null,
+        paymentId: null,
+        createdAt: '2026-10-11T07:00:00+00:00',
+      },
+    ],
+  },
+  set_delivery_info: {
+    input: {
+      orderId: ids.order,
+      provider: 'lalamove',
+      trackingUrl: 'https://m.lalamove.com/track/123',
+      riderName: 'Kuya Juan',
+      riderPhone: '+639171234567',
+    },
+    output: sample.order,
+  },
+  rate_order: {
+    input: { token: 'abc123def456', stars: 5, comment: 'Great coffee!' },
+    output: { stars: 5, comment: 'Great coffee!' },
+  },
+  subscribe_order_push: {
+    input: {
+      token: 'abc123def456',
+      subscription: {
+        endpoint: 'https://push.example.com/sub/1',
+        keys: { p256dh: 'p256dhkey123', auth: 'authkey123' },
+      },
+    },
+    output: { ok: true, subscriptionId: ids.order },
+  },
+  claim_push_batch: {
+    input: { secret: 'push_dispatch_secret', limit: 10 },
+    output: [
+      {
+        id: ids.order,
+        tenantId: ids.tenant,
+        subscription: {
+          endpoint: 'https://push.example.com/sub/1',
+          keys: { p256dh: 'p256dhkey123', auth: 'authkey123' },
+        },
+        payload: { title: 'order:42', body: 'status:ready', url: '/orders/abc' },
+        attempts: 1,
+      },
+    ],
+  },
+  finish_push: {
+    input: { secret: 'push_dispatch_secret', id: ids.order, ok: true, gone: false },
+    output: { ok: true },
+  },
 };
+
 
 describe('database function contracts', () => {
   it('list exactly the functions of system paper 7.4 and the P3 and P5.1 additions', () => {

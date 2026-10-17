@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  ANNOUNCEMENT_TONES,
   AUDIT_ACTIONS,
   AUDIT_TARGET_TYPES,
+  BANNER_KINDS,
   BUSINESS_TYPES,
   CashMethod,
   CONSENT_CHANNELS,
+  DELIVERY_PROVIDERS,
   FULFILLMENTS,
   ITEM_STATUSES,
   LINE_PROBLEMS,
@@ -13,11 +16,16 @@ import {
   MEMBER_ROLES,
   ORDER_ACTORS,
   ORDER_EVENT_KINDS,
+  ORDER_MESSAGE_KINDS,
+  ORDER_MESSAGE_SENDERS,
   ORDER_STATUSES,
   OrderStatus,
+  OUTBOX_STATUSES,
   PAYMENT_METHODS,
   PAYMENT_REVIEW_STATUSES,
   PAYMENT_STATUSES,
+  REWARD_CLAIM_STATUSES,
+  REWARD_KINDS,
   SHOP_STATUSES,
   TransferMethod,
 } from './enums';
@@ -48,6 +56,14 @@ describe('enums', () => {
     expect(CONSENT_CHANNELS).toEqual(['privacy', 'sms', 'email', 'push']);
     expect(AUDIT_ACTIONS).toEqual(['payment_approved', 'payment_rejected', 'payment_recorded', 'order_cancelled', 'stock_set']);
     expect(AUDIT_TARGET_TYPES).toEqual(['order', 'payment', 'variant']);
+    expect(BANNER_KINDS).toEqual(['image', 'youtube']);
+    expect(ANNOUNCEMENT_TONES).toEqual(['info', 'promo', 'warning']);
+    expect(REWARD_KINDS).toEqual(['discount', 'free_item', 'custom']);
+    expect(REWARD_CLAIM_STATUSES).toEqual(['pending', 'given', 'cancelled']);
+    expect(ORDER_MESSAGE_SENDERS).toEqual(['customer', 'owner', 'system']);
+    expect(ORDER_MESSAGE_KINDS).toEqual(['text', 'image', 'payment_proof', 'status']);
+    expect(DELIVERY_PROVIDERS).toEqual(['own', 'lalamove', 'grab', 'other']);
+    expect(OUTBOX_STATUSES).toEqual(['queued', 'sent', 'failed']);
   });
   it('reject values from later phases', () => {
     expect(OrderStatus.safeParse('voided').success).toBe(false);
@@ -57,3 +73,4 @@ describe('enums', () => {
     expect(CashMethod.options).toEqual(['cash', 'cod']);
   });
 });
+

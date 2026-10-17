@@ -43,3 +43,14 @@ export * from './install';
 export * from './csv';
 export * from './reports';
 export * from './setup';
+export * from './schemas/pin';
+export * from './geo';
+export * from './schemas/banner';
+export * from './schemas/announcement';
+export * from './schemas/reward-rule';
+export * from './schemas/reward-claim';
+export * from './schemas/order-message';
+export * from './schemas/rating';
+export * from './schemas/delivery-info';
+export * from './schemas/push-subscription';
+

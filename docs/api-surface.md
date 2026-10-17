@@ -57,6 +57,7 @@ Error codes: `already_has_shop`, `slug_taken`, `slug_reserved`, `slug_invalid`, 
 | `useClosures`, `useAddClosure`, `useRemoveClosure` | | `{ closedOn, note }`, `{ closedOn }` | |
 | `usePaymentAccounts`, `useSavePaymentAccount`, `useRemovePaymentAccount` | | `PaymentAccountDraft` (`id: null` for new), `{ accountId }` | removing deletes its QR image |
 | `useDeliveryZones`, `useSaveDeliveryZone`, `useRemoveDeliveryZone` | | `DeliveryZoneDraft`, `{ zoneId }` | |
+| `useShopBanners(tenantId)`, `useSaveShopBanners()` | query, mutation | `ShopBannerDraft[]` (up to 3 active slides per shop) | `ShopBanner[]` |
 | `useCategories`, `useSaveCategory`, `useRemoveCategory` | | `CategoryDraft` (with `icon`), `{ categoryId }` | remove refuses a category with items: `category_not_empty` |
 | `useCatalog(tenantId)` | query | | `CatalogItem[]`: item + photos + variants + option group ids, all statuses |
 | `useSaveItem()` | mutation | `ItemDraft` (item, variants ≥ 1, photo paths in order, option group ids) | `CatalogItem`, one transaction (`save_item`) |
@@ -71,9 +72,9 @@ Error codes: `already_has_shop`, `slug_taken`, `slug_reserved`, `slug_invalid`, 
 
 `Category.icon` is `{ kind: 'fluent', key } | { kind: 'emoji', value } | { kind: 'image', path } | null` (rendered by the `CategoryIcon` pattern).
 Queries take the shop id; the mutations act on the signed-in owner's shop (`useMyShop`). Drafts (`ItemDraft`,
-`CategoryDraft`, `PaymentAccountDraft`, `DeliveryZoneDraft`, `OptionGroupDraft`, `DayHours`, `ShopSettingsPatch`) are
+`CategoryDraft`, `PaymentAccountDraft`, `DeliveryZoneDraft`, `ShopBannerDraft`, `OptionGroupDraft`, `DayHours`, `ShopSettingsPatch`) are
 core Zod schemas. Removing a photo, logo, QR or photo icon also deletes the file. Error codes: `invalid`,
-`variant_required`, `category_not_empty`, `not_allowed`.
+`variant_required`, `category_not_empty`, `not_allowed`, `too_many_active_banners`.
 
 ## 2. Storefront read
 
@@ -83,7 +84,9 @@ core Zod schemas. Removing a photo, logo, QR or photo icon also deletes the file
 
 `Storefront` = `PublicShop` (tenant without `plan`, `paidUntil`, `status`) + settings, `isOpen`, `hours`,
 `closures`, visible `categories`, visible `items` (photos, variants not archived, option groups), active payment
-accounts and zones, `stampRule` (null when off), `memberCount` (null when hidden). Open/closed text such as
+accounts and zones (with `center` pin), `stampRule` (`rewardKind`, free item, custom description; null when off),
+`announcement` (text, tone, endsAt; null when ended or unset), `about`, `googleReviewUrl`, `banners` (active, sorted),
+`pin` (shop coordinates), `memberCount` (null when hidden). Open/closed text such as
 "Open until 9 PM" or "Opens 7 AM tomorrow" comes from `openState(hours, closures, now)` in core; `isOpen` from the
 database is what ordering obeys. The cart is client-side (localStorage per shop slug, `CartLine[]`), always
 re-priced with `quote_order` before Place order.
@@ -100,15 +103,24 @@ slot is 20 minutes out and the last is 15 minutes before closing). The Messenger
 | `useQuote(slug, payload)` | query | `QuotePayload` (choices only), or `null` to wait | `Quote`; `problems[]` (`lineIndex`, `code`, `variantId`) for line issues; shop-level issues are errors |
 | `usePlaceOrder()` | mutation | `{ slug, payload }` (`OrderInput`: `OrderPayload` without `clientKey`) | `{ orderId, orderNo, token }`; the hook keeps one `clientKey` per checkout, so a retry is safe |
 | `useOrder(token)` | query | token | `OrderReceipt`, or `null` for an unknown link (`qk.order(token)`) |
-| `useOrderLive(token)` | effect hook | token | joins public channel `order:<token>`, refetches `useOrder` on each change; polls every 15 s while not joined |
+| `useOrderLive(token)` | effect hook | token | joins public channel `order:<token>`, refetches `useOrder` on each change (`order_changed`, `message_added`); polls every 15 s while not joined |
+| `useOrderMessages(token)` | query | token | `OrderMessage[]` (kept live via `order:<token>` channel broadcast `message_added`) |
+| `useRateOrder()` | mutation | `{ token, stars, comment }` | `OrderRating` (completed orders only, once) |
+| `useSubscribeOrderPush()` | mutation | `{ token, subscription }` | `{ ok, subscriptionId }` (registers Web Push & records transactional consent) |
 | `uploadPaymentProof(client, { tenantId, token }, blob)` | function | | `{ path }` (`<tenantId>/<token>/<uuid>.webp`) |
-| `useSubmitPaymentProof()` | mutation | `{ token, method, referenceNo, proofPath }` | `Payment` |
+| `submitPaymentProof(client, input)` / `useSubmitPaymentProof()` | function, mutation | `{ token, method, referenceNo, proofPath }` | `Payment` |
+| `getOrderMessages(client, token)` | function | token | `OrderMessage[]` |
+| `rateOrder(client, token, stars, comment)` | function | | `OrderRating` |
+| `subscribeOrderPush(client, token, subscription)` | function | | `{ ok, subscriptionId }` |
 | `useMyOrderTokens(slug)` | hook | | tokens this device placed (localStorage), for the guest Orders tab |
+
+Payloads `QuotePayload` and `OrderPayload` accept optional `delivery.pin` `{ lat, lng }` (ignored for non-delivery orders).
 
 Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavailable`, `payment_unavailable`,
 `cod_not_allowed`, `pickup_time_invalid`, `zone_required`, `zone_invalid`, `item_unavailable`, `out_of_stock`,
-`invalid_options`, `reward_unavailable`, `rate_limited`, `order_not_payable`, `duplicate_reference`,
-`proof_missing`, `too_many_proofs`, `not_found`, `invalid`.
+`invalid_options`, `reward_unavailable`, `reward_item_sold_out`, `reward_not_for_orders`, `rate_limited`,
+`order_not_payable`, `duplicate_reference`, `proof_missing`, `too_many_proofs`, `not_found`, `invalid`,
+`order_not_completed`, `already_rated`.
 
 ## 4. Orders board (dashboard)
 
@@ -122,22 +134,29 @@ Error codes: `shop_closed`, `shop_busy`, `shop_not_found`, `fulfillment_unavaila
 | `useRecordPayment()` | mutation | `{ orderId, method }` | `Payment` |
 | `useAdvanceOrder()` | mutation | `{ orderId, toStatus, trackingUrl }` | `Order` (optimistic) |
 | `useCancelOrder()` | mutation | `{ orderId, reason }` | `Order` |
+| `useSetDeliveryInfo()` | mutation | `{ orderId, provider, trackingUrl, riderName, riderPhone }` | `Order` (`set_delivery_info`) |
+| `setDeliveryInfo(client, orderId, provider, trackingUrl, riderName, riderPhone)` | function | | `Order` |
 
+`Order` / `BoardOrder` / `OrderReceipt` includes `deliveryProvider`, `riderName`, `riderPhone`, `deliveryPin` and `rating`.
 Core rules the board uses (`packages/core/src/order-rules.ts`, kept in line with the SQL): `boardColumn(order)`,
 `nextActions(order, settings)` (the main step first: `verify_payment`, `mark_paid`, `start`, `mark_ready`, `out_for_delivery`, `complete`), `canCancel(order)`, `timelineSteps(order, events)`, `isLate(order, now)`. A core test proves every open order can be finished. Steps only move forward: there is no Undo.
 
-Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`, `not_paid`, `payment_not_pending`, `already_paid`; also `invalid`, `payment_unavailable` (`cod` on a non-delivery order, `cash` on delivery) and `order_not_payable` (a cancelled or expired order).
+Error codes: `not_allowed`, `not_found`, `invalid_transition`, `item_has_orders`, `not_paid`, `payment_not_pending`, `already_paid`; also `invalid`, `invalid_tracking_host`, `payment_unavailable` (`cod` on a non-delivery order, `cash` on delivery) and `order_not_payable` (a cancelled or expired order).
 
 ## 5. Members and stamps
 
 | Name | Kind | Input | Output / notes |
 | --- | --- | --- | --- |
 | `useJoinAsMember()` | mutation | `{ slug, name, phone, orderToken }` | `MemberAccount`; `orderToken` is any token this device holds for the shop (links past guest orders); `null` sends the newest one this device holds. A first join on a shop with an active stamp card includes 1 welcome stamp (decision P5-16 in `docs/decisions.md`). Joining again returns the same account, not an error |
-| `useMyAccount(slug)` | query | | `MemberAccount \| null` (null: signed in but not a member here; waits while signed out). `MemberAccount.history` is the latest 20 stamp movements |
-| `useSaveMyAddress(slug)`, `useRemoveMyAddress(slug)` | mutation | `AddressInput` (`CustomerAddress` with `id: null` to add), address id | refresh `useMyAccount(slug)` |
-| `useStampRule(tenantId)`, `useSaveStampRule()` | query, mutation | `StampRule` | dashboard |
+| `useMyAccount(slug)` | query | | `MemberAccount \| null` (null: signed in but not a member here; waits while signed out). `MemberAccount.history` is the latest 20 stamp movements; `openClaim` is the active custom prize code |
+| `useSaveMyAddress(slug)`, `useRemoveMyAddress(slug)` | mutation | `AddressInput` (`CustomerAddress` with `id: null` to add; includes `pin`), address id | refresh `useMyAccount(slug)` |
+| `useStampRule(tenantId)`, `useSaveStampRule()` | query, mutation | `RewardRule` | dashboard (discount, free item or custom prize) |
+| `useClaimReward(slug)` | mutation | none | `{ claimId, code }` (`claim_reward`, custom prize, member only) |
+| `useSettleRewardClaim()` | mutation | `{ claimId, given }` | `{ claimId, status }` (`settle_reward_claim`, owner only) |
+| `claimReward(client, slug)` | function | slug | `{ claimId, code }` |
+| `settleRewardClaim(client, claimId, given)` | function | | `{ claimId, status }` |
 
-Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unavailable` comes from `useQuote` and `usePlaceOrder` when `useReward` is set.
+Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`, `reward_unavailable`, `claim_already_pending`; `reward_unavailable` comes from `useQuote` and `usePlaceOrder` when `useReward` is set.
 
 ## 6. Home, customers, reports (dashboard)
 
@@ -145,7 +164,7 @@ Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unava
 | --- | --- | --- | --- |
 | `useDashboardToday(tenantId)` | query | | `DashboardToday` |
 | `useMemberInsights(tenantId)` | query | | `MemberInsights` |
-| `useSalesReport(tenantId, { from, to })` | query | Manila dates | `SalesReport`: days, totals `{ orders, paidOrders, sales }`, best sellers |
+| `useSalesReport(tenantId, { from, to })` | query | Manila dates | `SalesReport`: days, totals `{ orders, paidOrders, sales, ratingAverage, ratingCount }`, best sellers |
 | `useCustomers(tenantId, { search, membersOnly })` | infinite query | | `data`: `CustomerRow[]` (customer + stamp balance) loaded so far, newest order first, 50 per page; `hasNextPage` / `fetchNextPage` for "Load more". Search matches a name or a mobile (`09…`, `+63…`, `9…`) |
 | `useUpdateCustomerNotes()` | mutation | `{ customerId, notes, tags }` | `Customer`; refreshes the shop's customer lists |
 | `exportOrdersCsv(client, tenantId, { from, to })` | function | | CSV `Blob` (Manila times, pesos), one row per order; file name from `WORDS.dashboard.reports.csv.fileName(from, to)` |
@@ -153,11 +172,18 @@ Error codes: `not_signed_in`, `phone_needs_order`, `phone_in_use`; `reward_unava
 
 Error codes: `not_allowed`, `invalid` (a range over 92 days, or `from` after `to`).
 
+## 7. Push notifications (server dispatcher)
+
+| Name | Kind | Input | Output / notes |
+| --- | --- | --- | --- |
+| `claimPushBatch(client, secret, limit)` | function | secret, limit (default 50) | `ClaimedPushBatchItem[]` (`claim_push_batch`, skip locked) |
+| `finishPush(client, secret, id, ok, gone)` | function | secret, id, ok, gone (default false) | `{ ok: boolean }` (`finish_push`, marks sent/failed, drops gone) |
+
 ## Realtime channels
 
 | Channel | Who joins | Sent when | Payload |
 | --- | --- | --- | --- |
-| `order:<token>` (public) | the receipt page | the order's status or payment status changes | `{ status, paymentStatus }` |
+| `order:<token>` (public) | the receipt page | the order's status or payment status changes, or a message is added | `{ status, paymentStatus }` or event `message_added` |
 | `shop:<tenantId>` (private, RLS: shop members) | the dashboard | an order is placed or changes | `{ orderId, op: 'insert' \| 'update', status, paymentStatus }` |
 
 Payloads are only a nudge: the hook refetches through the normal queries, so RLS still decides what is read.
@@ -173,10 +199,12 @@ Writes and anything touching money, stock or stamps go through these `public.` f
 | `shops/shops.ts` | `slug_available`, `create_my_shop` |
 | `catalog/catalog.ts` | `save_item`, `set_stock`, `save_sort_order` |
 | `storefront/storefront.ts` | `get_storefront` |
-| `orders/orders.ts` | `quote_order`, `place_order`, `get_order`, `submit_payment_proof` |
-| `board/board.ts` | `review_payment`, `record_payment`, `advance_order`, `cancel_order` |
-| `members/members.ts` | `join_as_member`, `get_my_account` |
+| `orders/orders.ts` | `quote_order`, `place_order`, `get_order`, `submit_payment_proof`, `get_order_messages`, `rate_order`, `set_delivery_info`, `subscribe_order_push` |
+| `board/board.ts` | `review_payment`, `record_payment`, `advance_order`, `cancel_order`, `set_delivery_info` |
+| `members/members.ts` | `join_as_member`, `get_my_account`, `claim_reward`, `settle_reward_claim` |
 | `reports/reports.ts` | `get_dashboard_today`, `get_member_insights`, `get_sales_report` |
+| `push/server.ts` | `claim_push_batch`, `finish_push` |
 
 Database-only helpers worth knowing: `private.demo_setup()` and `private.demo_reset(slug)` (demo shops, run as the
 database owner), `private.expire_unpaid_orders()` (cron job).
+

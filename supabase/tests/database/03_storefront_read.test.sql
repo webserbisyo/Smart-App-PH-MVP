@@ -141,7 +141,7 @@ select is(tests.shop_a() #>> '{shop,name}', 'Shop A', 'the shop name comes back'
 select ok(not (tests.shop_a() -> 'shop') ?| array['plan', 'paidUntil', 'status'], 'no plan, paidUntil or status key');
 select is(
   (select array_agg(key order by key) from jsonb_object_keys(tests.shop_a()) key),
-  array['categories', 'closures', 'deliveryZones', 'hours', 'isOpen', 'items', 'memberCount', 'paymentAccounts', 'shop', 'stampRule'],
+  array['about', 'announcement', 'banners', 'categories', 'closures', 'deliveryZones', 'googleReviewUrl', 'hours', 'isOpen', 'items', 'memberCount', 'paymentAccounts', 'pin', 'shop', 'stampRule'],
   'the result has the Storefront keys'
 );
 select is(
