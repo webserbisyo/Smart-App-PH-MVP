@@ -8,10 +8,12 @@ export interface Vocab {
   item: 'Menu item' | 'Product';
   /** Where orders are made ready: "Kitchen" or "Packing". */
   prep: 'Kitchen' | 'Packing';
+  /** LocalBusiness Schema.org type for SEO JSON-LD. */
+  schemaType: 'FoodEstablishment' | 'Store';
 }
 
 /** The only place the business type picks words. Nothing else branches on the business type. */
 export const VOCAB: Readonly<Record<BusinessType, Vocab>> = {
-  food: { catalog: 'Menu', item: 'Menu item', prep: 'Kitchen' },
-  retail: { catalog: 'Products', item: 'Product', prep: 'Packing' },
+  food: { catalog: 'Menu', item: 'Menu item', prep: 'Kitchen', schemaType: 'FoodEstablishment' },
+  retail: { catalog: 'Products', item: 'Product', prep: 'Packing', schemaType: 'Store' },
 };

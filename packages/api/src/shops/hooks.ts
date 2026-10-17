@@ -50,3 +50,12 @@ export function useShopId(): () => string {
     return shop.id;
   };
 }
+
+/**
+ * For mutations that revalidate the storefront cache: returns the signed-in owner's shop slug.
+ */
+export function useShopSlug(): () => string | null {
+  const { data: shop } = useMyShop();
+  return () => shop?.slug ?? null;
+}
+

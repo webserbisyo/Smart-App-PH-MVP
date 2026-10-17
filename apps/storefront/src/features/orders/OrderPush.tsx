@@ -1,23 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useSubscribeOrderPush } from '@smartapp/api';
-import { WORDS } from '@smartapp/core';
+import { installPlatform, WORDS } from '@smartapp/core';
 import type { Order } from '@smartapp/core';
 import { Button } from '@smartapp/ui/components/button';
 import { Spinner } from '@smartapp/ui/components/spinner';
 import { IconBell, IconCircleCheckFilled } from '@smartapp/ui/icons';
 
 import { IosSteps } from '../install/InstallCard';
+import { isStandalone } from '../install/install-prompt';
 
 const words = WORDS.storefront.receipt.push;
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
+  const buffer = new ArrayBuffer(rawData.length);
+  const outputArray = new Uint8Array(buffer);
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
@@ -42,17 +44,6 @@ export function OrderPush({ order, shopName, vapidPublicKey }: OrderPushProps) {
   // Only prompt when order is in preparation / active before ready.
   const isPendingReady = order.status === 'placed' || order.status === 'preparing';
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
-      setStatus('unsupported');
-      return;
-    }
-    if (Notification.permission === 'denied') {
-      setStatus('denied');
-    }
-  }, []);
-
   if (!isPendingReady) {
     return null;
   }
@@ -60,12 +51,9 @@ export function OrderPush({ order, shopName, vapidPublicKey }: OrderPushProps) {
   const handleSubscribe = async () => {
     if (typeof window === 'undefined') return;
 
-    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true);
+    const isIos = installPlatform(window.navigator.userAgent, window.navigator.maxTouchPoints) === 'ios';
 
-    if (isIos && !isStandalone) {
+    if (isIos && !isStandalone()) {
       setShowIosSteps(true);
       return;
     }
@@ -106,14 +94,15 @@ export function OrderPush({ order, shopName, vapidPublicKey }: OrderPushProps) {
       }
 
       const json = sub.toJSON();
-      if (json.endpoint && json.keys?.p256dh && json.keys?.auth) {
+      const keys = json.keys;
+      if (json.endpoint && keys && keys.p256dh && keys.auth) {
         await subscribePush.mutateAsync({
           token: order.token,
           subscription: {
             endpoint: json.endpoint,
             keys: {
-              p256dh: json.keys.p256dh,
-              auth: json.keys.auth,
+              p256dh: keys.p256dh,
+              auth: keys.auth,
             },
           },
         });

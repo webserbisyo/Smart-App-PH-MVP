@@ -15,8 +15,8 @@ const config: NextConfig = {
     // The local Supabase (127.0.0.1) in development only.
     dangerouslyAllowLocalIP: process.env.NODE_ENV === 'development',
   },
-  async headers() {
-    return [
+  headers() {
+    return Promise.resolve([
       {
         source: '/sw.js',
         headers: [
@@ -34,7 +34,7 @@ const config: NextConfig = {
           },
         ],
       },
-    ];
+    ]);
   },
 };
 

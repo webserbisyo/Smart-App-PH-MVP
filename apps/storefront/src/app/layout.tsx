@@ -8,6 +8,7 @@ import { ServiceWorkerRegister } from '../features/pwa/ServiceWorkerRegister';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://smartapp.ph'),
   title: WORDS.app.name,
 };
 

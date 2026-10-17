@@ -354,7 +354,7 @@ export function Receipt({
         <ReceiptView
           receipt={order.data}
           justPlaced={justPlaced}
-          vapidPublicKey={vapidPublicKey}
+          vapidPublicKey={vapidPublicKey ?? null}
         />
       )}
     </QueryState>

@@ -1,9 +1,9 @@
 import 'server-only';
 
 import { timingSafeEqual } from 'node:crypto';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { createPublicClient, dispatchPushBatch } from '@smartapp/api';
+import { type NextRequest, NextResponse } from 'next/server';
+import { createPublicClient } from '@smartapp/api';
+import { dispatchPushBatch } from '@smartapp/api/server';
 
 function secureCompare(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
