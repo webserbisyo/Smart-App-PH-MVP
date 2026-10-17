@@ -94,4 +94,12 @@ describe('trackingHostOk', () => {
     expect(trackingHostOk('other', 'https://custom-courier.com/shipment/456')).toBe(true);
     expect(trackingHostOk('own', 'http://insecure.com/track')).toBe(false);
   });
+
+  it('rejects bypasses with query, hash, spaces or credentials', () => {
+    expect(trackingHostOk('lalamove', 'https://evil.example?x.lalamove.com')).toBe(false);
+    expect(trackingHostOk('grab', 'https://evil.example#.grab.com')).toBe(false);
+    expect(trackingHostOk('own', 'https://a b c')).toBe(false);
+    expect(trackingHostOk('other', 'https://a b c')).toBe(false);
+    expect(trackingHostOk('lalamove', 'https://user@lalamove.com')).toBe(false);
+  });
 });

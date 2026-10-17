@@ -63,6 +63,11 @@ export function toApiError(error: unknown): ApiError {
     if (code === '42501') {
       return new ApiError(message !== null && /row-level security/i.test(message) ? 'not_allowed' : 'not_signed_in');
     }
+    if (code === '23503') {
+      const details = text(field(error, 'details'));
+      const combined = `${message ?? ''} ${details ?? ''}`;
+      if (/loyalty_rules/i.test(combined)) return new ApiError('reward_item_in_use');
+    }
     // Postgres: a bad value, a broken rule, a duplicate, or a row pointing at another shop's row.
     if (POSTGRES_INVALID.has(code)) return new ApiError('invalid', message);
   }

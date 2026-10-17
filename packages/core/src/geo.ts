@@ -85,9 +85,9 @@ export function pinFromMapsLink(url: string): Pin | null {
  * - 'own' | 'other': any valid https URL
  */
 export function trackingHostOk(provider: string, url: string): boolean {
-  if (!url || typeof url !== 'string') return false;
+  if (!url || typeof url !== 'string' || url.includes('@') || !/^https:\/\/[^\s/]+\.[^\s]+$/.test(url)) return false;
 
-  const match = url.match(/^https:\/\/([^/:?#]+)(?:[:/?#]|$)/i);
+  const match = url.match(/^https:\/\/([^/:?#@]+)/i);
   if (!match || !match[1]) return false;
 
   const host = match[1].toLowerCase();

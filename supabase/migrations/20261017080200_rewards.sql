@@ -17,8 +17,8 @@ alter table public.loyalty_rules
   drop constraint if exists loyalty_rules_reward_shape;
 
 alter table public.loyalty_rules
-  add constraint loyalty_rules_item_fk foreign key (reward_item_id, tenant_id) references public.items (id, tenant_id) on delete set null,
-  add constraint loyalty_rules_variant_fk foreign key (reward_variant_id, tenant_id) references public.item_variants (id, tenant_id) on delete set null,
+  add constraint loyalty_rules_item_fk foreign key (reward_item_id, tenant_id) references public.items (id, tenant_id),
+  add constraint loyalty_rules_variant_fk foreign key (reward_variant_id, tenant_id) references public.item_variants (id, tenant_id),
   add constraint loyalty_rules_reward_shape check (
     (reward_kind = 'discount') or
     (reward_kind = 'free_item' and reward_item_id is not null and reward_variant_id is not null) or
@@ -83,7 +83,7 @@ alter table public.loyalty_ledger
   drop constraint if exists loyalty_ledger_claim_fk;
 
 alter table public.loyalty_ledger
-  add constraint loyalty_ledger_claim_fk foreign key (claim_id, tenant_id) references public.reward_claims (id, tenant_id) on delete set null;
+  add constraint loyalty_ledger_claim_fk foreign key (claim_id, tenant_id) references public.reward_claims (id, tenant_id) on delete cascade;
 
 -- 5. Update private.stamp_rule_json to include reward details
 create or replace function private.stamp_rule_json(p_rule public.loyalty_rules)

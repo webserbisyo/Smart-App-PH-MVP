@@ -482,7 +482,7 @@ begin
 
   perform private.write_audit(
     v_order.tenant_id, 'order_cancelled', 'order', v_order.id,
-    jsonb_build_object('reason', v_reason, 'wasPaid', v_was_paid)
+    jsonb_build_object('fromStatus', v_from, 'reason', v_reason, 'wasPaid', v_was_paid, 'total', v_order.total)
   );
 
   return private.order_json(v_order);

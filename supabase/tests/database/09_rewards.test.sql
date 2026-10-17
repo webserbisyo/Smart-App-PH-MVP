@@ -359,5 +359,34 @@ select is(
   'Loyalty ledger has reversed entry restoring stamps'
 );
 
+-- 6. Deleting the reward variant raises foreign key error (translated to friendly error by API)
+select tests.act_as(tests.id('owner_a'));
+update public.loyalty_rules
+set
+  reward_kind = 'free_item',
+  reward_item_id = tests.id('itm_donut'),
+  reward_variant_id = tests.id('var_donut_single')
+where tenant_id = tests.id('shop_cafe');
+
+select throws_ok(
+  $$ delete from public.item_variants where id = tests.id('var_donut_single') $$,
+  '23503',
+  null,
+  'deleting the reward variant raises the friendly error'
+);
+
+-- 7. Deleting a customer who has a claim cascades and works
+reset role;
+select lives_ok(
+  $$ delete from public.customers where id = tests.id('cust_maria') $$,
+  'deleting a customer who has a claim still works'
+);
+
+select is(
+  (select count(*) from public.reward_claims where id = tests.id('claim_1')),
+  0::bigint,
+  'Customer claims are removed on cascade'
+);
+
 select * from finish();
 rollback;

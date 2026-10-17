@@ -16,6 +16,7 @@ export const API_ERROR_CODES = [
   'variant_required',
   'category_not_empty',
   'item_has_orders',
+  'reward_item_in_use',
   'not_allowed',
   'shop_not_found',
   'not_found',

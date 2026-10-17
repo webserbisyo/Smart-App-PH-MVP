@@ -127,17 +127,20 @@ begin
   end if;
 
   if v_url is not null then
-    if v_url !~ '^https://[^\s/]+(\.[^\s]+)*' or char_length(v_url) > 500 then
+    if char_length(v_url) > 500 or v_url !~ '^https://[^\s/]+\.[^\s]+$' or v_url like '%@%' then
       raise exception 'invalid';
     end if;
 
-    v_host := lower(substring(v_url from '^https://([^/:]+)'));
+    v_host := lower(substring(v_url from '^https://([^/:?#@]+)'));
+    if v_host is null then
+      raise exception 'invalid';
+    end if;
     if p_provider = 'lalamove' then
-      if v_host is null or (v_host <> 'lalamove.com' and v_host !~ '\.lalamove\.com$') then
+      if v_host <> 'lalamove.com' and v_host !~ '\.lalamove\.com$' then
         raise exception 'invalid_tracking_host';
       end if;
     elsif p_provider = 'grab' then
-      if v_host is null or (v_host <> 'grab.com' and v_host !~ '\.grab\.com$') then
+      if v_host <> 'grab.com' and v_host !~ '\.grab\.com$' then
         raise exception 'invalid_tracking_host';
       end if;
     end if;

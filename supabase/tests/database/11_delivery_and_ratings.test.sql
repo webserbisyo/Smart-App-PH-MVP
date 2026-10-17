@@ -296,6 +296,66 @@ select throws_ok(
   'grab with invalid host is refused'
 );
 
+-- Query parameter bypass is refused (https://evil.example?x.lalamove.com)
+select throws_ok(
+  $$
+  select public.set_delivery_info(
+    tests.order_id('delivery_order'),
+    'lalamove',
+    'https://evil.example?x.lalamove.com',
+    'Kuya Rider',
+    '+639171234567'
+  )
+  $$,
+  'invalid_tracking_host',
+  'lalamove query bypass URL is refused'
+);
+
+-- Hash fragment bypass is refused (https://evil.example#.grab.com)
+select throws_ok(
+  $$
+  select public.set_delivery_info(
+    tests.order_id('delivery_order'),
+    'grab',
+    'https://evil.example#.grab.com',
+    'Kuya Rider',
+    '+639171234567'
+  )
+  $$,
+  'invalid_tracking_host',
+  'grab hash bypass URL is refused'
+);
+
+-- URL with spaces is refused (https://a b c)
+select throws_ok(
+  $$
+  select public.set_delivery_info(
+    tests.order_id('delivery_order'),
+    'own',
+    'https://a b c',
+    'Kuya Rider',
+    '+639171234567'
+  )
+  $$,
+  'invalid',
+  'URL with spaces is refused'
+);
+
+-- URL with @ is refused
+select throws_ok(
+  $$
+  select public.set_delivery_info(
+    tests.order_id('delivery_order'),
+    'lalamove',
+    'https://user@lalamove.com',
+    'Kuya Rider',
+    '+639171234567'
+  )
+  $$,
+  'invalid',
+  'URL with @ is refused'
+);
+
 -- lalamove valid host succeeds
 select lives_ok(
   $$

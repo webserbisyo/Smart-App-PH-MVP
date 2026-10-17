@@ -1029,6 +1029,7 @@ export const WORDS = {
     variant_required: 'Add at least one price.',
     category_not_empty: 'Move or remove everything in this category first.',
     item_has_orders: 'This has orders, so it cannot be deleted. Archive it instead.',
+    reward_item_in_use: 'This item is your stamp reward. Change the reward first.',
     not_allowed: 'You cannot change this.',
     invalid_code: 'That code is wrong or has expired. Check it, or send a new one.',
     code_expired: 'That code has expired. Send a new one.',
@@ -1067,6 +1068,7 @@ export const WORDS = {
   vocabErrors: {
     category_not_empty: (item: string) => `Move or remove every ${item} in this category first.`,
     item_has_orders: (item: string) => `This ${item} has orders, so it cannot be deleted. Archive it instead.`,
+    reward_item_in_use: (item: string) => `This ${item} is your stamp reward. Change the reward first.`,
     item_unavailable: (item: string) => `This ${item} is no longer available. Remove it to continue.`,
     invalid_options: (item: string) => `Check the choices for this ${item}.`,
   },
