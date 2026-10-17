@@ -578,6 +578,8 @@ export const WORDS = {
         pasteLink: 'Paste image link',
         pasteLinkPlaceholder: 'https://example.com/photo.jpg',
         importLink: 'Import image',
+        importing: 'Importing…',
+        importSuccess: 'Image imported to storage.',
         youtubePlaceholder: 'Paste YouTube link or video ID',
         youtubeHint: 'e.g. https://www.youtube.com/watch?v=... or youtu.be/...',
         title: 'Title (optional)',

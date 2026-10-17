@@ -27,6 +27,8 @@ import {
 } from '@smartapp/ui/components/field';
 import { Input } from '@smartapp/ui/components/input';
 import { NativeSelect } from '@smartapp/ui/components/native-select';
+import { Spinner } from '@smartapp/ui/components/spinner';
+import { toast } from '@smartapp/ui/components/sonner';
 import {
   Sortable,
   SortableContent,
@@ -91,6 +93,48 @@ function BannerSlideEditor({
   const kind = useWatch({ control, name: `banners.${rowIndex}.kind` });
   const youtubeId = useWatch({ control, name: `banners.${rowIndex}.youtubeId` });
   const [pasteLinkInput, setPasteLinkInput] = useState('');
+  const [importing, setImporting] = useState(false);
+
+  const handleImport = async (onImageImported: (path: string) => void) => {
+    const url = pasteLinkInput.trim();
+    if (!url.startsWith('http')) return;
+
+    setImporting(true);
+    try {
+      const { data: auth } = await client.auth.getSession();
+      const token = auth.session?.access_token;
+      if (!token) {
+        toast.error('You must be signed in to import images.');
+        return;
+      }
+
+      const storefrontUrl =
+        (import.meta as unknown as { env?: { VITE_STOREFRONT_URL?: string } }).env
+          ?.VITE_STOREFRONT_URL ?? 'http://localhost:3000';
+      const response = await fetch(`${storefrontUrl}/api/media/import`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ url, tenantId }),
+      });
+
+      if (!response.ok) {
+        const errorData = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(errorData.error ?? `Import failed (${String(response.status)})`);
+      }
+
+      const result = (await response.json()) as { path: string };
+      onImageImported(result.path);
+      setPasteLinkInput('');
+      toast.success(words.importSuccess);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to import image.');
+    } finally {
+      setImporting(false);
+    }
+  };
 
   return (
     <Card className="border-border/60 bg-card/60 shadow-xs">
@@ -193,13 +237,20 @@ function BannerSlideEditor({
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={disabled || !pasteLinkInput.trim().startsWith('http')}
+                      disabled={disabled || importing || !pasteLinkInput.trim().startsWith('http')}
                       onClick={() => {
-                        field.onChange(pasteLinkInput.trim());
-                        setPasteLinkInput('');
+                        void handleImport(field.onChange);
                       }}
+                      className="gap-1.5"
                     >
-                      {words.importLink}
+                      {importing ? (
+                        <>
+                          <Spinner className="size-3.5" />
+                          <span>{words.importing}</span>
+                        </>
+                      ) : (
+                        words.importLink
+                      )}
                     </Button>
                   </div>
                 </div>

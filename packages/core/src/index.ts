@@ -54,4 +54,5 @@ export * from './schemas/rating';
 export * from './schemas/delivery-info';
 export * from './schemas/push-subscription';
 export * from './youtube';
+export * from './ssrf';
 

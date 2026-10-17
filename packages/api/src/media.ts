@@ -1,7 +1,10 @@
+import { createClient } from '@supabase/supabase-js';
+
 import type { MediaKind } from '@smartapp/core';
 
-import type { ApiClient } from './client';
-import { throwIfError } from './errors';
+import type { Database } from './database.types';
+import type { ApiClient, ApiEnv } from './client';
+import { ApiError, throwIfError } from './errors';
 
 // Shop images in the public `shop-media` bucket (decision P5-3). The browser makes both sizes (compressImage in
 // packages/ui); paths never change, so a new image gets a new path and files are cached for a year.
@@ -67,4 +70,54 @@ export function setMediaClient(client: ApiClient): void {
 export function mediaUrl(path: string, size: 'full' | 'thumb'): string {
   if (mediaClient === null) throw new Error('mediaUrl needs a Supabase client: create one first.');
   return mediaClient.storage.from(SHOP_MEDIA_BUCKET).getPublicUrl(size === 'thumb' ? thumbPath(path) : path).data.publicUrl;
+}
+
+/**
+ * Verifies that the bearer token belongs to an active member of `tenantId`,
+ * then uploads the verified image buffer to `shop-media/<tenantId>/imported/<uuid>.<ext>`.
+ * Returns the storage path.
+ */
+export async function uploadImportedMedia(
+  env: ApiEnv,
+  token: string,
+  tenantId: string,
+  file: { buffer: Uint8Array; contentType: string; ext: string },
+): Promise<{ path: string }> {
+  const client = createClient<Database>(env.url, env.publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  });
+
+  const { data: auth, error: authError } = await client.auth.getUser(token);
+  if (authError || !auth.user) {
+    throw new ApiError('not_signed_in');
+  }
+
+  // Verify membership
+  const { data: member, error: memberError } = await client
+    .from('tenant_members')
+    .select('tenant_id')
+    .eq('user_id', auth.user.id)
+    .eq('tenant_id', tenantId)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (memberError || !member) {
+    throw new ApiError('not_allowed');
+  }
+
+  const path = `${tenantId}/imported/${crypto.randomUUID()}.${file.ext}`;
+  const bucket = client.storage.from(SHOP_MEDIA_BUCKET);
+  const options = {
+    upsert: false,
+    cacheControl: ONE_YEAR_SECONDS,
+    contentType: file.contentType,
+  };
+
+  const uploadResult = await bucket.upload(path, file.buffer, options);
+  throwIfError(uploadResult.error);
+
+  return { path };
 }
