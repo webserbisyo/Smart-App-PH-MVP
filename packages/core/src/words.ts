@@ -819,6 +819,17 @@ export const WORDS = {
         cover: 'Cover',
         movePhoto: (index: number) => `Move photo ${String(index)}`,
         removePhoto: (index: number) => `Remove photo ${String(index)}`,
+        photoSummary: (uploaded: number, total: number, failed: number) =>
+          failed > 0
+            ? `${String(uploaded)} of ${String(total)} uploaded, ${String(failed)} failed`
+            : `${String(uploaded)} of ${String(total)} uploaded`,
+        retryFailed: 'Retry failed',
+        tooManyPhotos: (count: number, max: number) =>
+          `You selected ${String(count)} photos. Only ${String(max)} photos are allowed.`,
+        cropTitle: 'Crop photo',
+        confirmCenterCrop: 'Confirm all with center crop',
+        cropAndUpload: 'Crop & upload',
+        addPhotos: 'Add photos',
         details: 'Details',
         name: 'Name',
         category: 'Category',

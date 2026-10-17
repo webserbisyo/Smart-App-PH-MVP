@@ -19,3 +19,20 @@ export function useMediaUpload(kind: MediaKind) {
     return path;
   };
 }
+
+/**
+ * Upload an already compressed pair of { full, thumb } blobs to the shop's media folder.
+ */
+export function usePrecompressedUpload(kind: MediaKind) {
+  const client = useApiClient();
+  const shop = useShop();
+  return async (
+    files: { full: Blob; thumb: Blob },
+    progress: (percent: number) => void,
+  ): Promise<string> => {
+    progress(25);
+    const { path } = await uploadShopMedia(client, shop.id, kind, files);
+    progress(100);
+    return path;
+  };
+}
